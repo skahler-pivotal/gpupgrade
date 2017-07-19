@@ -42,7 +42,7 @@ func (cmd CheckCommand) execute(dbConnector db.DBConnector, writer config.Store)
 	defer dbConnector.Close()
 
 	rows, err := dbConnector.GetConn().Query(`select dbid, content, role, preferred_role,
-	mode, status, port, hostname, address, san_mounts, datadir
+	mode, status, port, hostname, address, datadir
 	from gp_segment_configuration`)
 
 	if err != nil {

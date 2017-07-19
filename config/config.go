@@ -14,7 +14,6 @@ import (
 //"port": 25437,
 //"preferred_role": "m",
 //"role": "m",
-//"san_mounts": null,
 //"status": "u"
 
 type SegmentConfiguration []Segment
