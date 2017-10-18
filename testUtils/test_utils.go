@@ -23,6 +23,18 @@ const (
     "preferred_role": "m",
     "role": "m",
     "status": "u"
+  },
+  {
+    "address": "aspen",
+    "content": 1,
+    "datadir": "/Users/pivotal/workspace/gpdb/gpAux/gpdemo/datadirs/dbfast_mirror2/demoDataDir1",
+    "dbid": 6,
+    "hostname": "aspen.pivotal",
+    "mode": "s",
+    "port": 25436,
+    "preferred_role": "m",
+    "role": "m",
+    "status": "u"
   }]`
 )
 
