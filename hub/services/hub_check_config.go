@@ -22,7 +22,10 @@ func (s *cliToHubListenerImpl) CheckConfig(ctx context.Context,
 	}
 	databaseHandler := dbConnector.GetConn()
 
-	err = CreateConfigurationFile(databaseHandler, config.NewWriter())
+	configQuery := `select dbid, content, role, preferred_role,
+	mode, status, port, hostname, address, datadir
+	from gp_segment_configuration`
+	err = CreateConfigurationFile(databaseHandler, configQuery, config.NewWriter())
 	if err != nil {
 		return nil, err
 	}
@@ -31,10 +34,8 @@ func (s *cliToHubListenerImpl) CheckConfig(ctx context.Context,
 }
 
 // public for testing purposes
-func CreateConfigurationFile(databaseHandler *sqlx.DB, writer config.Store) error {
-	rows, err := databaseHandler.Query(`select dbid, content, role, preferred_role,
-	mode, status, port, hostname, address, datadir
-	from gp_segment_configuration`)
+func CreateConfigurationFile(databaseHandler *sqlx.DB, configQuery string, writer config.Store) error {
+	rows, err := databaseHandler.Query(configQuery)
 
 	if err != nil {
 		return errors.New(err.Error())
