@@ -23,18 +23,27 @@ func (s *cliToHubListenerImpl) CheckConfig(ctx context.Context,
 	databaseHandler := dbConnector.GetConn()
 
 	configQuery := `select dbid, content, role, preferred_role,
-	mode, status, port, hostname, address, datadir
-	from gp_segment_configuration`
-	err = CreateConfigurationFile(databaseHandler, configQuery, config.NewWriter())
+		mode, status, port, hostname, address, datadir
+		from gp_segment_configuration`
+	err = SaveQueryResultToJSON(databaseHandler, configQuery,
+		config.NewWriter(config.GetConfigFilePath()))
 	if err != nil {
 		return nil, err
 	}
+
+	versionQuery := `show gp_server_version_num`
+	err = SaveQueryResultToJSON(databaseHandler, versionQuery,
+		config.NewWriter(config.GetVersionFilePath()))
+	if err != nil {
+		return nil, err
+	}
+
 	successReply := &pb.CheckConfigReply{ConfigStatus: "All good"}
 	return successReply, nil
 }
 
 // public for testing purposes
-func CreateConfigurationFile(databaseHandler *sqlx.DB, configQuery string, writer config.Store) error {
+func SaveQueryResultToJSON(databaseHandler *sqlx.DB, configQuery string, writer config.Store) error {
 	rows, err := databaseHandler.Query(configQuery)
 
 	if err != nil {
