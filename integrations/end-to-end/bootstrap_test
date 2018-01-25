@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# bootstrap_test is characterized by the fact that it doesn't need a GPDB cluster up
+
+set -eox pipefail
+
+# although we won't be bringing up a cluster, convenient way to get the right $PATH
+source /usr/local/greenplum-db-devel/greenplum_path.sh
+
+gp_upgrade prepare start-hub
+gp_upgrade status upgrade | grep "PENDING - Configuration Check"
+
+gp_upgrade status upgrade | grep "PENDING - Install binaries on segments"
