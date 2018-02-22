@@ -71,6 +71,24 @@ func (mr *MockCommandListenerClientMockRecorder) CheckDiskUsageOnAgents(ctx, in 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckDiskUsageOnAgents", reflect.TypeOf((*MockCommandListenerClient)(nil).CheckDiskUsageOnAgents), varargs...)
 }
 
+// PingAgents mocks base method
+func (m *MockCommandListenerClient) PingAgents(ctx context.Context, in *PingAgentsRequest, opts ...grpc.CallOption) (*PingAgentsReply, error) {
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PingAgents", varargs...)
+	ret0, _ := ret[0].(*PingAgentsReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PingAgents indicates an expected call of PingAgents
+func (mr *MockCommandListenerClientMockRecorder) PingAgents(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingAgents", reflect.TypeOf((*MockCommandListenerClient)(nil).PingAgents), varargs...)
+}
+
 // MockCommandListenerServer is a mock of CommandListenerServer interface
 type MockCommandListenerServer struct {
 	ctrl     *gomock.Controller
@@ -118,4 +136,17 @@ func (m *MockCommandListenerServer) CheckDiskUsageOnAgents(arg0 context.Context,
 // CheckDiskUsageOnAgents indicates an expected call of CheckDiskUsageOnAgents
 func (mr *MockCommandListenerServerMockRecorder) CheckDiskUsageOnAgents(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckDiskUsageOnAgents", reflect.TypeOf((*MockCommandListenerServer)(nil).CheckDiskUsageOnAgents), arg0, arg1)
+}
+
+// PingAgents mocks base method
+func (m *MockCommandListenerServer) PingAgents(arg0 context.Context, arg1 *PingAgentsRequest) (*PingAgentsReply, error) {
+	ret := m.ctrl.Call(m, "PingAgents", arg0, arg1)
+	ret0, _ := ret[0].(*PingAgentsReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PingAgents indicates an expected call of PingAgents
+func (mr *MockCommandListenerServerMockRecorder) PingAgents(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingAgents", reflect.TypeOf((*MockCommandListenerServer)(nil).PingAgents), arg0, arg1)
 }

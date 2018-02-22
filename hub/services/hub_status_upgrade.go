@@ -35,11 +35,10 @@ func (s *CatchAllCliToHubListenerImpl) StatusUpgrade(ctx context.Context, in *pb
 
 	gpstopStatePath := filepath.Join(homeDirectory, ".gp_upgrade/gpstop")
 	clusterPair := upgradestatus.NewShutDownClusters(gpstopStatePath)
+	shutdownClustersStatus, _ := clusterPair.GetStatus()
 
 	pgUpgradePath := filepath.Join(homeDirectory, ".gp_upgrade/pg_upgrade")
 	convertMaster := upgradestatus.NewConvertMaster(pgUpgradePath)
-
-	shutdownClustersStatus, _ := clusterPair.GetStatus()
 	masterUpgradeStatus, _ := convertMaster.GetStatus()
 
 	startAgentsStatePath := filepath.Join(homeDirectory, ".gp_upgrade/start-agents")

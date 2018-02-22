@@ -33,6 +33,8 @@ It has these top-level messages:
 	PrepareInitClusterReply
 	UpgradeConvertMasterRequest
 	UpgradeConvertMasterReply
+	PingAgentsRequest
+	PingAgentsReply
 	CheckUpgradeStatusRequest
 	CheckUpgradeStatusReply
 	FileSysUsage

@@ -5,7 +5,11 @@ package idl;
 service CommandListener {
     rpc CheckUpgradeStatus (CheckUpgradeStatusRequest) returns (CheckUpgradeStatusReply) {}
     rpc CheckDiskUsageOnAgents (CheckDiskUsageRequestToAgent) returns (CheckDiskUsageReplyFromAgent) {}
+    rpc PingAgents (PingAgentsRequest) returns (PingAgentsReply) {}
 }
+
+message PingAgentsRequest {}
+message PingAgentsReply {}
 
 message CheckUpgradeStatusRequest {}
 

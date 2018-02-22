@@ -16,8 +16,7 @@ service CliToHub {
     rpc PrepareStartAgents(PrepareStartAgentsRequest) returns (PrepareStartAgentsReply) {}
 }
 
-message PingRequest {
-}
+message PingRequest {}
 message PingReply {}
 
 message StatusUpgradeRequest {}

@@ -1,9 +1,9 @@
 package configutils
 
 import (
-	"fmt"
 	pb "gp_upgrade/idl"
 
+	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"google.golang.org/grpc"
 )
 
@@ -18,23 +18,25 @@ type ClientAndHostname struct {
 	Hostname string
 }
 
-type RPCClients struct{}
+func GetRPCClients() ([]ClientAndHostname, error) {
+	reader := NewReader()
+	reader.OfOldClusterConfig()
+	hostnames, err := reader.GetHostnames()
+	if err != nil {
+		return nil, err
+	}
 
-func (helper RPCClients) GetRPCClients() []ClientAndHostname {
-	reader := Reader{}
-	hostnames, _ := reader.GetHostnames()
 	var clients []ClientAndHostname
 	for i := 0; i < len(hostnames); i++ {
 		conn, err := grpc.Dial(hostnames[i]+":"+port, grpc.WithInsecure())
-		if err == nil {
-			clientAndHost := ClientAndHostname{
-				Client:   pb.NewCommandListenerClient(conn),
-				Hostname: hostnames[i],
-			}
-			clients = append(clients, clientAndHost)
-		} else {
-			fmt.Println("ERROR: couldn't get gRPC conn to " + hostnames[i])
+		if err != nil {
+			gplog.Error(err.Error())
 		}
+		clientAndHost := ClientAndHostname{
+			Client:   pb.NewCommandListenerClient(conn),
+			Hostname: hostnames[i],
+		}
+		clients = append(clients, clientAndHost)
 	}
-	return clients
+	return clients, err
 }

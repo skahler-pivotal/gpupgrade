@@ -12,7 +12,6 @@ import (
 )
 
 var _ = Describe("ClusterSsher", func() {
-
 	AfterEach(func() {
 		utils.System = utils.InitializeSystemFunctions()
 	})
@@ -23,10 +22,11 @@ var _ = Describe("ClusterSsher", func() {
 				return nil, errors.New("host not found")
 			}
 			cw := newSpyChecklistWriter()
+			ap := newSpyAgentPinger()
 			//the buffer capacity is 100 to make sure that nothing blocks, there are no readers for this channel
 			fakeErrors := make(chan string, 100)
 			fakeLogger := logger.LogEntry{Error: fakeErrors}
-			clusterSsher := services.NewClusterSsher(cw, fakeLogger)
+			clusterSsher := services.NewClusterSsher(cw, fakeLogger, ap)
 			clusterSsher.VerifySoftware([]string{"doesnt matter"})
 			Expect(cw.freshStateDirs).To(ContainElement("seginstall"))
 			Expect(cw.stepsMarkedInProgress).To(ContainElement("seginstall"))
@@ -42,10 +42,11 @@ var _ = Describe("ClusterSsher", func() {
 				return []byte("completed"), nil
 			}
 			cw := newSpyChecklistWriter()
+			ap := newSpyAgentPinger()
 			//the buffer capacity is 100 to make sure that nothing blocks, there are no readers for this channel
 			fakeErrors := make(chan string, 100)
 			fakeLogger := logger.LogEntry{Error: fakeErrors}
-			clusterSsher := services.NewClusterSsher(cw, fakeLogger)
+			clusterSsher := services.NewClusterSsher(cw, fakeLogger, ap)
 			clusterSsher.VerifySoftware([]string{"doesnt matter"})
 			Expect(recvdName).To(Equal("ssh"))
 			Expect(recvdArgs).To(ContainElement("-o"))
@@ -69,7 +70,8 @@ var _ = Describe("ClusterSsher", func() {
 				return []byte("completed"), nil
 			}
 			cw := newSpyChecklistWriter()
-			clusterSsher := services.NewClusterSsher(cw, logger.LogEntry{})
+			ap := newSpyAgentPinger()
+			clusterSsher := services.NewClusterSsher(cw, logger.LogEntry{}, ap)
 			clusterSsher.Start([]string{"doesnt matter"})
 			Expect(recvdName).To(Equal("ssh"))
 			Expect(recvdArgs).To(ContainElement("-o"))
@@ -85,8 +87,14 @@ var _ = Describe("ClusterSsher", func() {
 	})
 })
 
-func newSpyChecklistWriter() *spyChecklistWriter {
-	return &spyChecklistWriter{}
+type spyAgentPinger struct{}
+
+func newSpyAgentPinger() *spyAgentPinger {
+	return &spyAgentPinger{}
+}
+
+func (s *spyAgentPinger) PingPollAgents() error {
+	return nil
 }
 
 type spyChecklistWriter struct {
@@ -94,6 +102,10 @@ type spyChecklistWriter struct {
 	stepsMarkedInProgress []string
 	stepsMarkedFailed     []string
 	stepsMarkedCompleted  []string
+}
+
+func newSpyChecklistWriter() *spyChecklistWriter {
+	return &spyChecklistWriter{}
 }
 
 func (s *spyChecklistWriter) MarkFailed(step string) error {

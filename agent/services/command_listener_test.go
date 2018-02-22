@@ -79,4 +79,11 @@ var _ = Describe("CommandListener", func() {
 			Expect(string(testLogFile.Contents())).To(ContainSubstring("fake error"))
 		})
 	})
+	Describe("got a ping from hub", func() {
+		It("returns an empty reply to signal its running.", func() {
+			listener := NewCommandListener()
+			_, err := listener.PingAgents(nil, &pb.PingAgentsRequest{})
+			Expect(err).To(BeNil())
+		})
+	})
 })
