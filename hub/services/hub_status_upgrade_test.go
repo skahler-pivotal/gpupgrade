@@ -13,7 +13,7 @@ import (
 
 	"gp_upgrade/hub/logger"
 	"gp_upgrade/hub/services"
-	"gp_upgrade/testUtils"
+	"gp_upgrade/testutils"
 	"io/ioutil"
 	"path/filepath"
 )
@@ -156,7 +156,7 @@ var _ = Describe("hub", func() {
 			}
 			utils.System.Stat = func(filename string) (os.FileInfo, error) {
 				if strings.Contains(filename, "found something") {
-					return &testUtils.FakeFileInfo{}, nil
+					return &testutils.FakeFileInfo{}, nil
 				}
 				return nil, nil
 			}

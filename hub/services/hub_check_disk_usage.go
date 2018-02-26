@@ -5,7 +5,7 @@ import (
 	"gp_upgrade/hub/configutils"
 	pb "gp_upgrade/idl"
 
-	gpbackupUtils "github.com/greenplum-db/gp-common-go-libs/gplog"
+	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -20,7 +20,7 @@ const (
 func (s *CatchAllCliToHubListenerImpl) CheckDiskUsage(ctx context.Context,
 	in *pb.CheckDiskUsageRequest) (*pb.CheckDiskUsageReply, error) {
 
-	gpbackupUtils.Info("starting CheckDiskUsage")
+	gplog.Info("starting CheckDiskUsage")
 	var replyMessages []string
 	reader := configutils.Reader{}
 	// We don't care whether this the old json vs the new json because we're
@@ -37,7 +37,7 @@ func (s *CatchAllCliToHubListenerImpl) CheckDiskUsage(ctx context.Context,
 			clients = append(clients, configutils.ClientAndHostname{Client: pb.NewCommandListenerClient(conn), Hostname: hostnames[i]})
 			defer conn.Close()
 		} else {
-			gpbackupUtils.Error(err.Error())
+			gplog.Error(err.Error())
 			replyMessages = append(replyMessages, "ERROR: couldn't get gRPC conn to "+hostnames[i])
 		}
 	}
@@ -52,7 +52,7 @@ func GetDiskUsageFromSegmentHosts(clients []configutils.ClientAndHostname) []str
 		reply, err := clients[i].Client.CheckDiskUsageOnAgents(context.Background(),
 			&pb.CheckDiskUsageRequestToAgent{})
 		if err != nil {
-			gpbackupUtils.Error(err.Error())
+			gplog.Error(err.Error())
 			replyMessages = append(replyMessages, "Could not get disk usage from: "+clients[i].Hostname)
 			continue
 		}

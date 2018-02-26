@@ -2,8 +2,8 @@ package integrations_test
 
 import (
 	"gp_upgrade/cli/commanders"
-	"gp_upgrade/sshClient"
-	"gp_upgrade/testUtils"
+	"gp_upgrade/sshclient"
+	"gp_upgrade/testutils"
 
 	"fmt"
 	"os"
@@ -91,23 +91,23 @@ var _ = BeforeEach(func() {
 
 	sshd = exec.Command(sshdPath)
 	_, err := sshd.StdoutPipe()
-	testUtils.Check("cannot get stdout", err)
+	testutils.Check("cannot get stdout", err)
 	_, err = sshd.StderrPipe()
-	testUtils.Check("cannot get stderr", err)
+	testutils.Check("cannot get stderr", err)
 
 	err = sshd.Start()
 	Expect(err).ToNot(HaveOccurred())
 
 	waitForSocketToAllowConnections()
 
-	testUtils.EnsureHomeDirIsTempAndClean()
+	testutils.EnsureHomeDirIsTempAndClean()
 })
 
 func waitForSocketToAllowConnections() {
 	time.Sleep(100 * time.Millisecond)
 	register_path := path.Join(fixture_path, "registered_private_key.pem")
 
-	connector, err := sshClient.NewSSHConnector(register_path)
+	connector, err := sshclient.NewSSHConnector(register_path)
 	if err != nil {
 		Fail("cannot create client for testing sshd")
 	}

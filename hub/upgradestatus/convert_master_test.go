@@ -10,7 +10,7 @@ import (
 
 	"gp_upgrade/hub/upgradestatus"
 	pb "gp_upgrade/idl"
-	"gp_upgrade/testUtils"
+	"gp_upgrade/testutils"
 	"gp_upgrade/utils"
 	"io/ioutil"
 	"strings"
@@ -83,7 +83,7 @@ var _ bool = Describe("hub", func() {
 			}
 			utils.System.Stat = func(filename string) (os.FileInfo, error) {
 				if strings.Contains(filename, "found something") {
-					return &testUtils.FakeFileInfo{}, nil
+					return &testutils.FakeFileInfo{}, nil
 				}
 				return nil, nil
 			}

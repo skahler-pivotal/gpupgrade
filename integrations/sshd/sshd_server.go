@@ -11,15 +11,16 @@ import (
 
 	"os"
 
-	"github.com/pkg/errors"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"log"
 
 	"path"
 	"runtime"
 
-	"gp_upgrade/testUtils"
+	"gp_upgrade/testutils"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -37,17 +38,17 @@ func startShell(channel ssh.Channel, requests <-chan *ssh.Request) {
 			switch req.Type {
 			case "exec":
 				cmdName, err := parsePayload(payload)
-				testUtils.Check("Cannot parse payload", err)
+				testutils.Check("Cannot parse payload", err)
 
 				cmd := exec.Command("bash", "-c", fmt.Sprintf("%s", cmdName))
 
 				stdout, err := cmd.StdoutPipe()
-				testUtils.Check("Cannot get stdoutpipe", err)
+				testutils.Check("Cannot get stdoutpipe", err)
 
-				var cheatSheet testUtils.CheatSheet
+				var cheatSheet testutils.CheatSheet
 				//TODO: Currently reading from a cheatsheet file; possibly passing through ssh server instead?
 				err = cheatSheet.ReadFromFile()
-				testUtils.Check("Cannot read from file", err)
+				testutils.Check("Cannot read from file", err)
 
 				// NOTE: We are intentionally overwriting the bash command output
 				// Probably not necessary to actually run the command anymore...

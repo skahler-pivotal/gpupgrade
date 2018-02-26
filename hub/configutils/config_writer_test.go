@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"gp_upgrade/testUtils"
+	"gp_upgrade/testutils"
 	"io/ioutil"
 	"os"
 
@@ -22,7 +22,7 @@ var _ = Describe("configWriter", func() {
 
 	BeforeEach(func() {
 		saved_old_home = os.Getenv("HOME")
-		testUtils.EnsureHomeDirIsTempAndClean()
+		testutils.EnsureHomeDirIsTempAndClean()
 		subject = configutils.NewWriter("/tmp/doesnotexist")
 	})
 
@@ -35,7 +35,7 @@ var _ = Describe("configWriter", func() {
 			sampleCombinedRows := make([]interface{}, 2)
 			sampleCombinedRows[0] = "value1"
 			sampleCombinedRows[1] = []byte{35}
-			fakeRows := &testUtils.FakeRows{
+			fakeRows := &testutils.FakeRows{
 				FakeColumns:      []string{"colnameString", "colnameBytes"},
 				NumRows:          1,
 				SampleRowStrings: sampleCombinedRows,
@@ -60,7 +60,7 @@ var _ = Describe("configWriter", func() {
 				sample = make([]interface{}, 1)
 
 				sample[0] = "value1"
-				fakeRows := &testUtils.FakeRows{
+				fakeRows := &testutils.FakeRows{
 					FakeColumns:      []string{"colname1", "colname2"},
 					NumRows:          1,
 					SampleRowStrings: sample,
@@ -107,7 +107,7 @@ var _ = Describe("configWriter", func() {
 		})
 		Describe("error cases", func() {
 			It("returns an error when home directory is not writable", func() {
-				os.Chmod(testUtils.TempHomeDir, 0100)
+				os.Chmod(testutils.TempHomeDir, 0100)
 				subject := configutils.Writer{
 					TableJSONData: json_structure,
 					Formatter:     configutils.NewJSONFormatter(),
@@ -116,7 +116,7 @@ var _ = Describe("configWriter", func() {
 				err := subject.Write()
 
 				Expect(err).To(HaveOccurred())
-				Expect(string(err.Error())).To(ContainSubstring(fmt.Sprintf("mkdir %v/.gp_upgrade: permission denied", testUtils.TempHomeDir)))
+				Expect(string(err.Error())).To(ContainSubstring(fmt.Sprintf("mkdir %v/.gp_upgrade: permission denied", testutils.TempHomeDir)))
 			})
 			It("returns an error when cluster configutils.go file cannot be opened", func() {
 				// pre-create the directory with 0100 perms
@@ -131,7 +131,7 @@ var _ = Describe("configWriter", func() {
 				err = subject.Write()
 
 				Expect(err).To(HaveOccurred())
-				Expect(string(err.Error())).To(ContainSubstring(fmt.Sprintf("open %v/.gp_upgrade/cluster_config.json: permission denied", testUtils.TempHomeDir)))
+				Expect(string(err.Error())).To(ContainSubstring(fmt.Sprintf("open %v/.gp_upgrade/cluster_config.json: permission denied", testutils.TempHomeDir)))
 			})
 			It("returns an error when json marshalling fails", func() {
 				myMap := make(map[string]interface{})
@@ -151,7 +151,7 @@ var _ = Describe("configWriter", func() {
 			It("returns an error when json pretty print fails", func() {
 				subject := configutils.Writer{
 					TableJSONData: json_structure,
-					Formatter:     &testUtils.ErrorFormatter{},
+					Formatter:     &testutils.ErrorFormatter{},
 				}
 				err := subject.Write()
 
@@ -161,8 +161,8 @@ var _ = Describe("configWriter", func() {
 			It("returns an error when file writing fails", func() {
 				subject := configutils.Writer{
 					TableJSONData: json_structure,
-					Formatter:     &testUtils.NilFormatter{},
-					FileWriter:    &testUtils.ErrorFileWriterDuringWrite{},
+					Formatter:     &testutils.NilFormatter{},
+					FileWriter:    &testutils.ErrorFileWriterDuringWrite{},
 				}
 				err := subject.Write()
 

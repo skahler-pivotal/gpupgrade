@@ -1,4 +1,4 @@
-package sshClient
+package sshclient
 
 import (
 	"fmt"
@@ -7,8 +7,9 @@ import (
 
 	"net"
 
-	"github.com/pkg/errors"
 	"io"
+
+	"github.com/pkg/errors"
 
 	"golang.org/x/crypto/ssh"
 )

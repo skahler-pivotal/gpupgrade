@@ -19,7 +19,7 @@ COVERAGE_DIRS_FILE=`mktemp`
 #echo "child file: $CHILD_DIRS_FILE"
 
 # some directories we wish to skip for coverage
-SKIP_DIRS="integrations scripts testUtils"
+SKIP_DIRS="integrations scripts testutils"
 SKIP_DIR_ARRAY=(${SKIP_DIRS})
 IFS=$'\n' sorted=($(sort <<<"${SKIP_DIR_ARRAY[*]}"))
 unset IFS

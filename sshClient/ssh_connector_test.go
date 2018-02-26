@@ -1,4 +1,4 @@
-package sshClient_test
+package sshclient_test
 
 import (
 	"golang.org/x/crypto/ssh"
@@ -14,7 +14,7 @@ import (
 
 	"io/ioutil"
 
-	"gp_upgrade/sshClient"
+	"gp_upgrade/sshclient"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -28,13 +28,13 @@ var (
 
 var _ = Describe("SSHConnector", func() {
 	var (
-		subject       *sshClient.RealSSHConnector
+		subject       *sshclient.RealSSHConnector
 		test_key_path string
 	)
 	BeforeEach(func() {
 		_, this_file_path, _, _ := runtime.Caller(0)
 		test_key_path = path.Join(path.Dir(this_file_path), "../integrations/sshd/fake_private_key.pem")
-		subject = &sshClient.RealSSHConnector{
+		subject = &sshclient.RealSSHConnector{
 			SSHDialer:      FakeDialer{},
 			SSHKeyParser:   FakeKeyParser{},
 			PrivateKeyPath: test_key_path,
@@ -46,12 +46,12 @@ var _ = Describe("SSHConnector", func() {
 		It("populates the private key correctly", func() {
 			const PRIVATE_KEY_FILE_PATH = "/tmp/testPrivateKeyFile.key"
 			ioutil.WriteFile(PRIVATE_KEY_FILE_PATH, []byte("----TEST PRIVATE KEY ---"), 0600)
-			sshConnector, err := sshClient.NewSSHConnector(PRIVATE_KEY_FILE_PATH)
+			sshConnector, err := sshclient.NewSSHConnector(PRIVATE_KEY_FILE_PATH)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(sshConnector.(*sshClient.RealSSHConnector).PrivateKeyPath).To(Equal(PRIVATE_KEY_FILE_PATH))
+			Expect(sshConnector.(*sshclient.RealSSHConnector).PrivateKeyPath).To(Equal(PRIVATE_KEY_FILE_PATH))
 		})
 		It("returns an error when private key is missing", func() {
-			_, err := sshClient.NewSSHConnector("pathThatDoesNotExist")
+			_, err := sshclient.NewSSHConnector("pathThatDoesNotExist")
 			Expect(err).To(HaveOccurred())
 		})
 	})
@@ -166,7 +166,7 @@ type FakeSSHClient struct {
 	buf bytes.Buffer
 }
 
-func (FakeSSHClient) NewSession() (sshClient.SSHSession, error) {
+func (FakeSSHClient) NewSession() (sshclient.SSHSession, error) {
 	fakeSession := FakeSession{}
 	return &fakeSession, nil
 }
@@ -193,7 +193,7 @@ func (errorOutputSession ErrorOutputSession) Output(string) ([]byte, error) {
 
 type FakeDialer struct{}
 
-func (FakeDialer) Dial(network, addr string, config *ssh.ClientConfig) (sshClient.SSHClient, error) {
+func (FakeDialer) Dial(network, addr string, config *ssh.ClientConfig) (sshclient.SSHClient, error) {
 	param_network = network
 	param_addr = addr
 	param_config = config
@@ -202,13 +202,13 @@ func (FakeDialer) Dial(network, addr string, config *ssh.ClientConfig) (sshClien
 
 type GoodDialerBadOutput struct{}
 
-func (GoodDialerBadOutput) Dial(network, addr string, config *ssh.ClientConfig) (sshClient.SSHClient, error) {
+func (GoodDialerBadOutput) Dial(network, addr string, config *ssh.ClientConfig) (sshclient.SSHClient, error) {
 	return &GoodClientBadSession{}, nil
 }
 
 type GoodClientBadSession struct{}
 
-func (GoodClientBadSession) NewSession() (sshClient.SSHSession, error) {
+func (GoodClientBadSession) NewSession() (sshclient.SSHSession, error) {
 	return &ErrorOutputSession{}, nil
 }
 
@@ -220,18 +220,18 @@ func (ThrowingKeyParser) ParsePrivateKey(pemBytes []byte) (ssh.Signer, error) {
 
 type ThrowingDialer struct{}
 
-func (ThrowingDialer) Dial(network, addr string, config *ssh.ClientConfig) (sshClient.SSHClient, error) {
+func (ThrowingDialer) Dial(network, addr string, config *ssh.ClientConfig) (sshclient.SSHClient, error) {
 	return nil, errors.New("test dialing failure")
 }
 
 type ThrowingClient struct{}
 
-func (ThrowingClient) NewSession() (sshClient.SSHSession, error) {
+func (ThrowingClient) NewSession() (sshclient.SSHSession, error) {
 	return nil, errors.New("test NewSession failure")
 }
 
 type ThrowingBadClientDialer struct{}
 
-func (ThrowingBadClientDialer) Dial(network, addr string, config *ssh.ClientConfig) (sshClient.SSHClient, error) {
+func (ThrowingBadClientDialer) Dial(network, addr string, config *ssh.ClientConfig) (sshclient.SSHClient, error) {
 	return new(ThrowingClient), nil
 }

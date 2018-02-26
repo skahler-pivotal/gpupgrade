@@ -1,7 +1,7 @@
-package shellParsers_test
+package shellparsers_test
 
 import (
-	"gp_upgrade/shellParsers"
+	shellparsers "gp_upgrade/shellParsers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -10,9 +10,9 @@ import (
 var _ = Describe("ShellParser", func() {
 
 	Describe("#isPgUpgradeRunning", func() {
-		var subject shellParsers.ShellParser
+		var subject shellparsers.ShellParser
 		BeforeEach(func() {
-			subject = shellParsers.RealShellParser{}
+			subject = shellparsers.RealShellParser{}
 		})
 
 		Context("when ShellParser has no ps output", func() {

@@ -1,7 +1,7 @@
 package integrations_test
 
 import (
-	"gp_upgrade/testUtils"
+	"gp_upgrade/testutils"
 	"io/ioutil"
 
 	"gp_upgrade/hub/configutils"
@@ -31,12 +31,12 @@ var _ = Describe("check", func() {
 			// check file
 
 			_, err := ioutil.ReadFile(configutils.GetConfigFilePath())
-			testUtils.Check("cannot read file", err)
+			testutils.Check("cannot read file", err)
 
 			reader := configutils.Reader{}
 			reader.OfOldClusterConfig()
 			err = reader.Read()
-			testUtils.Check("cannot read config", err)
+			testutils.Check("cannot read config", err)
 
 			// for extra credit, read db and compare info
 			Expect(len(reader.GetSegmentConfiguration())).To(BeNumerically(">", 1))

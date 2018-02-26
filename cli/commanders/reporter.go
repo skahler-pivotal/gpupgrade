@@ -5,7 +5,7 @@ import (
 	"fmt"
 	pb "gp_upgrade/idl"
 
-	gpbackupUtils "github.com/greenplum-db/gp-common-go-libs/gplog"
+	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"github.com/pkg/errors"
 )
 
@@ -49,7 +49,7 @@ func (r *Reporter) OverallUpgradeStatus() error {
 		upgradeStepStatus := reply.ListOfUpgradeStepStatuses[i]
 		reportString := fmt.Sprintf("%v %s", upgradeStepStatus.Status,
 			UpgradeStepsMessage[upgradeStepStatus.Step])
-		gpbackupUtils.Info(reportString)
+		gplog.Info(reportString)
 	}
 
 	return nil

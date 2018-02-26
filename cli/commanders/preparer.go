@@ -10,7 +10,7 @@ import (
 
 	pb "gp_upgrade/idl"
 
-	gpbackupUtils "github.com/greenplum-db/gp-common-go-libs/gplog"
+	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
 
 type Preparer struct {
@@ -27,9 +27,9 @@ func (p Preparer) ShutdownClusters(oldBinDir string, newBinDir string) error {
 	_, err := p.client.PrepareShutdownClusters(context.Background(),
 		&pb.PrepareShutdownClustersRequest{OldBinDir: oldBinDir, NewBinDir: newBinDir})
 	if err != nil {
-		gpbackupUtils.Error(err.Error())
+		gplog.Error(err.Error())
 	}
-	gpbackupUtils.Info("request to shutdown clusters sent to hub")
+	gplog.Info("request to shutdown clusters sent to hub")
 	return nil
 }
 
@@ -37,11 +37,11 @@ func (p Preparer) StartHub() error {
 
 	countHubs, err := HowManyHubsRunning()
 	if err != nil {
-		gpbackupUtils.Error("failed to determine if hub already running")
+		gplog.Error("failed to determine if hub already running")
 		return err
 	}
 	if countHubs >= 1 {
-		gpbackupUtils.Error("gp_upgrade_hub process already running")
+		gplog.Error("gp_upgrade_hub process already running")
 		return errors.New("gp_upgrade_hub process already running")
 	}
 
@@ -49,10 +49,10 @@ func (p Preparer) StartHub() error {
 	cmd := exec.Command("gp_upgrade_hub")
 	cmdErr := cmd.Start()
 	if cmdErr != nil {
-		gpbackupUtils.Error("gp_upgrade_hub kickoff failed")
+		gplog.Error("gp_upgrade_hub kickoff failed")
 		return cmdErr
 	}
-	gpbackupUtils.Debug("gp_upgrade_hub started")
+	gplog.Debug("gp_upgrade_hub started")
 	return nil
 }
 
@@ -62,7 +62,7 @@ func (p Preparer) InitCluster(dbPort int) error {
 		return err
 	}
 
-	gpbackupUtils.Info("Gleaning the new cluster config")
+	gplog.Info("Gleaning the new cluster config")
 	return nil
 }
 
@@ -81,7 +81,7 @@ func (p Preparer) StartAgents() error {
 		return err
 	}
 
-	gpbackupUtils.Info("Started Agents in progress, check gp_upgrade_agent logs for details")
+	gplog.Info("Started Agents in progress, check gp_upgrade_agent logs for details")
 	return nil
 }
 

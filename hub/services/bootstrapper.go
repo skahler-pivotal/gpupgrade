@@ -32,7 +32,7 @@ func NewBootstrapper(hg HostnameGetter, r RemoteExecutor) *Bootstrapper {
 func (s *Bootstrapper) CheckSeginstall(ctx context.Context,
 	in *pb.CheckSeginstallRequest) (*pb.CheckSeginstallReply, error) {
 	//
-	//gpbackupUtils.Info("starting CheckSeginstall()")
+	//gplog.Info("starting CheckSeginstall()")
 	//
 	clusterHostnames, err := s.hostnameGetter.GetHostnames()
 	if err != nil || len(clusterHostnames) == 0 {

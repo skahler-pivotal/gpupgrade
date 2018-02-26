@@ -11,7 +11,7 @@ package services
 //	"golang.org/x/net/context"
 //	"google.golang.org/grpc"
 //	"gp_upgrade/idl"
-//	"gp_upgrade/testUtils"
+//	"gp_upgrade/testutils"
 //	"io"
 //	"io/ioutil"
 //	"os"
@@ -51,7 +51,7 @@ package services
 //			Consistently(errorChannel).ShouldNot(Receive())
 //
 //			dat, err := ioutil.ReadFile(utils.GetLogger().GetLogFilePath())
-//			testUtils.Check("failed to read file", err)
+//			testutils.Check("failed to read file", err)
 //			Expect(string(dat)).To(ContainSubstring("Starting Command Listener"))
 //		})
 //	})

@@ -1,4 +1,4 @@
-package sshClient
+package sshclient
 
 type SSHClient interface {
 	NewSession() (SSHSession, error)

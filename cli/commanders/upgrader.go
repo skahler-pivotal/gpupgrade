@@ -5,7 +5,7 @@ import (
 
 	pb "gp_upgrade/idl"
 
-	gpbackupUtils "github.com/greenplum-db/gp-common-go-libs/gplog"
+	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
 
 type Upgrader struct {
@@ -26,10 +26,10 @@ func (u Upgrader) ConvertMaster(oldDataDir string, oldBinDir string, newDataDir 
 	_, err := u.client.UpgradeConvertMaster(context.Background(), &upgradeConvertMasterRequest)
 	if err != nil {
 		// TODO: Change the logging message?
-		gpbackupUtils.Error("ERROR - Unable to connect to hub")
+		gplog.Error("ERROR - Unable to connect to hub")
 		return err
 	}
 
-	gpbackupUtils.Info("Kicked off pg_upgrade request.")
+	gplog.Info("Kicked off pg_upgrade request.")
 	return nil
 }

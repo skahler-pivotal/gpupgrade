@@ -1,4 +1,4 @@
-package sshClient_test
+package sshclient_test
 
 import (
 	"testing"

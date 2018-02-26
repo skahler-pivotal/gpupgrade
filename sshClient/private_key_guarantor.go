@@ -1,10 +1,11 @@
-package sshClient
+package sshclient
 
 import (
-	"github.com/pkg/errors"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/pkg/errors"
 )
 
 type PrivateKeyGuarantor struct {

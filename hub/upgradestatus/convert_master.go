@@ -9,7 +9,7 @@ import (
 	"os"
 	"regexp"
 
-	gpbackupUtils "github.com/greenplum-db/gp-common-go-libs/gplog"
+	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
 
 type ConvertMaster struct {
@@ -30,7 +30,7 @@ func (c ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 	pgUpgradePath := c.pgUpgradePath
 
 	if _, err := utils.System.Stat(pgUpgradePath); utils.System.IsNotExist(err) {
-		gpbackupUtils.Info("setting status to PENDING")
+		gplog.Info("setting status to PENDING")
 		masterUpgradeStatus = &pb.UpgradeStepStatus{
 			Step:   pb.UpgradeSteps_MASTERUPGRADE,
 			Status: pb.StepStatus_PENDING,
@@ -39,7 +39,7 @@ func (c ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 	}
 
 	if pgUpgradeRunning() {
-		gpbackupUtils.Info("setting status to RUNNING")
+		gplog.Info("setting status to RUNNING")
 		masterUpgradeStatus = &pb.UpgradeStepStatus{
 			Step:   pb.UpgradeSteps_MASTERUPGRADE,
 			Status: pb.StepStatus_RUNNING,
@@ -47,14 +47,14 @@ func (c ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 		return masterUpgradeStatus, nil
 	}
 	if !inProgressFilesExist(pgUpgradePath) && c.IsUpgradeComplete(pgUpgradePath) {
-		gpbackupUtils.Info("setting status to COMPLETE")
+		gplog.Info("setting status to COMPLETE")
 		masterUpgradeStatus = &pb.UpgradeStepStatus{
 			Step:   pb.UpgradeSteps_MASTERUPGRADE,
 			Status: pb.StepStatus_COMPLETE,
 		}
 		return masterUpgradeStatus, nil
 	}
-	gpbackupUtils.Info("setting status to FAILED")
+	gplog.Info("setting status to FAILED")
 	masterUpgradeStatus = &pb.UpgradeStepStatus{
 		Step:   pb.UpgradeSteps_MASTERUPGRADE,
 		Status: pb.StepStatus_FAILED,
@@ -79,7 +79,7 @@ func inProgressFilesExist(pgUpgradePath string) bool {
 	}
 
 	if err != nil {
-		gpbackupUtils.Error("err is: ", err)
+		gplog.Error("err is: ", err)
 		return false
 	}
 
@@ -94,7 +94,7 @@ func (c ConvertMaster) IsUpgradeComplete(pgUpgradePath string) bool {
 	}
 
 	if doneErr != nil {
-		gpbackupUtils.Error(doneErr.Error())
+		gplog.Error(doneErr.Error())
 		return false
 	}
 
@@ -106,7 +106,7 @@ func (c ConvertMaster) IsUpgradeComplete(pgUpgradePath string) bool {
 	latestDoneFile := doneFiles[0]
 	fi, err := utils.System.Stat(latestDoneFile)
 	if err != nil {
-		gpbackupUtils.Error("IsUpgradeComplete: %v", err)
+		gplog.Error("IsUpgradeComplete: %v", err)
 		return false
 	}
 
@@ -127,7 +127,7 @@ func (c ConvertMaster) IsUpgradeComplete(pgUpgradePath string) bool {
 
 	f, err := utils.System.Open(latestDoneFile)
 	if err != nil {
-		gpbackupUtils.Error(err.Error())
+		gplog.Error(err.Error())
 	}
 	defer f.Close()
 	r := bufio.NewReader(f)
@@ -136,10 +136,10 @@ func (c ConvertMaster) IsUpgradeComplete(pgUpgradePath string) bool {
 	// TODO: Needs more error checking
 	for err != io.EOF {
 		if err != nil {
-			gpbackupUtils.Error("IsUpgradeComplete: %v", err)
+			gplog.Error("IsUpgradeComplete: %v", err)
 			return false
 		}
-		gpbackupUtils.Debug(line)
+		gplog.Debug(line)
 		re := regexp.MustCompile("Upgrade complete")
 		if re.FindString(line) != "" {
 			return true

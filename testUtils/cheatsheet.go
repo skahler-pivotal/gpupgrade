@@ -1,10 +1,11 @@
-package testUtils
+package testutils
 
 import (
 	"bufio"
 	"encoding/gob"
-	"github.com/pkg/errors"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 // These commands will be the way to interact with the ssh server

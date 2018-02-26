@@ -2,7 +2,7 @@ package configutils_test
 
 import (
 	"encoding/json"
-	"gp_upgrade/testUtils"
+	"gp_upgrade/testutils"
 	"os"
 
 	"gp_upgrade/hub/configutils"
@@ -31,7 +31,7 @@ var _ = Describe("configutils reader", func() {
 
 	BeforeEach(func() {
 		saved_old_home = os.Getenv("HOME")
-		testUtils.EnsureHomeDirIsTempAndClean()
+		testutils.EnsureHomeDirIsTempAndClean()
 		err := json.Unmarshal([]byte(expected_json), &json_structure)
 		Expect(err).NotTo(HaveOccurred())
 		subject = configutils.Reader{}
@@ -45,7 +45,7 @@ var _ = Describe("configutils reader", func() {
 
 	Describe("#Read", func() {
 		It("reads a configuration", func() {
-			testUtils.WriteSampleConfig()
+			testutils.WriteSampleConfig()
 			err := subject.Read()
 
 			Expect(err).NotTo(HaveOccurred())
@@ -56,7 +56,7 @@ var _ = Describe("configutils reader", func() {
 			Expect(err).To(HaveOccurred())
 		})
 		It("returns list of hostnames", func() {
-			testUtils.WriteSampleConfig()
+			testutils.WriteSampleConfig()
 			err := subject.Read()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(subject.GetHostnames()).Should(ContainElement("briarwood"))
@@ -64,8 +64,8 @@ var _ = Describe("configutils reader", func() {
 		})
 		It("returns list of hostnames without duplicates", func() {
 			re := regexp.MustCompile("aspen.pivotal")
-			configWithDupe := re.ReplaceAllLiteralString(testUtils.SAMPLE_JSON, "briarwood")
-			testUtils.WriteProvidedConfig(configWithDupe)
+			configWithDupe := re.ReplaceAllLiteralString(testutils.SAMPLE_JSON, "briarwood")
+			testutils.WriteProvidedConfig(configWithDupe)
 			err := subject.Read()
 			Expect(err).NotTo(HaveOccurred())
 			hostnames, err := subject.GetHostnames()
