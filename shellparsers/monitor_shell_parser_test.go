@@ -1,7 +1,7 @@
 package shellparsers_test
 
 import (
-	shellparsers "gp_upgrade/shellParsers"
+	"gp_upgrade/shellparsers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
