@@ -11,7 +11,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"gp_upgrade/hub/logger"
 	"gp_upgrade/hub/services"
 	"gp_upgrade/testutils"
 	"io/ioutil"
@@ -19,15 +18,18 @@ import (
 )
 
 var _ = Describe("hub", func() {
+	var (
+		listener                 services.CliToHubListenerImpl
+		fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
+	)
 	BeforeEach(func() {
 		testhelper.SetupTestLogger() // extend to capture the values in a var if future tests need it
 		//any mocking of utils.System function pointers should be reset by calling InitializeSystemFunctions
 		utils.System = utils.InitializeSystemFunctions()
+		listener = *services.NewCliToHubListener(nil)
 	})
 	Describe("creates a reply", func() {
 		It("sends status messages under good condition", func() {
-			listener := services.NewCliToHubListener(logger.LogEntry{}, nil)
-			var fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
 			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
 			Expect(err).To(BeNil())
 			countOfStatuses := len(formulatedResponse.GetListOfUpgradeStepStatuses())
@@ -38,7 +40,7 @@ var _ = Describe("hub", func() {
 			utils.System.FilePathGlob = func(string) ([]string, error) {
 				return []string{"somefile"}, nil
 			}
-			listener := services.NewCliToHubListener(logger.LogEntry{}, nil)
+			listener := services.NewCliToHubListener(nil)
 			var fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
 
 			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
@@ -69,8 +71,6 @@ var _ = Describe("hub", func() {
 			utils.System.Stat = func(name string) (os.FileInfo, error) {
 				return nil, nil
 			}
-			listener := services.NewCliToHubListener(logger.LogEntry{}, nil)
-
 			pollStatusUpgrade := func() pb.StepStatus {
 				response, _ := listener.StatusUpgrade(nil, &pb.StatusUpgradeRequest{})
 
@@ -92,9 +92,6 @@ var _ = Describe("hub", func() {
 		})
 
 		It("reports that master upgrade is pending when pg_upgrade dir does not exist", func() {
-			listener := services.NewCliToHubListener(logger.LogEntry{}, nil)
-			var fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
-
 			utils.System.IsNotExist = func(error) bool {
 				return true
 			}
@@ -111,9 +108,6 @@ var _ = Describe("hub", func() {
 			}
 		})
 		It("reports that master upgrade is running when pg_upgrade/*.inprogress files exists", func() {
-			listener := services.NewCliToHubListener(logger.LogEntry{}, nil)
-			var fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
-
 			utils.System.IsNotExist = func(error) bool {
 				return false
 			}
@@ -136,9 +130,6 @@ var _ = Describe("hub", func() {
 			}
 		})
 		It("reports that master upgrade is done when no *.inprogress files exist in ~/.gp_upgrade/pg_upgrade", func() {
-			listener := services.NewCliToHubListener(logger.LogEntry{}, nil)
-			var fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
-
 			utils.System.IsNotExist = func(error) bool {
 				return false
 			}
@@ -185,9 +176,6 @@ var _ = Describe("hub", func() {
 			}
 		})
 		It("reports pg_upgrade has failed", func() {
-			listener := services.NewCliToHubListener(logger.LogEntry{}, nil)
-			var fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
-
 			utils.System.IsNotExist = func(error) bool {
 				return false
 			}
@@ -252,9 +240,6 @@ var _ = Describe("hub", func() {
 	})
 	Describe("Status of ShutdownClusters", func() {
 		It("We're sending the status of shutdown clusters", func() {
-
-			listener := services.NewCliToHubListener(logger.LogEntry{}, nil)
-			var fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
 			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
 			Expect(err).To(BeNil())
 			countOfStatuses := len(formulatedResponse.GetListOfUpgradeStepStatuses())

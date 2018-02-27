@@ -4,7 +4,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"gp_upgrade/hub/logger"
 	"gp_upgrade/hub/services"
 	"gp_upgrade/utils"
 
@@ -23,10 +22,7 @@ var _ = Describe("ClusterSsher", func() {
 			}
 			cw := newSpyChecklistWriter()
 			ap := newSpyAgentPinger()
-			//the buffer capacity is 100 to make sure that nothing blocks, there are no readers for this channel
-			fakeErrors := make(chan string, 100)
-			fakeLogger := logger.LogEntry{Error: fakeErrors}
-			clusterSsher := services.NewClusterSsher(cw, fakeLogger, ap)
+			clusterSsher := services.NewClusterSsher(cw, ap)
 			clusterSsher.VerifySoftware([]string{"doesnt matter"})
 			Expect(cw.freshStateDirs).To(ContainElement("seginstall"))
 			Expect(cw.stepsMarkedInProgress).To(ContainElement("seginstall"))
@@ -43,10 +39,7 @@ var _ = Describe("ClusterSsher", func() {
 			}
 			cw := newSpyChecklistWriter()
 			ap := newSpyAgentPinger()
-			//the buffer capacity is 100 to make sure that nothing blocks, there are no readers for this channel
-			fakeErrors := make(chan string, 100)
-			fakeLogger := logger.LogEntry{Error: fakeErrors}
-			clusterSsher := services.NewClusterSsher(cw, fakeLogger, ap)
+			clusterSsher := services.NewClusterSsher(cw, ap)
 			clusterSsher.VerifySoftware([]string{"doesnt matter"})
 			Expect(recvdName).To(Equal("ssh"))
 			Expect(recvdArgs).To(ContainElement("-o"))
@@ -71,7 +64,7 @@ var _ = Describe("ClusterSsher", func() {
 			}
 			cw := newSpyChecklistWriter()
 			ap := newSpyAgentPinger()
-			clusterSsher := services.NewClusterSsher(cw, logger.LogEntry{}, ap)
+			clusterSsher := services.NewClusterSsher(cw, ap)
 			clusterSsher.Start([]string{"doesnt matter"})
 			Expect(recvdName).To(Equal("ssh"))
 			Expect(recvdArgs).To(ContainElement("-o"))

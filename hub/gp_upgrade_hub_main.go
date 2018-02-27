@@ -10,8 +10,6 @@ import (
 
 	pb "gp_upgrade/idl"
 
-	"fmt"
-	hubLogger "gp_upgrade/hub/logger"
 	"os"
 	"runtime/debug"
 
@@ -35,45 +33,18 @@ func main() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			debug.SetTraceback("all")
 			gplog.InitializeLogging("gp_upgrade_hub", logdir)
-			errorChannel := make(chan error)
-			defer close(errorChannel)
 			lis, err := net.Listen("tcp", cliToHubPort)
 			if err != nil {
 				gplog.Fatal(err, "failed to listen")
 			}
 
-			channelLogger := hubLogger.LogEntry{Info: make(chan string), Error: make(chan string), Done: make(chan bool)}
 			server := grpc.NewServer()
 			clusterPair := cluster.Pair{}
-			myImpl := services.NewCliToHubListener(channelLogger, &clusterPair)
+			myImpl := services.NewCliToHubListener(&clusterPair)
 			pb.RegisterCliToHubServer(server, myImpl)
 			reflection.Register(server)
-			go func(myListener net.Listener) {
-				if err := server.Serve(myListener); err != nil {
-					gplog.Fatal(err, "failed to serve", err)
-					errorChannel <- err
-				}
-
-				close(errorChannel)
-			}(lis)
-
-			go func(channelLogger hubLogger.LogEntry) {
-				for {
-					select {
-					case infoMsg := <-channelLogger.Info:
-						gplog.Info(infoMsg)
-					case errorMsg := <-channelLogger.Error:
-						fmt.Println("got error log")
-						gplog.Error(errorMsg)
-					}
-				}
-			}(channelLogger)
-
-			select {
-			case err := <-errorChannel:
-				if err != nil {
-					gplog.Fatal(err, "error during Listening")
-				}
+			if err := server.Serve(lis); err != nil {
+				gplog.Fatal(err, "failed to serve", err)
 			}
 			return nil
 		},

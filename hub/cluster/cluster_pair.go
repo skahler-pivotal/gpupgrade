@@ -5,14 +5,15 @@ import (
 	"gp_upgrade/utils"
 
 	"fmt"
-	"gp_upgrade/hub/logger"
 	"gp_upgrade/hub/upgradestatus"
 	"os/exec"
+
+	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
 
 type PairOperator interface {
 	Init(string, string) error
-	StopEverything(string, *logger.LogEntry)
+	StopEverything(string)
 }
 
 type Pair struct {
@@ -48,7 +49,7 @@ func (cp *Pair) Init(oldBinDir string, newBinDir string) error {
 	return nil
 }
 
-func (cp *Pair) StopEverything(pathToGpstopStateDir string, logger *logger.LogEntry) {
+func (cp *Pair) StopEverything(pathToGpstopStateDir string) {
 	checklistManager := upgradestatus.NewChecklistManager(pathToGpstopStateDir)
 	checklistManager.ResetStateDir("gpstop.old")
 	checklistManager.ResetStateDir("gpstop.new")
@@ -61,24 +62,23 @@ func (cp *Pair) StopEverything(pathToGpstopStateDir string, logger *logger.LogEn
 		cp.newMasterDataDirectory, cp.newBinDir)
 	runNewStopCmd := utils.System.ExecCommand("bash", "-c", newGpstopShellArgs)
 
-	stopCluster(runOldStopCmd, "gpstop.old", logger, checklistManager)
-	stopCluster(runNewStopCmd, "gpstop.new", logger, checklistManager)
+	stopCluster(runOldStopCmd, "gpstop.old", checklistManager)
+	stopCluster(runNewStopCmd, "gpstop.new", checklistManager)
 }
 
-func stopCluster(stopCmd *exec.Cmd, baseName string, logger *logger.LogEntry,
-	stateManager *upgradestatus.ChecklistManager) {
+func stopCluster(stopCmd *exec.Cmd, baseName string, stateManager *upgradestatus.ChecklistManager) {
 	err := stateManager.MarkInProgress(baseName)
 	if err != nil {
-		logger.Error <- err.Error()
+		gplog.Error(err.Error())
 		return
 	}
 
 	err = stopCmd.Run()
 
-	logger.Info <- fmt.Sprintf("finished stopping %s", baseName)
+	gplog.Info("finished stopping %s", baseName)
 
 	if err != nil {
-		logger.Error <- err.Error()
+		gplog.Error(err.Error())
 		stateManager.MarkFailed(baseName)
 		return
 	}

@@ -12,8 +12,6 @@ import (
 	"strconv"
 	"testing"
 
-	"gp_upgrade/hub/logger"
-
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -71,7 +69,7 @@ var _ = Describe("hub", func() {
 	Some pg_upgrade output here
 	Passed through all of pg_upgrade`
 
-			listener := services.NewCliToHubListener(logger.LogEntry{}, nil)
+			listener := services.NewCliToHubListener(nil)
 			utils.System.ExecCommand = fakeExecCommand
 			services.GetMasterDataDirs = func() (string, string, error) {
 				return "old/datadirectory/path", "new/datadirectory/path", nil
@@ -99,7 +97,7 @@ var _ = Describe("hub", func() {
 	Some kind of error message here that helps us understand what's going on
 	Some kind of obscure error message`
 
-			listener := services.NewCliToHubListener(logger.LogEntry{}, nil)
+			listener := services.NewCliToHubListener(nil)
 			utils.System.ExecCommand = fakeExecCommand
 			defer func() { utils.System.ExecCommand = exec.Command }()
 

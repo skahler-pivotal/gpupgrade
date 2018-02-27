@@ -2,15 +2,15 @@ package services
 
 import (
 	"fmt"
-	"gp_upgrade/hub/logger"
 	"gp_upgrade/utils"
 	"os"
 	"path/filepath"
+
+	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
 
 type ClusterSsher struct {
 	checklistWriter ChecklistWriter
-	logger          logger.LogEntry
 	AgentPinger     AgentPinger
 }
 
@@ -25,8 +25,8 @@ type AgentPinger interface {
 	PingPollAgents() error
 }
 
-func NewClusterSsher(cw ChecklistWriter, logger logger.LogEntry, ap AgentPinger) *ClusterSsher {
-	return &ClusterSsher{checklistWriter: cw, logger: logger, AgentPinger: ap}
+func NewClusterSsher(cw ChecklistWriter, ap AgentPinger) *ClusterSsher {
+	return &ClusterSsher{checklistWriter: cw, AgentPinger: ap}
 }
 
 func (c *ClusterSsher) VerifySoftware(hostnames []string) {
@@ -56,13 +56,13 @@ func (c *ClusterSsher) Start(hostnames []string) {
 func (c *ClusterSsher) remoteExec(hostnames []string, statedir string, command []string) bool {
 	err := c.checklistWriter.ResetStateDir(statedir)
 	if err != nil {
-		c.logger.Error <- err.Error()
+		gplog.Error(err.Error())
 		//For MMVP, return here, but maybe should log more info
 		return true
 	}
 	err = c.checklistWriter.MarkInProgress(statedir)
 	if err != nil {
-		c.logger.Error <- err.Error()
+		gplog.Error(err.Error())
 		//For MMVP, return here, but maybe should log more info
 		return true
 	}
@@ -75,8 +75,7 @@ func (c *ClusterSsher) remoteExec(hostnames []string, statedir string, command [
 		sshArgs = append(sshArgs, command...)
 		output, err := utils.System.ExecCmdCombinedOutput("ssh", sshArgs...)
 		if err != nil {
-			c.logger.Error <- string(output)
-			c.logger.Error <- fmt.Sprintf("Couldn't run %s on %s", command, hostname)
+			gplog.Error("Couldn't run %s on %s: %s", command, hostname, string(output))
 			anyFailed = true
 		}
 	}
@@ -88,13 +87,13 @@ func handleStatusLogging(c *ClusterSsher, statedir string, anyFailed bool) {
 		err := c.checklistWriter.MarkFailed(statedir)
 		if err != nil {
 			fmt.Println("Got an error (failed):", err)
-			c.logger.Error <- err.Error()
+			gplog.Error(err.Error())
 		}
 		return
 	}
 	err := c.checklistWriter.MarkComplete(statedir)
 	if err != nil {
 		fmt.Println("Got an error (complete):", err)
-		c.logger.Error <- err.Error()
+		gplog.Error(err.Error())
 	}
 }

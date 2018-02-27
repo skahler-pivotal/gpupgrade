@@ -6,19 +6,20 @@ import (
 	"golang.org/x/net/context"
 
 	"errors"
-	"fmt"
 	"gp_upgrade/utils"
 	"path"
+
+	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
 
 func (s *CatchAllCliToHubListenerImpl) PrepareShutdownClusters(ctx context.Context,
 	in *pb.PrepareShutdownClustersRequest) (*pb.PrepareShutdownClustersReply, error) {
-	s.logger.Info <- fmt.Sprintf("starting PrepareShutdownClusters()")
+	gplog.Info("starting PrepareShutdownClusters()")
 
 	// will be initialized for future uses also? We think so -- it should
 	initErr := s.clusterPair.Init(in.OldBinDir, in.NewBinDir)
 	if initErr != nil {
-		s.logger.Error <- fmt.Sprintf("An occurred during cluster pair init: %v", initErr)
+		gplog.Error("An occurred during cluster pair init: %v", initErr)
 		return nil, initErr
 	}
 
@@ -28,7 +29,7 @@ func (s *CatchAllCliToHubListenerImpl) PrepareShutdownClusters(ctx context.Conte
 
 	}
 	pathToGpstopStateDir := path.Join(homeDirectory, ".gp_upgrade", "gpstop")
-	go s.clusterPair.StopEverything(pathToGpstopStateDir, &s.logger)
+	go s.clusterPair.StopEverything(pathToGpstopStateDir)
 
 	/* TODO: gpstop may take a while.
 	 * How do we check if everything is stopped?

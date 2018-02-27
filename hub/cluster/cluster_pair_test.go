@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"gp_upgrade/hub/cluster"
-	"gp_upgrade/hub/logger"
 	"gp_upgrade/utils"
 
+	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -53,8 +53,6 @@ func TestHelperProcess(t *testing.T) {
 
 var _ = Describe("ClusterPair", func() {
 	var (
-		fakeLogger logger.LogEntry
-
 		mockedOutput     string
 		mockedExitStatus int
 
@@ -79,6 +77,7 @@ var _ = Describe("ClusterPair", func() {
 
 	Describe("StopEverything(), shutting down both clusters", func() {
 		BeforeEach(func() {
+			testhelper.SetupTestLogger()
 			// fake out system utilities
 			utils.System.ReadFile = func(filename string) ([]byte, error) {
 				return []byte(MASTER_ONLY_JSON), nil
@@ -97,15 +96,6 @@ var _ = Describe("ClusterPair", func() {
 				filesLaidDown = filteredFiles
 				return nil
 			}
-
-			// fake out the logger
-			// If the channel doesn't have enough capacity, it will block.
-			// This will give a really vauge error message during testing.
-			// Make the channel buffer LARGE!
-			muchLargerThanNeeded := 999
-			infoChannel := make(chan string, muchLargerThanNeeded)
-			fakeLogger = logger.LogEntry{Info: infoChannel,
-				Error: make(chan string, muchLargerThanNeeded), Done: make(chan bool, muchLargerThanNeeded)}
 		})
 
 		It("Logs successful when things work", func() {
@@ -117,7 +107,7 @@ var _ = Describe("ClusterPair", func() {
 			err := subject.Init("old/path", "new/path")
 			Expect(err).ToNot(HaveOccurred())
 
-			subject.StopEverything("path/to/gpstop", &fakeLogger)
+			subject.StopEverything("path/to/gpstop")
 
 			/* By waiting on the channel message, we enforce the test to wait for
 			 * the goroutine to finish and not hit the "race" issue
@@ -140,7 +130,7 @@ var _ = Describe("ClusterPair", func() {
 			err := subject.Init("old/path", "new/path")
 			Expect(err).ToNot(HaveOccurred())
 
-			subject.StopEverything("path/to/gpstop", &fakeLogger)
+			subject.StopEverything("path/to/gpstop")
 
 			//Eventually(fakeLogger.Error).Should(Receive(Equal("filesystem blowup")))
 			//Consistently(fakeLogger.Info).ShouldNot(Receive(Equal("finished stopping gpstop.old")))
@@ -156,7 +146,7 @@ var _ = Describe("ClusterPair", func() {
 			err := subject.Init("old/path", "new/path")
 			Expect(err).ToNot(HaveOccurred())
 
-			subject.StopEverything("path/to/gpstop", &fakeLogger)
+			subject.StopEverything("path/to/gpstop")
 
 			// failing because stopCmd.Run() isn't returning an err
 			//Eventually(fakeLogger.Info).Should(Receive(Equal("finished stopping gpstop.old")))
