@@ -24,24 +24,13 @@ all : dependencies build
 # The inheritied LD_LIBRARY_PATH setting causes git clone in go get to fail.  Hence, nullifying it.
 dependencies :  export LD_LIBRARY_PATH =
 dependencies :
-		go get -d -u github.com/greenplum-db/gp-common-go-libs/gplog
-		go get github.com/blang/semver
-		go get github.com/cppforlife/go-semi-semantic/version
-		go get github.com/onsi/ginkgo/ginkgo
 		go get golang.org/x/tools/cmd/goimports
-		go get github.com/onsi/gomega
-		go get golang.org/x/crypto/ssh
-		go get -u github.com/golang/lint/golint
+		go get github.com/golang/lint/golint
+		go get github.com/onsi/ginkgo/ginkgo
 		go get github.com/alecthomas/gometalinter
-		go get github.com/golang/protobuf/protoc-gen-go
-		go get github.com/spf13/cobra
-		go get github.com/pkg/errors
-		go get google.golang.org/grpc
-		go get github.com/golang/mock/gomock
-		go get github.com/cloudfoundry/gosigar
-		go get gopkg.in/DATA-DOG/go-sqlmock.v1
-		go get github.com/lib/pq
-		go get github.com/jmoiron/sqlx
+		gometalinter --install
+		go get github.com/golang/dep/cmd/dep
+		dep ensure
 
 # Counterfeiter is not a proper dependency of the app. It is only used occasionally to generate a test class that
 # is then checked in.  At the time of that generation, it can be added back to run the dependency list, temporarily.
@@ -51,7 +40,7 @@ format :
 		gofmt -s -w .
 
 lint :
-		gometalinter --config=gometalinter.config ./...
+		gometalinter --config=gometalinter.config -s vendor ./...
 
 unit :
 		ginkgo -r -randomizeSuites -randomizeAllSpecs -race --skipPackage=integrations
