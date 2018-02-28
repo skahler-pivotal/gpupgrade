@@ -4,11 +4,8 @@
 
 ### Prerequisites
 
-- Golang. We currently develop against latest stable Golang, which was v1.8.3 as of June 2017
-- For GOPATH, in the Makefile, we set a combination path, with the default ~/go as the first entry, 
-and the path to go-utils/ as the second entry. This allows all dependencies to be download by "go get"
-into the ~/go/ directory, away from the gpdb/ sources. See the
-  [overall go-utils README](../../README.md) for more information.
+- Golang. We currently develop against latest stable Golang, which was v1.10 as of February 2018
+- See the [overall go-utils README](../../README.md) for more information about setting GOPATH.
 - protoc This is the compiler for the [gRPC protobuffer](https://grpc.io/) system. 
 On macos, one way to install this is via `brew install protobuf`   
 
@@ -18,6 +15,26 @@ On macos, one way to install this is via `brew install protobuf`
 make
 ```
 from here, the gp_upgrade directory, should build and then test the code
+
+### Dependency vendoring
+gp_upgrade uses go dep to vendor its dependencies.
+
+To view the state of dependencies in the project, use the command
+```
+dep status
+```
+
+To add add new dependencies, use the command
+```
+dep ensure -add [package import string]
+```
+
+To update existing dependencies, use the command
+```
+dep ensure -update
+```
+
+For additional information please refer to the [dep documentation](https://golang.github.io/dep/docs/daily-dep.html)
 
 ### Build details
 
