@@ -2,20 +2,13 @@ package integrations_test
 
 import (
 	"gp_upgrade/cli/commanders"
-	"gp_upgrade/sshclient"
 	"gp_upgrade/testutils"
 
-	"fmt"
 	"os"
 	"os/exec"
 	"path"
-	"reflect"
 	"runtime"
 	"testing"
-	"time"
-
-	"github.com/pkg/errors"
-
 	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
@@ -88,51 +81,10 @@ var _ = AfterSuite(func() {
 })
 
 var _ = BeforeEach(func() {
-
-	sshd = exec.Command(sshdPath)
-	_, err := sshd.StdoutPipe()
-	testutils.Check("cannot get stdout", err)
-	_, err = sshd.StderrPipe()
-	testutils.Check("cannot get stderr", err)
-
-	err = sshd.Start()
-	Expect(err).ToNot(HaveOccurred())
-
-	waitForSocketToAllowConnections()
-
 	testutils.EnsureHomeDirIsTempAndClean()
 })
 
-func waitForSocketToAllowConnections() {
-	time.Sleep(100 * time.Millisecond)
-	register_path := path.Join(fixture_path, "registered_private_key.pem")
-
-	connector, err := sshclient.NewSSHConnector(register_path)
-	if err != nil {
-		Fail("cannot create client for testing sshd")
-	}
-
-	attempts := 0
-	err = errors.New("need non nil to start")
-	for err != nil && attempts < 10 {
-		session, err := connector.Connect("localhost", 2022, "pivotal")
-		if err == nil {
-			session.Close()
-			break
-		}
-
-		fmt.Printf("retrying ssh connection: got err: %v type: %v\n", err, reflect.TypeOf(err))
-		attempts += 1
-		time.Sleep(1 * time.Second)
-	}
-}
-
-var _ = AfterEach(func() {
-	ShutDownSshdServer()
-})
-
 func runCommand(args ...string) *Session {
-
 	// IMPORTANT TEST INFO: exec.Command forks and runs in a separate process,
 	// which has its own Golang context; any mocks/fakes you set up in
 	// the test context will NOT be meaningful in the new exec.Command context.
@@ -142,18 +94,6 @@ func runCommand(args ...string) *Session {
 	<-session.Exited
 
 	return session
-}
-
-type KeyPair struct {
-	Key string
-	Val string
-}
-
-func ShutDownSshdServer() {
-	if sshd != nil {
-		sshd.Process.Kill()
-		sshd = nil
-	}
 }
 
 func ensureHubIsUp() {
@@ -170,9 +110,4 @@ func killHub() {
 	//pkill gp_upgrade_ will kill both gp_upgrade_hub and gp_upgrade_agent
 	pkillCmd := exec.Command("pkill", "gp_upgrade_")
 	pkillCmd.Run()
-}
-
-func restartHub() {
-	killHub()
-	ensureHubIsUp()
 }
