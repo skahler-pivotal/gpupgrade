@@ -72,8 +72,8 @@ var _ = Describe("hub", func() {
 					err := services.SaveQueryResultToJSON(dbConnector.GetConn(), fineFakeQuery, FailingWriter{})
 
 					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("I always fail"))
-					Expect(string(testLogFile.Contents())).To(ContainSubstring("I always fail"))
+					Expect(err.Error()).To(ContainSubstring("i always fail"))
+					Expect(string(testLogFile.Contents())).To(ContainSubstring("i always fail"))
 				})
 			})
 		})
@@ -98,11 +98,11 @@ func (w *SuccessfulWriter) Write() error {
 type FailingWriter struct{}
 
 func (FailingWriter) Load(rows utils.RowsWrapper) error {
-	return errors.New("I always fail")
+	return errors.New("i always fail")
 }
 
 func (FailingWriter) Write() error {
-	return errors.New("I always fail")
+	return errors.New("i always fail")
 }
 
 // Construct sqlmock in-memory rows that are structured properly

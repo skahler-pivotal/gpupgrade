@@ -12,12 +12,12 @@ import (
 
 const (
 	// todo generalize to any host
-	address               = "localhost"
-	port                  = "6416"
+	address = "localhost"
+	//port                  = "6416"
 	diskUsageWarningLimit = 80
 )
 
-func (s *CatchAllCliToHubListenerImpl) CheckDiskUsage(ctx context.Context,
+func (s *HubClient) CheckDiskUsage(ctx context.Context,
 	in *pb.CheckDiskUsageRequest) (*pb.CheckDiskUsageReply, error) {
 
 	gplog.Info("starting CheckDiskUsage")
@@ -34,7 +34,7 @@ func (s *CatchAllCliToHubListenerImpl) CheckDiskUsage(ctx context.Context,
 	for i := 0; i < len(hostnames); i++ {
 		conn, err := grpc.Dial(hostnames[i]+":"+port, grpc.WithInsecure())
 		if err == nil {
-			clients = append(clients, configutils.ClientAndHostname{Client: pb.NewCommandListenerClient(conn), Hostname: hostnames[i]})
+			clients = append(clients, configutils.ClientAndHostname{Client: pb.NewAgentClient(conn), Hostname: hostnames[i]})
 			defer conn.Close()
 		} else {
 			gplog.Error(err.Error())

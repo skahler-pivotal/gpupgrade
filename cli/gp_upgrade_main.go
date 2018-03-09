@@ -168,6 +168,26 @@ func main() {
 		},
 	}
 
+	var cmdStatusSubConversion = &cobra.Command{
+		Use:   "conversion",
+		Short: "the status of the conversion",
+		Long:  "the status of the conversion",
+		Run: func(cmd *cobra.Command, args []string) {
+			conn, connConfigErr := grpc.Dial("localhost:"+hubPort, grpc.WithInsecure())
+			if connConfigErr != nil {
+				gplog.Error(connConfigErr.Error())
+				os.Exit(1)
+			}
+			client := pb.NewCliToHubClient(conn)
+			reporter := commanders.NewReporter(client)
+			err := reporter.OverallConversionStatus()
+			if err != nil {
+				gplog.Error(err.Error())
+				os.Exit(1)
+			}
+		},
+	}
+
 	var cmdCheck = &cobra.Command{
 		Use:   "check",
 		Short: "collects information and validates the target Greenplum installation can be upgraded",
@@ -335,6 +355,7 @@ func main() {
 
 	// status subcommands
 	cmdStatus.AddCommand(cmdStatusSubUpgrade)
+	cmdStatus.AddCommand(cmdStatusSubConversion)
 
 	// check subcommands
 	cmdCheck.AddCommand(cmdCheckSubCheckVersionCommand)

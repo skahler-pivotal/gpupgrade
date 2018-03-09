@@ -15,6 +15,9 @@ type spyCliToHubClient struct {
 	statusUpgradeCount int
 	statusUpgradeReply *pb.StatusUpgradeReply
 
+	statusConversionCount int
+	statusConversionReply *pb.StatusConversionReply
+
 	err error
 }
 
@@ -42,4 +45,14 @@ func (s *spyCliToHubClient) StatusUpgrade(
 
 	s.statusUpgradeCount++
 	return s.statusUpgradeReply, s.err
+}
+
+func (s *spyCliToHubClient) StatusConversion(
+	ctx context.Context,
+	request *pb.StatusConversionRequest,
+	opts ...grpc.CallOption,
+) (*pb.StatusConversionReply, error) {
+
+	s.statusConversionCount++
+	return s.statusConversionReply, s.err
 }

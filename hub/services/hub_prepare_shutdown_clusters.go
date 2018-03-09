@@ -12,7 +12,7 @@ import (
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
 
-func (s *CatchAllCliToHubListenerImpl) PrepareShutdownClusters(ctx context.Context,
+func (s *HubClient) PrepareShutdownClusters(ctx context.Context,
 	in *pb.PrepareShutdownClustersRequest) (*pb.PrepareShutdownClustersReply, error) {
 	gplog.Info("starting PrepareShutdownClusters()")
 
@@ -25,7 +25,7 @@ func (s *CatchAllCliToHubListenerImpl) PrepareShutdownClusters(ctx context.Conte
 
 	homeDirectory := utils.System.Getenv("HOME")
 	if homeDirectory == "" {
-		return nil, errors.New("Could not find the home directory environment variable")
+		return nil, errors.New("could not find the home directory environment variable")
 
 	}
 	pathToGpstopStateDir := path.Join(homeDirectory, ".gp_upgrade", "gpstop")

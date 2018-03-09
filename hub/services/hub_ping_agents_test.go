@@ -18,7 +18,7 @@ import (
 
 var _ = Describe("hub pings agents test", func() {
 	var (
-		client        *mockpb.MockCommandListenerClient
+		client        *mockpb.MockAgentClient
 		ctrl          *gomock.Controller
 		testLogFile   *gbytes.Buffer
 		pingerManager *services.PingerManager
@@ -26,7 +26,7 @@ var _ = Describe("hub pings agents test", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		client = mockpb.NewMockCommandListenerClient(ctrl)
+		client = mockpb.NewMockAgentClient(ctrl)
 		_, _, testLogFile = testhelper.SetupTestLogger()
 		pingerManager = &services.PingerManager{
 			[]configutils.ClientAndHostname{{Client: client, Hostname: "doesnotexist"}},

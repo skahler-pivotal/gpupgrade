@@ -10,7 +10,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func (s *CatchAllCliToHubListenerImpl) PrepareInitCluster(ctx context.Context,
+func (s *HubClient) PrepareInitCluster(ctx context.Context,
 	in *pb.PrepareInitClusterRequest) (*pb.PrepareInitClusterReply, error) {
 
 	gplog.Info("starting PrepareInitCluster()")

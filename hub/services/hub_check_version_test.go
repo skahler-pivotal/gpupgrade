@@ -56,8 +56,8 @@ var _ bool = Describe("hub", func() {
 				WillReturnRows(sqlmock.NewRows([]string{"version"}).AddRow([]driver.Value{"not a good result for version query"}...))
 			_, err := services.VerifyVersion(dbConnector.GetConn())
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("Didn't get a version string match"))
-			Expect(string(testLogFile.Contents())).To(ContainSubstring("Didn't get a version string match"))
+			Expect(err.Error()).To(Equal("didn't get a version string match"))
+			Expect(string(testLogFile.Contents())).To(ContainSubstring("didn't get a version string match"))
 		})
 		It("converting version string to Version object fails", func() {
 			mock.ExpectQuery(services.VERSION_QUERY).

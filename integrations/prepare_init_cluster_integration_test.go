@@ -21,7 +21,7 @@ var _ = Describe("prepare", func() {
 		ensureHubIsUp()
 	})
 
-	/* This is demonstrating the limited implmentation of init-cluster.
+	/* This is demonstrating the limited implementation of init-cluster.
 	    Assuming the user has already set up their new cluster, they should `init-cluster`
 		with the port at which they stood it up, so the upgrade tool can create new_cluster_config
 

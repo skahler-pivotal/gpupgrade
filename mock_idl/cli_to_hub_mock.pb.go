@@ -71,6 +71,24 @@ func (mr *MockCliToHubClientMockRecorder) StatusUpgrade(ctx, in interface{}, opt
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StatusUpgrade", reflect.TypeOf((*MockCliToHubClient)(nil).StatusUpgrade), varargs...)
 }
 
+// StatusConversion mocks base method
+func (m *MockCliToHubClient) StatusConversion(ctx context.Context, in *StatusConversionRequest, opts ...grpc.CallOption) (*StatusConversionReply, error) {
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "StatusConversion", varargs...)
+	ret0, _ := ret[0].(*StatusConversionReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StatusConversion indicates an expected call of StatusConversion
+func (mr *MockCliToHubClientMockRecorder) StatusConversion(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StatusConversion", reflect.TypeOf((*MockCliToHubClient)(nil).StatusConversion), varargs...)
+}
+
 // CheckConfig mocks base method
 func (m *MockCliToHubClient) CheckConfig(ctx context.Context, in *CheckConfigRequest, opts ...grpc.CallOption) (*CheckConfigReply, error) {
 	varargs := []interface{}{ctx, in}
@@ -280,6 +298,19 @@ func (m *MockCliToHubServer) StatusUpgrade(arg0 context.Context, arg1 *StatusUpg
 // StatusUpgrade indicates an expected call of StatusUpgrade
 func (mr *MockCliToHubServerMockRecorder) StatusUpgrade(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StatusUpgrade", reflect.TypeOf((*MockCliToHubServer)(nil).StatusUpgrade), arg0, arg1)
+}
+
+// StatusConversion mocks base method
+func (m *MockCliToHubServer) StatusConversion(arg0 context.Context, arg1 *StatusConversionRequest) (*StatusConversionReply, error) {
+	ret := m.ctrl.Call(m, "StatusConversion", arg0, arg1)
+	ret0, _ := ret[0].(*StatusConversionReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StatusConversion indicates an expected call of StatusConversion
+func (mr *MockCliToHubServerMockRecorder) StatusConversion(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StatusConversion", reflect.TypeOf((*MockCliToHubServer)(nil).StatusConversion), arg0, arg1)
 }
 
 // CheckConfig mocks base method

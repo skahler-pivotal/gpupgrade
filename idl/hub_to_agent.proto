@@ -2,8 +2,9 @@ syntax = "proto3";
 
 package idl;
 
-service CommandListener {
+service Agent {
     rpc CheckUpgradeStatus (CheckUpgradeStatusRequest) returns (CheckUpgradeStatusReply) {}
+    rpc CheckConversionStatus (CheckConversionStatusRequest) returns (CheckConversionStatusReply) {}
     rpc CheckDiskUsageOnAgents (CheckDiskUsageRequestToAgent) returns (CheckDiskUsageReplyFromAgent) {}
     rpc PingAgents (PingAgentsRequest) returns (PingAgentsReply) {}
 }
@@ -15,6 +16,20 @@ message CheckUpgradeStatusRequest {}
 
 message CheckUpgradeStatusReply {
     string process_list = 1;
+}
+
+message CheckConversionStatusRequest {
+    repeated SegmentInfo segments = 1;
+	string hostname = 2;
+}
+
+message SegmentInfo {
+	int32 content = 1;
+	int32 dbid = 2;
+}
+
+message CheckConversionStatusReply {
+    repeated string statuses = 1;
 }
 
 message FileSysUsage {

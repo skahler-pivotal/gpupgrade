@@ -2,6 +2,7 @@ package main
 
 import (
 	"gp_upgrade/hub/cluster"
+	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
 	"net"
 
@@ -39,9 +40,12 @@ func main() {
 			}
 
 			server := grpc.NewServer()
-			clusterPair := cluster.Pair{}
-			myImpl := services.NewCliToHubListener(&clusterPair)
-			pb.RegisterCliToHubServer(server, myImpl)
+
+			reader := configutils.NewReader()
+			hub, shutdownHub := services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext)
+			defer shutdownHub()
+
+			pb.RegisterCliToHubServer(server, hub)
 			reflection.Register(server)
 			if err := server.Serve(lis); err != nil {
 				gplog.Fatal(err, "failed to serve", err)
@@ -56,5 +60,4 @@ func main() {
 		gplog.Error(err.Error())
 		os.Exit(1)
 	}
-
 }

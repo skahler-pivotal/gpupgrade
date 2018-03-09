@@ -1,10 +1,9 @@
 package configutils
 
 import (
-	pb "gp_upgrade/idl"
-
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"google.golang.org/grpc"
+	pb "gp_upgrade/idl"
 )
 
 const (
@@ -14,11 +13,11 @@ const (
 )
 
 type ClientAndHostname struct {
-	Client   pb.CommandListenerClient
+	Client   pb.AgentClient
 	Hostname string
 }
 
-func GetRPCClients() ([]ClientAndHostname, error) {
+func GetClients() ([]ClientAndHostname, error) {
 	reader := NewReader()
 	reader.OfOldClusterConfig()
 	hostnames, err := reader.GetHostnames()
@@ -33,7 +32,7 @@ func GetRPCClients() ([]ClientAndHostname, error) {
 			gplog.Error(err.Error())
 		}
 		clientAndHost := ClientAndHostname{
-			Client:   pb.NewCommandListenerClient(conn),
+			Client:   pb.NewAgentClient(conn),
 			Hostname: hostnames[i],
 		}
 		clients = append(clients, clientAndHost)

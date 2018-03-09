@@ -13,7 +13,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func (s *CatchAllCliToHubListenerImpl) CheckVersion(ctx context.Context,
+func (s *HubClient) CheckVersion(ctx context.Context,
 	in *pb.CheckVersionRequest) (*pb.CheckVersionReply, error) {
 
 	gplog.Info("starting CheckVersion")
@@ -43,8 +43,8 @@ func VerifyVersion(dbHandler *sqlx.DB) (bool, error) {
 	re := regexp.MustCompile("Greenplum Database (.*) build")
 	versionStringResults := re.FindStringSubmatch(row)
 	if len(versionStringResults) < 2 {
-		gplog.Error("Didn't get a version string match")
-		return false, errors.New("Didn't get a version string match")
+		gplog.Error("didn't get a version string match")
+		return false, errors.New("didn't get a version string match")
 	}
 	versionString := versionStringResults[1]
 	versionObject, err := version.NewVersionFromString(versionString)

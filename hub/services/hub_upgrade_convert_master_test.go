@@ -2,20 +2,23 @@ package services_test
 
 import (
 	"fmt"
-	"gp_upgrade/hub/services"
-	"gp_upgrade/utils"
-
-	pb "gp_upgrade/idl"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"testing"
 
+	"gp_upgrade/hub/configutils"
+	"gp_upgrade/hub/services"
+	"gp_upgrade/utils"
+
+	pb "gp_upgrade/idl"
+
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
+	"google.golang.org/grpc"
 )
 
 // TestHelperProcess isn't a real test. It's used as a helper process
@@ -69,7 +72,10 @@ var _ = Describe("hub", func() {
 	Some pg_upgrade output here
 	Passed through all of pg_upgrade`
 
-			listener := services.NewCliToHubListener(nil)
+			reader := configutils.NewReader()
+			listener, shutdownHub := services.NewHub(nil, &reader, grpc.DialContext)
+			defer shutdownHub()
+
 			utils.System.ExecCommand = fakeExecCommand
 			services.GetMasterDataDirs = func() (string, string, error) {
 				return "old/datadirectory/path", "new/datadirectory/path", nil
@@ -97,7 +103,10 @@ var _ = Describe("hub", func() {
 	Some kind of error message here that helps us understand what's going on
 	Some kind of obscure error message`
 
-			listener := services.NewCliToHubListener(nil)
+			reader := configutils.NewReader()
+			listener, shutdownHub := services.NewHub(nil, &reader, grpc.DialContext)
+			defer shutdownHub()
+
 			utils.System.ExecCommand = fakeExecCommand
 			defer func() { utils.System.ExecCommand = exec.Command }()
 

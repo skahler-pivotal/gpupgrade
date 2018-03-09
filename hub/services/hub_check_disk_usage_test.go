@@ -18,14 +18,14 @@ import (
 
 var _ = Describe("object count tests", func() {
 	var (
-		client      *mockpb.MockCommandListenerClient
+		client      *mockpb.MockAgentClient
 		ctrl        *gomock.Controller
 		testLogFile *gbytes.Buffer
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		client = mockpb.NewMockCommandListenerClient(ctrl)
+		client = mockpb.NewMockAgentClient(ctrl)
 		_, _, testLogFile = testhelper.SetupTestLogger()
 	})
 

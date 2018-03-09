@@ -34,7 +34,6 @@ func (p Preparer) ShutdownClusters(oldBinDir string, newBinDir string) error {
 }
 
 func (p Preparer) StartHub() error {
-
 	countHubs, err := HowManyHubsRunning()
 	if err != nil {
 		gplog.Error("failed to determine if hub already running")

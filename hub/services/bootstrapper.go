@@ -36,7 +36,7 @@ func (s *Bootstrapper) CheckSeginstall(ctx context.Context,
 	//
 	clusterHostnames, err := s.hostnameGetter.GetHostnames()
 	if err != nil || len(clusterHostnames) == 0 {
-		return nil, errors.New("No cluster config found, did you forget to run gp_upgrade check config?")
+		return nil, errors.New("no cluster config found, did you forget to run gp_upgrade check config?")
 	}
 
 	go s.remoteExecutor.VerifySoftware(clusterHostnames)
@@ -49,7 +49,7 @@ func (s *Bootstrapper) PrepareStartAgents(ctx context.Context,
 
 	clusterHostnames, err := s.hostnameGetter.GetHostnames()
 	if err != nil || len(clusterHostnames) == 0 {
-		return nil, errors.New("No cluster config found, did you forget to run gp_upgrade check config?")
+		return nil, errors.New("no cluster config found, did you forget to run gp_upgrade check config?")
 	}
 
 	go s.remoteExecutor.Start(clusterHostnames)

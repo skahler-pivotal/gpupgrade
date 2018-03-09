@@ -24,6 +24,7 @@ all : dependencies build
 # The inheritied LD_LIBRARY_PATH setting causes git clone in go get to fail.  Hence, nullifying it.
 dependencies :  export LD_LIBRARY_PATH =
 dependencies :
+		go get -u github.com/golang/protobuf/protoc-gen-go
 		go get golang.org/x/tools/cmd/goimports
 		go get github.com/golang/lint/golint
 		go get github.com/onsi/ginkgo/ginkgo

@@ -7,9 +7,9 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"runtime"
 	"testing"
-	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -76,6 +76,7 @@ var _ = AfterSuite(func() {
 	* test things out they should start their own up under a different HOME dir
 	* setting than what ginkgo has been using */
 	killHub()
+	killAllAgents()
 
 	CleanupBuildArtifacts()
 })
@@ -100,14 +101,25 @@ func ensureHubIsUp() {
 	countHubs, _ := commanders.HowManyHubsRunning()
 
 	if countHubs == 0 {
-		prepareSession := runCommand("prepare", "start-hub")
-		Eventually(prepareSession).Should(Exit(0))
+		cmd := exec.Command("gp_upgrade_hub", "&")
+		Start(cmd, GinkgoWriter, GinkgoWriter)
 	}
-
 }
 
 func killHub() {
 	//pkill gp_upgrade_ will kill both gp_upgrade_hub and gp_upgrade_agent
-	pkillCmd := exec.Command("pkill", "gp_upgrade_")
+	pkillCmd := exec.Command("pkill", "gp_upgrade_hub")
+	pkillCmd.Run()
+}
+
+func ensureAgentIsUp() {
+	killAllAgents()
+
+	cmd := exec.Command("gp_upgrade_agent", "&")
+	Start(cmd, GinkgoWriter, GinkgoWriter)
+}
+
+func killAllAgents() {
+	pkillCmd := exec.Command("pkill", "gp_upgrade_agent")
 	pkillCmd.Run()
 }

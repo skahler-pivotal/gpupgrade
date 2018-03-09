@@ -18,7 +18,7 @@ var (
 	GetMasterDataDirs = getMasterDataDirs
 )
 
-func (s *CatchAllCliToHubListenerImpl) UpgradeConvertMaster(ctx context.Context,
+func (s *HubClient) UpgradeConvertMaster(ctx context.Context,
 	in *pb.UpgradeConvertMasterRequest) (*pb.UpgradeConvertMasterReply, error) {
 
 	gplog.Info("Starting master upgrade")
@@ -26,7 +26,7 @@ func (s *CatchAllCliToHubListenerImpl) UpgradeConvertMaster(ctx context.Context,
 	//this is also where the 1.done, 2.inprogress ... files will be written
 	homeDirectory := os.Getenv("HOME")
 	if homeDirectory == "" {
-		return nil, errors.New("Could not find the home directory environemnt variable")
+		return nil, errors.New("could not find the home directory environemnt variable")
 
 	}
 	gpUpgradeDirectory := homeDirectory + "/.gp_upgrade"

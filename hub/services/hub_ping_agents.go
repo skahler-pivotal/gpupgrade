@@ -16,7 +16,7 @@ type PingerManager struct {
 }
 
 func NewPingerManager() *PingerManager {
-	rpcClients, err := configutils.GetRPCClients()
+	rpcClients, err := configutils.GetClients()
 	if err != nil {
 		return &PingerManager{}
 	}

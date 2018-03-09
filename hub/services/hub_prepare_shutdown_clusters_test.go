@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
 	pb "gp_upgrade/idl"
 	"gp_upgrade/utils"
@@ -12,6 +13,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
+	"google.golang.org/grpc"
 )
 
 var _ = Describe("object count tests", func() {
@@ -24,6 +26,7 @@ var _ = Describe("object count tests", func() {
 	BeforeEach(func() {
 		stdout, _, _ = testhelper.SetupTestLogger()
 	})
+
 	AfterEach(func() {
 		utils.System = utils.InitializeSystemFunctions()
 	})
@@ -31,7 +34,9 @@ var _ = Describe("object count tests", func() {
 	Describe("PrepareShutdownClusters", func() {
 		Describe("ignoring the go routine", func() {
 			initialSetup := func() (pb.CliToHubServer, *pb.PrepareShutdownClustersRequest) {
-				listener := services.NewCliToHubListener(&fakeStubClusterPair{})
+				reader := configutils.NewReader()
+				listener, shutdownHub := services.NewHub(&fakeStubClusterPair{}, &reader, grpc.DialContext)
+				defer shutdownHub()
 
 				fakeShutdownClustersRequest := &pb.PrepareShutdownClustersRequest{OldBinDir: "/old/path/bin",
 					NewBinDir: "/new/path/bin"}
@@ -67,7 +72,9 @@ var _ = Describe("object count tests", func() {
 				utils.System.RemoveAll = func(s string) error { return nil }
 				utils.System.MkdirAll = func(s string, perm os.FileMode) error { return nil }
 
-				failingListener := services.NewCliToHubListener(&fakeFailingClusterPair{})
+				reader := configutils.NewReader()
+				failingListener, shutdownHub := services.NewHub(&fakeFailingClusterPair{}, &reader, grpc.DialContext)
+				defer shutdownHub()
 
 				_, err := failingListener.PrepareShutdownClusters(nil, fakeShutdownClustersRequest)
 				Expect(err).ToNot(BeNil())

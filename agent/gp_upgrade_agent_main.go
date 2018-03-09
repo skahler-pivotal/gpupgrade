@@ -41,9 +41,10 @@ func main() {
 			}
 
 			server := grpc.NewServer()
-			myImpl := services.NewCommandListener()
-			pb.RegisterCommandListenerServer(server, myImpl)
+			agentServer := services.NewAgentServer()
+			pb.RegisterAgentServer(server, agentServer)
 			reflection.Register(server)
+
 			go func(myListener net.Listener) {
 				if err := server.Serve(myListener); err != nil {
 					gplog.Fatal(err, "failed to serve", err)
@@ -62,6 +63,7 @@ func main() {
 			return nil
 		},
 	}
+
 	RootCmd.PersistentFlags().StringVar(&logdir, "log-directory", "", "command_listener log directory")
 
 	if err := RootCmd.Execute(); err != nil {

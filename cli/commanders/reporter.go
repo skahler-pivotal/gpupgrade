@@ -39,18 +39,36 @@ func NewReporter(client pb.CliToHubClient) *Reporter {
 }
 
 func (r *Reporter) OverallUpgradeStatus() error {
-	reply, err := r.client.StatusUpgrade(context.Background(), &pb.StatusUpgradeRequest{})
+	status, err := r.client.StatusUpgrade(context.Background(), &pb.StatusUpgradeRequest{})
 	if err != nil {
 		// find some way to expound on the error message? Integration test failing because we no longer log here
 		return errors.New("Unable to connect to hub: " + err.Error())
 	}
 
-	for i := 0; i < len(reply.ListOfUpgradeStepStatuses); i++ {
-		upgradeStepStatus := reply.ListOfUpgradeStepStatuses[i]
-		reportString := fmt.Sprintf("%v %s", upgradeStepStatus.Status,
-			UpgradeStepsMessage[upgradeStepStatus.Step])
+	if len(status.GetListOfUpgradeStepStatuses()) == 0 {
+		return errors.New("Received no list of upgrade statuses from hub")
+	}
+
+	for _, step := range status.GetListOfUpgradeStepStatuses() {
+		reportString := fmt.Sprintf("%v %s", step.GetStatus(),
+			UpgradeStepsMessage[step.GetStep()])
 		gplog.Info(reportString)
 	}
+
+	return nil
+}
+
+func (r *Reporter) OverallConversionStatus() error {
+	status, err := r.client.StatusConversion(context.Background(), &pb.StatusConversionRequest{})
+	if err != nil {
+		return errors.New("hub returned an error when checking overall conversion status: " + err.Error())
+	}
+
+	if status.GetConversionStatus() == "" {
+		return errors.New("Received no conversion status from hub")
+	}
+
+	gplog.Info(status.GetConversionStatus())
 
 	return nil
 }

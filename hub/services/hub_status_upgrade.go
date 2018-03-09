@@ -13,7 +13,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func (s *CatchAllCliToHubListenerImpl) StatusUpgrade(ctx context.Context, in *pb.StatusUpgradeRequest) (*pb.StatusUpgradeReply, error) {
+func (s *HubClient) StatusUpgrade(ctx context.Context, in *pb.StatusUpgradeRequest) (*pb.StatusUpgradeReply, error) {
 	gplog.Info("starting StatusUpgrade")
 
 	demoStepStatus := &pb.UpgradeStepStatus{
@@ -25,7 +25,7 @@ func (s *CatchAllCliToHubListenerImpl) StatusUpgrade(ctx context.Context, in *pb
 
 	homeDirectory := os.Getenv("HOME")
 	if homeDirectory == "" {
-		return nil, errors.New("Could not find the HOME environment")
+		return nil, errors.New("could not find the HOME environment")
 	}
 
 	seginstallStatePath := filepath.Join(homeDirectory, ".gp_upgrade/seginstall")

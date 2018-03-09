@@ -12,31 +12,31 @@ import (
 	reflect "reflect"
 )
 
-// MockCommandListenerClient is a mock of CommandListenerClient interface
-type MockCommandListenerClient struct {
+// MockAgentClient is a mock of AgentClient interface
+type MockAgentClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockCommandListenerClientMockRecorder
+	recorder *MockAgentClientMockRecorder
 }
 
-// MockCommandListenerClientMockRecorder is the mock recorder for MockCommandListenerClient
-type MockCommandListenerClientMockRecorder struct {
-	mock *MockCommandListenerClient
+// MockAgentClientMockRecorder is the mock recorder for MockAgentClient
+type MockAgentClientMockRecorder struct {
+	mock *MockAgentClient
 }
 
-// NewMockCommandListenerClient creates a new mock instance
-func NewMockCommandListenerClient(ctrl *gomock.Controller) *MockCommandListenerClient {
-	mock := &MockCommandListenerClient{ctrl: ctrl}
-	mock.recorder = &MockCommandListenerClientMockRecorder{mock}
+// NewMockAgentClient creates a new mock instance
+func NewMockAgentClient(ctrl *gomock.Controller) *MockAgentClient {
+	mock := &MockAgentClient{ctrl: ctrl}
+	mock.recorder = &MockAgentClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockCommandListenerClient) EXPECT() *MockCommandListenerClientMockRecorder {
+func (m *MockAgentClient) EXPECT() *MockAgentClientMockRecorder {
 	return m.recorder
 }
 
 // CheckUpgradeStatus mocks base method
-func (m *MockCommandListenerClient) CheckUpgradeStatus(ctx context.Context, in *CheckUpgradeStatusRequest, opts ...grpc.CallOption) (*CheckUpgradeStatusReply, error) {
+func (m *MockAgentClient) CheckUpgradeStatus(ctx context.Context, in *CheckUpgradeStatusRequest, opts ...grpc.CallOption) (*CheckUpgradeStatusReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
@@ -48,13 +48,31 @@ func (m *MockCommandListenerClient) CheckUpgradeStatus(ctx context.Context, in *
 }
 
 // CheckUpgradeStatus indicates an expected call of CheckUpgradeStatus
-func (mr *MockCommandListenerClientMockRecorder) CheckUpgradeStatus(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockAgentClientMockRecorder) CheckUpgradeStatus(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckUpgradeStatus", reflect.TypeOf((*MockCommandListenerClient)(nil).CheckUpgradeStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckUpgradeStatus", reflect.TypeOf((*MockAgentClient)(nil).CheckUpgradeStatus), varargs...)
+}
+
+// CheckConversionStatus mocks base method
+func (m *MockAgentClient) CheckConversionStatus(ctx context.Context, in *CheckConversionStatusRequest, opts ...grpc.CallOption) (*CheckConversionStatusReply, error) {
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CheckConversionStatus", varargs...)
+	ret0, _ := ret[0].(*CheckConversionStatusReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckConversionStatus indicates an expected call of CheckConversionStatus
+func (mr *MockAgentClientMockRecorder) CheckConversionStatus(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckConversionStatus", reflect.TypeOf((*MockAgentClient)(nil).CheckConversionStatus), varargs...)
 }
 
 // CheckDiskUsageOnAgents mocks base method
-func (m *MockCommandListenerClient) CheckDiskUsageOnAgents(ctx context.Context, in *CheckDiskUsageRequestToAgent, opts ...grpc.CallOption) (*CheckDiskUsageReplyFromAgent, error) {
+func (m *MockAgentClient) CheckDiskUsageOnAgents(ctx context.Context, in *CheckDiskUsageRequestToAgent, opts ...grpc.CallOption) (*CheckDiskUsageReplyFromAgent, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
@@ -66,13 +84,13 @@ func (m *MockCommandListenerClient) CheckDiskUsageOnAgents(ctx context.Context, 
 }
 
 // CheckDiskUsageOnAgents indicates an expected call of CheckDiskUsageOnAgents
-func (mr *MockCommandListenerClientMockRecorder) CheckDiskUsageOnAgents(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockAgentClientMockRecorder) CheckDiskUsageOnAgents(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckDiskUsageOnAgents", reflect.TypeOf((*MockCommandListenerClient)(nil).CheckDiskUsageOnAgents), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckDiskUsageOnAgents", reflect.TypeOf((*MockAgentClient)(nil).CheckDiskUsageOnAgents), varargs...)
 }
 
 // PingAgents mocks base method
-func (m *MockCommandListenerClient) PingAgents(ctx context.Context, in *PingAgentsRequest, opts ...grpc.CallOption) (*PingAgentsReply, error) {
+func (m *MockAgentClient) PingAgents(ctx context.Context, in *PingAgentsRequest, opts ...grpc.CallOption) (*PingAgentsReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
@@ -84,36 +102,36 @@ func (m *MockCommandListenerClient) PingAgents(ctx context.Context, in *PingAgen
 }
 
 // PingAgents indicates an expected call of PingAgents
-func (mr *MockCommandListenerClientMockRecorder) PingAgents(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockAgentClientMockRecorder) PingAgents(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingAgents", reflect.TypeOf((*MockCommandListenerClient)(nil).PingAgents), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingAgents", reflect.TypeOf((*MockAgentClient)(nil).PingAgents), varargs...)
 }
 
-// MockCommandListenerServer is a mock of CommandListenerServer interface
-type MockCommandListenerServer struct {
+// MockAgentServer is a mock of AgentServer interface
+type MockAgentServer struct {
 	ctrl     *gomock.Controller
-	recorder *MockCommandListenerServerMockRecorder
+	recorder *MockAgentServerMockRecorder
 }
 
-// MockCommandListenerServerMockRecorder is the mock recorder for MockCommandListenerServer
-type MockCommandListenerServerMockRecorder struct {
-	mock *MockCommandListenerServer
+// MockAgentServerMockRecorder is the mock recorder for MockAgentServer
+type MockAgentServerMockRecorder struct {
+	mock *MockAgentServer
 }
 
-// NewMockCommandListenerServer creates a new mock instance
-func NewMockCommandListenerServer(ctrl *gomock.Controller) *MockCommandListenerServer {
-	mock := &MockCommandListenerServer{ctrl: ctrl}
-	mock.recorder = &MockCommandListenerServerMockRecorder{mock}
+// NewMockAgentServer creates a new mock instance
+func NewMockAgentServer(ctrl *gomock.Controller) *MockAgentServer {
+	mock := &MockAgentServer{ctrl: ctrl}
+	mock.recorder = &MockAgentServerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockCommandListenerServer) EXPECT() *MockCommandListenerServerMockRecorder {
+func (m *MockAgentServer) EXPECT() *MockAgentServerMockRecorder {
 	return m.recorder
 }
 
 // CheckUpgradeStatus mocks base method
-func (m *MockCommandListenerServer) CheckUpgradeStatus(arg0 context.Context, arg1 *CheckUpgradeStatusRequest) (*CheckUpgradeStatusReply, error) {
+func (m *MockAgentServer) CheckUpgradeStatus(arg0 context.Context, arg1 *CheckUpgradeStatusRequest) (*CheckUpgradeStatusReply, error) {
 	ret := m.ctrl.Call(m, "CheckUpgradeStatus", arg0, arg1)
 	ret0, _ := ret[0].(*CheckUpgradeStatusReply)
 	ret1, _ := ret[1].(error)
@@ -121,12 +139,25 @@ func (m *MockCommandListenerServer) CheckUpgradeStatus(arg0 context.Context, arg
 }
 
 // CheckUpgradeStatus indicates an expected call of CheckUpgradeStatus
-func (mr *MockCommandListenerServerMockRecorder) CheckUpgradeStatus(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckUpgradeStatus", reflect.TypeOf((*MockCommandListenerServer)(nil).CheckUpgradeStatus), arg0, arg1)
+func (mr *MockAgentServerMockRecorder) CheckUpgradeStatus(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckUpgradeStatus", reflect.TypeOf((*MockAgentServer)(nil).CheckUpgradeStatus), arg0, arg1)
+}
+
+// CheckConversionStatus mocks base method
+func (m *MockAgentServer) CheckConversionStatus(arg0 context.Context, arg1 *CheckConversionStatusRequest) (*CheckConversionStatusReply, error) {
+	ret := m.ctrl.Call(m, "CheckConversionStatus", arg0, arg1)
+	ret0, _ := ret[0].(*CheckConversionStatusReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckConversionStatus indicates an expected call of CheckConversionStatus
+func (mr *MockAgentServerMockRecorder) CheckConversionStatus(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckConversionStatus", reflect.TypeOf((*MockAgentServer)(nil).CheckConversionStatus), arg0, arg1)
 }
 
 // CheckDiskUsageOnAgents mocks base method
-func (m *MockCommandListenerServer) CheckDiskUsageOnAgents(arg0 context.Context, arg1 *CheckDiskUsageRequestToAgent) (*CheckDiskUsageReplyFromAgent, error) {
+func (m *MockAgentServer) CheckDiskUsageOnAgents(arg0 context.Context, arg1 *CheckDiskUsageRequestToAgent) (*CheckDiskUsageReplyFromAgent, error) {
 	ret := m.ctrl.Call(m, "CheckDiskUsageOnAgents", arg0, arg1)
 	ret0, _ := ret[0].(*CheckDiskUsageReplyFromAgent)
 	ret1, _ := ret[1].(error)
@@ -134,12 +165,12 @@ func (m *MockCommandListenerServer) CheckDiskUsageOnAgents(arg0 context.Context,
 }
 
 // CheckDiskUsageOnAgents indicates an expected call of CheckDiskUsageOnAgents
-func (mr *MockCommandListenerServerMockRecorder) CheckDiskUsageOnAgents(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckDiskUsageOnAgents", reflect.TypeOf((*MockCommandListenerServer)(nil).CheckDiskUsageOnAgents), arg0, arg1)
+func (mr *MockAgentServerMockRecorder) CheckDiskUsageOnAgents(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckDiskUsageOnAgents", reflect.TypeOf((*MockAgentServer)(nil).CheckDiskUsageOnAgents), arg0, arg1)
 }
 
 // PingAgents mocks base method
-func (m *MockCommandListenerServer) PingAgents(arg0 context.Context, arg1 *PingAgentsRequest) (*PingAgentsReply, error) {
+func (m *MockAgentServer) PingAgents(arg0 context.Context, arg1 *PingAgentsRequest) (*PingAgentsReply, error) {
 	ret := m.ctrl.Call(m, "PingAgents", arg0, arg1)
 	ret0, _ := ret[0].(*PingAgentsReply)
 	ret1, _ := ret[1].(error)
@@ -147,6 +178,6 @@ func (m *MockCommandListenerServer) PingAgents(arg0 context.Context, arg1 *PingA
 }
 
 // PingAgents indicates an expected call of PingAgents
-func (mr *MockCommandListenerServerMockRecorder) PingAgents(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingAgents", reflect.TypeOf((*MockCommandListenerServer)(nil).PingAgents), arg0, arg1)
+func (mr *MockAgentServerMockRecorder) PingAgents(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingAgents", reflect.TypeOf((*MockAgentServer)(nil).PingAgents), arg0, arg1)
 }

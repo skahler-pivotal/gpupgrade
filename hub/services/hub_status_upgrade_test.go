@@ -2,32 +2,44 @@ package services_test
 
 import (
 	"errors"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"gp_upgrade/hub/configutils"
 	pb "gp_upgrade/idl"
 	"gp_upgrade/utils"
-	"os"
-	"strings"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"google.golang.org/grpc"
 
 	"gp_upgrade/hub/services"
 	"gp_upgrade/testutils"
-	"io/ioutil"
-	"path/filepath"
 )
 
 var _ = Describe("hub", func() {
 	var (
-		listener                 services.CliToHubListenerImpl
+		listener                 *services.HubClient
 		fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
+		shutdownHub              func()
 	)
+
 	BeforeEach(func() {
 		testhelper.SetupTestLogger() // extend to capture the values in a var if future tests need it
 		//any mocking of utils.System function pointers should be reset by calling InitializeSystemFunctions
 		utils.System = utils.InitializeSystemFunctions()
-		listener = *services.NewCliToHubListener(nil)
+
+		reader := configutils.NewReader()
+		listener, shutdownHub = services.NewHub(nil, &reader, grpc.DialContext)
 	})
+
+	AfterEach(func() {
+		shutdownHub()
+	})
+
 	Describe("creates a reply", func() {
 		It("sends status messages under good condition", func() {
 			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
@@ -40,7 +52,7 @@ var _ = Describe("hub", func() {
 			utils.System.FilePathGlob = func(string) ([]string, error) {
 				return []string{"somefile"}, nil
 			}
-			listener := services.NewCliToHubListener(nil)
+
 			var fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
 
 			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
@@ -107,6 +119,7 @@ var _ = Describe("hub", func() {
 				}
 			}
 		})
+
 		It("reports that master upgrade is running when pg_upgrade/*.inprogress files exists", func() {
 			utils.System.IsNotExist = func(error) bool {
 				return false
@@ -129,6 +142,7 @@ var _ = Describe("hub", func() {
 				}
 			}
 		})
+
 		It("reports that master upgrade is done when no *.inprogress files exist in ~/.gp_upgrade/pg_upgrade", func() {
 			utils.System.IsNotExist = func(error) bool {
 				return false
@@ -140,7 +154,7 @@ var _ = Describe("hub", func() {
 					return []string{"found something"}, nil
 				}
 
-				return nil, errors.New("Test not configured for this glob.")
+				return nil, errors.New("test not configured for this glob")
 			}
 			utils.System.ExecCmdOutput = func(cmd string, args ...string) ([]byte, error) {
 				return []byte(""), errors.New("bogus error")
@@ -175,6 +189,7 @@ var _ = Describe("hub", func() {
 				}
 			}
 		})
+
 		It("reports pg_upgrade has failed", func() {
 			utils.System.IsNotExist = func(error) bool {
 				return false
@@ -186,7 +201,7 @@ var _ = Describe("hub", func() {
 					return []string{"found something"}, nil
 				}
 
-				return nil, errors.New("Test not configured for this glob.")
+				return nil, errors.New("test not configured for this glob")
 			}
 			utils.System.ExecCmdOutput = func(cmd string, args ...string) ([]byte, error) {
 				return []byte(""), errors.New("bogus error")
@@ -214,17 +229,18 @@ var _ = Describe("hub", func() {
 			}
 		})
 	})
-	Describe("Status of PrepareNewClusterConfig", func() {
 
+	Describe("Status of PrepareNewClusterConfig", func() {
 		It("marks this step pending if there's no new cluster config file", func() {
 			utils.System.Stat = func(filename string) (os.FileInfo, error) {
-				return nil, errors.New("Cannot find file") /* This is normally a PathError */
+				return nil, errors.New("cannot find file") /* This is normally a PathError */
 			}
 			stepStatus, err := services.GetPrepareNewClusterConfigStatus()
 			Expect(err).To(BeNil()) // convert file-not-found errors into stepStatus
 			Expect(stepStatus.Step).To(Equal(pb.UpgradeSteps_PREPARE_INIT_CLUSTER))
 			Expect(stepStatus.Status).To(Equal(pb.StepStatus_PENDING))
 		})
+
 		It("marks this step complete if there is a new cluster config file", func() {
 			utils.System.Stat = func(filename string) (os.FileInfo, error) {
 				return nil, nil
@@ -238,6 +254,7 @@ var _ = Describe("hub", func() {
 		})
 
 	})
+
 	Describe("Status of ShutdownClusters", func() {
 		It("We're sending the status of shutdown clusters", func() {
 			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
@@ -252,6 +269,5 @@ var _ = Describe("hub", func() {
 			}
 			Expect(found).To(Equal(true))
 		})
-
 	})
 })

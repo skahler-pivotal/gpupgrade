@@ -18,7 +18,7 @@ var _ = Describe("ClusterSsher", func() {
 	Describe("VerifySoftware", func() {
 		It("indicates that it is in progress, failed on the hub filesystem", func() {
 			utils.System.ExecCmdCombinedOutput = func(name string, args ...string) ([]byte, error) {
-				return nil, errors.New("host not found")
+				return []byte("stdout/stderr message"), errors.New("host not found")
 			}
 			cw := newSpyChecklistWriter()
 			ap := newSpyAgentPinger()

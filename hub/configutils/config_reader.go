@@ -77,6 +77,13 @@ func (reader Reader) GetHostnames() ([]string, error) {
 }
 
 func (reader Reader) GetSegmentConfiguration() SegmentConfiguration {
+	if len(reader.config) == 0 {
+		err := reader.Read()
+		if err != nil {
+			return nil
+		}
+	}
+
 	return reader.config
 }
 

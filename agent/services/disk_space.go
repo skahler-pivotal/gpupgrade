@@ -1,38 +1,17 @@
-//go:generate protoc -I ../idl --go_out=plugins=grpc:../idl ../idl/idl.proto
-
 package services
 
 import (
+	"context"
+
 	pb "gp_upgrade/idl"
-	"gp_upgrade/utils"
 
 	"github.com/cloudfoundry/gosigar"
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
-	"golang.org/x/net/context"
 )
 
-type commandListenerImpl struct {
-	getDiskUsage func() (map[string]float64, error)
-}
-
-func NewCommandListener() pb.CommandListenerServer {
-	return &commandListenerImpl{diskUsage}
-}
-
-func (s *commandListenerImpl) CheckUpgradeStatus(ctx context.Context, in *pb.CheckUpgradeStatusRequest) (*pb.CheckUpgradeStatusReply, error) {
-	cmd := "ps auxx | grep pg_upgrade"
-
-	output, err := utils.System.ExecCmdOutput("bash", "-c", cmd)
-	if err != nil {
-		gplog.Error(err.Error())
-		return nil, err
-	}
-	return &pb.CheckUpgradeStatusReply{ProcessList: string(output)}, nil
-}
-
-func (s *commandListenerImpl) CheckDiskUsageOnAgents(ctx context.Context, in *pb.CheckDiskUsageRequestToAgent) (*pb.CheckDiskUsageReplyFromAgent, error) {
+func (s *AgentServer) CheckDiskUsageOnAgents(ctx context.Context, in *pb.CheckDiskUsageRequestToAgent) (*pb.CheckDiskUsageReplyFromAgent, error) {
 	gplog.Info("got a check disk command from the hub")
-	diskUsage, err := s.getDiskUsage()
+	diskUsage, err := s.GetDiskUsage()
 	if err != nil {
 		gplog.Error(err.Error())
 		return nil, err
@@ -71,9 +50,4 @@ func diskUsage() (map[string]float64, error) {
 		diskUsagePerFS[dirName] = usage.UsePercent()
 	}
 	return diskUsagePerFS, nil
-}
-
-func (s *commandListenerImpl) PingAgents(ctx context.Context, in *pb.PingAgentsRequest) (*pb.PingAgentsReply, error) {
-	gplog.Info("Successfully pinged agent")
-	return &pb.PingAgentsReply{}, nil
 }

@@ -5,6 +5,7 @@ package idl;
 service CliToHub {
     rpc Ping(PingRequest) returns (PingReply) {}
     rpc StatusUpgrade(StatusUpgradeRequest) returns (StatusUpgradeReply) {}
+    rpc StatusConversion(StatusConversionRequest) returns (StatusConversionReply) {}
     rpc CheckConfig(CheckConfigRequest) returns (CheckConfigReply) {}
     rpc CheckSeginstall(CheckSeginstallRequest) returns (CheckSeginstallReply) {}
     rpc CheckObjectCount(CheckObjectCountRequest) returns (CheckObjectCountReply) {}
@@ -18,6 +19,12 @@ service CliToHub {
 
 message PingRequest {}
 message PingReply {}
+
+message StatusConversionRequest {}
+
+message StatusConversionReply {
+    string ConversionStatus = 1;
+}
 
 message StatusUpgradeRequest {}
 
