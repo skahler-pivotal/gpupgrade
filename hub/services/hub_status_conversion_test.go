@@ -15,9 +15,10 @@ import (
 
 	"gp_upgrade/hub/services"
 
+	"gp_upgrade/hub/configutils"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gp_upgrade/hub/configutils"
 )
 
 var _ = Describe("hub", func() {

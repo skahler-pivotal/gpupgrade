@@ -86,14 +86,12 @@ func handleStatusLogging(c *ClusterSsher, statedir string, anyFailed bool) {
 	if anyFailed {
 		err := c.checklistWriter.MarkFailed(statedir)
 		if err != nil {
-			fmt.Println("Got an error (failed):", err)
 			gplog.Error(err.Error())
 		}
 		return
 	}
 	err := c.checklistWriter.MarkComplete(statedir)
 	if err != nil {
-		fmt.Println("Got an error (complete):", err)
 		gplog.Error(err.Error())
 	}
 }

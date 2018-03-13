@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 
+	"gp_upgrade/hub/upgradestatus"
 	"path"
+	"path/filepath"
 )
 
 const (
@@ -67,4 +69,10 @@ func WriteProvidedConfig(jsonConfig string) {
 	Check("cannot create sample dir", err)
 	err = ioutil.WriteFile(configutils.GetConfigFilePath(), []byte(jsonConfig), 0600)
 	Check("cannot write sample configutils", err)
+}
+
+func CleanUpDirectory(directory string) {
+	gpUpgradeDir := filepath.Join(os.Getenv("HOME"), ".gp_upgrade")
+	c := upgradestatus.NewChecklistManager(gpUpgradeDir)
+	c.ResetStateDir(directory)
 }

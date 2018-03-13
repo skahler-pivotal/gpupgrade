@@ -33,3 +33,12 @@ func (u Upgrader) ConvertMaster(oldDataDir string, oldBinDir string, newDataDir 
 	gplog.Info("Kicked off pg_upgrade request.")
 	return nil
 }
+
+func (u Upgrader) ShareOids() error {
+	_, err := u.client.UpgradeShareOids(context.Background(), &pb.UpgradeShareOidsRequest{})
+	if err != nil {
+		gplog.Error(err.Error())
+		return err
+	}
+	return nil
+}

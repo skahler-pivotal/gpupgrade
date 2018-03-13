@@ -78,7 +78,3 @@ var _ = Describe("check", func() {
 	})
 
 })
-
-func runStatusUpgrade() string {
-	return string(runCommand("status", "upgrade").Out.Contents())
-}

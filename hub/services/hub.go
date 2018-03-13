@@ -10,11 +10,12 @@ import (
 	"gp_upgrade/hub/upgradestatus"
 
 	"fmt"
+	"gp_upgrade/hub/configutils"
+	"strings"
+
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
-	"gp_upgrade/hub/configutils"
-	"strings"
 )
 
 const (
@@ -57,7 +58,7 @@ func NewHub(pair cluster.PairOperator, configReader reader, grpcDialer dialer) (
 		grpcDialer:   grpcDialer,
 		Bootstrapper: Bootstrapper{
 			hostnameGetter: configReader,
-			remoteExecutor: NewClusterSsher(upgradestatus.NewChecklistManager(gpUpgradeDir), NewPingerManager()),
+			remoteExecutor: NewClusterSsher(upgradestatus.NewChecklistManager(gpUpgradeDir), NewPingerManager(500*time.Millisecond)),
 		},
 	}
 

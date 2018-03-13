@@ -1,8 +1,9 @@
 package integrations_test
 
 import (
-	"github.com/onsi/gomega/gbytes"
 	"gp_upgrade/testutils"
+
+	"github.com/onsi/gomega/gbytes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

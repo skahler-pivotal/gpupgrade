@@ -15,7 +15,11 @@ service CliToHub {
     rpc PrepareShutdownClusters(PrepareShutdownClustersRequest) returns (PrepareShutdownClustersReply) {}
     rpc UpgradeConvertMaster(UpgradeConvertMasterRequest) returns (UpgradeConvertMasterReply) {}
     rpc PrepareStartAgents(PrepareStartAgentsRequest) returns (PrepareStartAgentsReply) {}
+    rpc UpgradeShareOids(UpgradeShareOidsRequest) returns (UpgradeShareOidsReply) {}
 }
+
+message UpgradeShareOidsRequest {}
+message UpgradeShareOidsReply {}
 
 message PingRequest {}
 message PingReply {}
@@ -45,6 +49,8 @@ enum UpgradeSteps {
     MASTERUPGRADE = 4;
     STOPPED_CLUSTER = 5;
     PREPARE_START_AGENTS = 6;
+    CONVERSION = 7;
+    SHARE_OIDS = 8;
 }
 
 enum StepStatus {

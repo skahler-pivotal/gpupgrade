@@ -45,9 +45,13 @@ func (s *HubClient) StatusUpgrade(ctx context.Context, in *pb.StatusUpgradeReque
 	prepareStartAgentsState := upgradestatus.NewStateCheck(startAgentsStatePath, pb.UpgradeSteps_PREPARE_START_AGENTS)
 	startAgentsStatus, _ := prepareStartAgentsState.GetStatus()
 
+	shareOidsPath := filepath.Join(homeDirectory, ".gp_upgrade/share-oids")
+	shareOidsState := upgradestatus.NewStateCheck(shareOidsPath, pb.UpgradeSteps_SHARE_OIDS)
+	shareOidsStatus, _ := shareOidsState.GetStatus()
+
 	reply := &pb.StatusUpgradeReply{}
 	reply.ListOfUpgradeStepStatuses = append(reply.ListOfUpgradeStepStatuses, demoStepStatus, seginstallStatus,
-		prepareInitStatus, shutdownClustersStatus, masterUpgradeStatus, startAgentsStatus)
+		prepareInitStatus, shutdownClustersStatus, masterUpgradeStatus, startAgentsStatus, shareOidsStatus)
 	return reply, nil
 }
 

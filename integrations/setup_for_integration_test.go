@@ -123,3 +123,7 @@ func killAllAgents() {
 	pkillCmd := exec.Command("pkill", "gp_upgrade_agent")
 	pkillCmd.Run()
 }
+
+func runStatusUpgrade() string {
+	return string(runCommand("status", "upgrade").Out.Contents())
+}

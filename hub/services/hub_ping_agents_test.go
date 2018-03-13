@@ -10,6 +10,8 @@ import (
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
 
+	"time"
+
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -31,6 +33,7 @@ var _ = Describe("hub pings agents test", func() {
 		pingerManager = &services.PingerManager{
 			[]configutils.ClientAndHostname{{Client: client, Hostname: "doesnotexist"}},
 			10,
+			1 * time.Millisecond,
 		}
 	})
 

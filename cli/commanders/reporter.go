@@ -30,6 +30,8 @@ var UpgradeStepsMessage = map[pb.UpgradeSteps]string{
 	pb.UpgradeSteps_PREPARE_START_AGENTS: "- Agents Started on Cluster",
 	pb.UpgradeSteps_MASTERUPGRADE:        "- Run pg_upgrade on master",
 	pb.UpgradeSteps_STOPPED_CLUSTER:      "- Shutdown clusters",
+	pb.UpgradeSteps_CONVERSION:           "- Run pg_upgrade on segments",
+	pb.UpgradeSteps_SHARE_OIDS:           "- Copy OID files from master to segments",
 }
 
 func NewReporter(client pb.CliToHubClient) *Reporter {

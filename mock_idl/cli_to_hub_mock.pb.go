@@ -251,6 +251,24 @@ func (mr *MockCliToHubClientMockRecorder) PrepareStartAgents(ctx, in interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareStartAgents", reflect.TypeOf((*MockCliToHubClient)(nil).PrepareStartAgents), varargs...)
 }
 
+// UpgradeShareOids mocks base method
+func (m *MockCliToHubClient) UpgradeShareOids(ctx context.Context, in *UpgradeShareOidsRequest, opts ...grpc.CallOption) (*UpgradeShareOidsReply, error) {
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpgradeShareOids", varargs...)
+	ret0, _ := ret[0].(*UpgradeShareOidsReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpgradeShareOids indicates an expected call of UpgradeShareOids
+func (mr *MockCliToHubClientMockRecorder) UpgradeShareOids(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeShareOids", reflect.TypeOf((*MockCliToHubClient)(nil).UpgradeShareOids), varargs...)
+}
+
 // MockCliToHubServer is a mock of CliToHubServer interface
 type MockCliToHubServer struct {
 	ctrl     *gomock.Controller
@@ -428,4 +446,17 @@ func (m *MockCliToHubServer) PrepareStartAgents(arg0 context.Context, arg1 *Prep
 // PrepareStartAgents indicates an expected call of PrepareStartAgents
 func (mr *MockCliToHubServerMockRecorder) PrepareStartAgents(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareStartAgents", reflect.TypeOf((*MockCliToHubServer)(nil).PrepareStartAgents), arg0, arg1)
+}
+
+// UpgradeShareOids mocks base method
+func (m *MockCliToHubServer) UpgradeShareOids(arg0 context.Context, arg1 *UpgradeShareOidsRequest) (*UpgradeShareOidsReply, error) {
+	ret := m.ctrl.Call(m, "UpgradeShareOids", arg0, arg1)
+	ret0, _ := ret[0].(*UpgradeShareOidsReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpgradeShareOids indicates an expected call of UpgradeShareOids
+func (mr *MockCliToHubServerMockRecorder) UpgradeShareOids(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeShareOids", reflect.TypeOf((*MockCliToHubServer)(nil).UpgradeShareOids), arg0, arg1)
 }

@@ -8,9 +8,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 
+	"gp_upgrade/hub/configutils"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gp_upgrade/hub/configutils"
 )
 
 var _ = Describe("HubClient", func() {
