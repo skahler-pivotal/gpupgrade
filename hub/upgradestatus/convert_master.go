@@ -46,6 +46,7 @@ func (c ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 		}
 		return masterUpgradeStatus, nil
 	}
+
 	if !inProgressFilesExist(pgUpgradePath) && c.IsUpgradeComplete(pgUpgradePath) {
 		gplog.Info("setting status to COMPLETE")
 		masterUpgradeStatus = &pb.UpgradeStepStatus{
@@ -54,6 +55,7 @@ func (c ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 		}
 		return masterUpgradeStatus, nil
 	}
+
 	gplog.Info("setting status to FAILED")
 	masterUpgradeStatus = &pb.UpgradeStepStatus{
 		Step:   pb.UpgradeSteps_MASTERUPGRADE,

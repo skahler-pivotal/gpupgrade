@@ -75,7 +75,11 @@ func (c *ClusterSsher) remoteExec(hostnames []string, statedir string, command [
 		sshArgs = append(sshArgs, command...)
 		output, err := utils.System.ExecCmdCombinedOutput("ssh", sshArgs...)
 		if err != nil {
-			gplog.Error("Couldn't run %s on %s: %s", command, hostname, string(output))
+			errText := "Couldn't run %s on %s:"
+			if output != nil {
+				errText += string(output)
+			}
+			gplog.Error(errText, command, hostname)
 			anyFailed = true
 		}
 	}

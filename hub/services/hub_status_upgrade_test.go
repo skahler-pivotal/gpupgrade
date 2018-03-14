@@ -20,7 +20,7 @@ import (
 	"gp_upgrade/testutils"
 )
 
-var _ = Describe("hub", func() {
+var _ = Describe("status upgrade", func() {
 	var (
 		listener                 *services.HubClient
 		fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
@@ -40,6 +40,51 @@ var _ = Describe("hub", func() {
 		shutdownHub()
 	})
 
+	It("responds with the statuses of the steps based on files on disk", func() {
+		dir, err := ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
+		defer os.RemoveAll(dir)
+		services.HomeDir = dir
+
+		setStateFile(dir, "seginstall", "completed")
+		setStateFile(dir, "share-oids", "failed")
+
+		f, err := os.Create(filepath.Join(dir, ".gp_upgrade", "cluster_config.json"))
+		Expect(err).ToNot(HaveOccurred())
+		f.Close()
+
+		resp, err := listener.StatusUpgrade(nil, &pb.StatusUpgradeRequest{})
+		Expect(err).To(BeNil())
+
+		Expect(resp.ListOfUpgradeStepStatuses).To(ConsistOf(
+			[]*pb.UpgradeStepStatus{
+				{
+					Step:   pb.UpgradeSteps_CHECK_CONFIG,
+					Status: pb.StepStatus_COMPLETE,
+				}, {
+					Step:   pb.UpgradeSteps_PREPARE_INIT_CLUSTER,
+					Status: pb.StepStatus_PENDING,
+				}, {
+					Step:   pb.UpgradeSteps_SEGINSTALL,
+					Status: pb.StepStatus_COMPLETE,
+				}, {
+					Step:   pb.UpgradeSteps_STOPPED_CLUSTER,
+					Status: pb.StepStatus_PENDING,
+				}, {
+					Step:   pb.UpgradeSteps_MASTERUPGRADE,
+					Status: pb.StepStatus_PENDING,
+				}, {
+					Step:   pb.UpgradeSteps_PREPARE_START_AGENTS,
+					Status: pb.StepStatus_PENDING,
+				}, {
+					Step:   pb.UpgradeSteps_SHARE_OIDS,
+					Status: pb.StepStatus_FAILED,
+				},
+			},
+		))
+	})
+
+	// TODO: Get rid of these tests once full rewritten test coverage exists
 	Describe("creates a reply", func() {
 		It("sends status messages under good condition", func() {
 			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
@@ -271,3 +316,12 @@ var _ = Describe("hub", func() {
 		})
 	})
 })
+
+func setStateFile(dir string, step string, state string) {
+	err := os.MkdirAll(filepath.Join(dir, ".gp_upgrade", step), os.ModePerm)
+	Expect(err).ToNot(HaveOccurred())
+
+	f, err := os.Create(filepath.Join(dir, ".gp_upgrade", step, state))
+	Expect(err).ToNot(HaveOccurred())
+	f.Close()
+}

@@ -8,10 +8,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-//upgradestatus/Seginstall represents the necessary information and functions
-// to determine the status of the seginstall step
-//
-// seginstallPath is expected to be an absolute path
 type StateCheck struct {
 	path string
 	step pb.UpgradeSteps
