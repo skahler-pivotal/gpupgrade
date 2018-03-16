@@ -3,6 +3,7 @@ package cluster_test
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -53,6 +54,7 @@ func TestHelperProcess(t *testing.T) {
 
 var _ = Describe("ClusterPair", func() {
 	var (
+		dir              string
 		mockedOutput     string
 		mockedExitStatus int
 
@@ -61,6 +63,10 @@ var _ = Describe("ClusterPair", func() {
 
 	/* This idea came from https://golang.org/src/os/exec/exec_test.go */
 	fakeExecCommand := func(command string, args ...string) *exec.Cmd {
+		var err error
+		dir, err = ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
+
 		cs := []string{"-test.run=TestHelperProcess", "--", command}
 		cs = append(cs, args...)
 		cmd := exec.Command(os.Args[0], cs...)
@@ -104,7 +110,7 @@ var _ = Describe("ClusterPair", func() {
 			utils.System.ExecCommand = fakeExecCommand
 
 			subject := cluster.Pair{}
-			err := subject.Init("old/path", "new/path")
+			err := subject.Init(dir, "old/path", "new/path")
 			Expect(err).ToNot(HaveOccurred())
 
 			subject.StopEverything("path/to/gpstop")
@@ -127,7 +133,7 @@ var _ = Describe("ClusterPair", func() {
 			}
 
 			subject := cluster.Pair{}
-			err := subject.Init("old/path", "new/path")
+			err := subject.Init(dir, "old/path", "new/path")
 			Expect(err).ToNot(HaveOccurred())
 
 			subject.StopEverything("path/to/gpstop")
@@ -143,7 +149,7 @@ var _ = Describe("ClusterPair", func() {
 			utils.System.ExecCommand = fakeExecCommand
 
 			subject := cluster.Pair{}
-			err := subject.Init("old/path", "new/path")
+			err := subject.Init(dir, "old/path", "new/path")
 			Expect(err).ToNot(HaveOccurred())
 
 			subject.StopEverything("path/to/gpstop")

@@ -3,12 +3,12 @@ package services
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"gp_upgrade/hub/configutils"
 	pb "gp_upgrade/idl"
 	"gp_upgrade/utils"
-
-	"os"
-	"path/filepath"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"golang.org/x/net/context"
@@ -18,27 +18,22 @@ var (
 	GetMasterDataDirs = getMasterDataDirs
 )
 
-func (s *HubClient) UpgradeConvertMaster(ctx context.Context,
-	in *pb.UpgradeConvertMasterRequest) (*pb.UpgradeConvertMasterReply, error) {
+func (h *HubClient) UpgradeConvertMaster(ctx context.Context, in *pb.UpgradeConvertMasterRequest) (*pb.UpgradeConvertMasterReply, error) {
 
 	gplog.Info("Starting master upgrade")
 	//need to remember where we ran, i.e. pathToUpgradeWD, b/c pg_upgrade generates some files that need to be copied to QE nodes later
 	//this is also where the 1.done, 2.inprogress ... files will be written
-	homeDirectory := os.Getenv("HOME")
-	if homeDirectory == "" {
-		return nil, errors.New("could not find the home directory environemnt variable")
-
-	}
-	gpUpgradeDirectory := homeDirectory + "/.gp_upgrade"
-	err := ConvertMaster(gpUpgradeDirectory+"/pg_upgrade", in.OldBinDir, in.NewBinDir)
+	err := ConvertMaster(h.conf.StateDir, "pg_upgrade", in.OldBinDir, in.NewBinDir)
 	if err != nil {
 		gplog.Error("%v", err)
 		return nil, err
 	}
+
 	return &pb.UpgradeConvertMasterReply{}, nil
 }
 
-func ConvertMaster(pathToUpgradeWD string, oldBinDir string, newBinDir string) error {
+func ConvertMaster(baseDir, upgradeFileName, oldBinDir, newBinDir string) error {
+	pathToUpgradeWD := filepath.Join(baseDir, upgradeFileName)
 	err := os.Mkdir(pathToUpgradeWD, 0700)
 	if err != nil {
 		gplog.Error("mkdir %s failed: %v. Is there an pg_upgrade in progress?", pathToUpgradeWD, err)
@@ -47,7 +42,7 @@ func ConvertMaster(pathToUpgradeWD string, oldBinDir string, newBinDir string) e
 	pgUpgradeLog := filepath.Join(pathToUpgradeWD, "/pg_upgrade_master.log")
 	f, _ := os.Create(pgUpgradeLog) /* We already made sure above that we have a prestine directory */
 
-	oldMasterDataDir, newMasterDataDir, err := GetMasterDataDirs() // TODO: this will need to the appropriate location
+	oldMasterDataDir, newMasterDataDir, err := GetMasterDataDirs(baseDir)
 	if err != nil {
 		return err
 	}
@@ -74,10 +69,10 @@ func ConvertMaster(pathToUpgradeWD string, oldBinDir string, newBinDir string) e
 	return nil
 }
 
-func getMasterDataDirs() (string, string, error) {
+func getMasterDataDirs(baseDir string) (string, string, error) {
 	var err error
 	reader := configutils.Reader{}
-	reader.OfOldClusterConfig()
+	reader.OfOldClusterConfig(baseDir)
 	err = reader.Read()
 	if err != nil {
 		gplog.Error("Unable to read the file: %v", err)
@@ -90,7 +85,7 @@ func getMasterDataDirs() (string, string, error) {
 	}
 
 	reader = configutils.Reader{}
-	reader.OfNewClusterConfig()
+	reader.OfNewClusterConfig(baseDir)
 	err = reader.Read()
 	if err != nil {
 		gplog.Error("Unable to read the file: %v", err)

@@ -16,8 +16,8 @@ type PingerManager struct {
 	PauseBeforeRetry time.Duration
 }
 
-func NewPingerManager(t time.Duration) *PingerManager {
-	rpcClients, err := configutils.GetClients()
+func NewPingerManager(baseDir string, t time.Duration) *PingerManager {
+	rpcClients, err := configutils.GetClients(baseDir)
 	if err != nil {
 		return &PingerManager{}
 	}

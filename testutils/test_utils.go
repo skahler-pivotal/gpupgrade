@@ -60,14 +60,14 @@ func EnsureHomeDirIsTempAndClean() {
 	Check("cannot set home dir", err)
 }
 
-func WriteSampleConfig() {
-	WriteProvidedConfig(SAMPLE_JSON)
+func WriteSampleConfig(base string) {
+	WriteProvidedConfig(base, SAMPLE_JSON)
 }
 
-func WriteProvidedConfig(jsonConfig string) {
-	err := os.MkdirAll(configutils.GetConfigDir(), 0700)
+func WriteProvidedConfig(base, jsonConfig string) {
+	err := os.MkdirAll(base, 0700)
 	Check("cannot create sample dir", err)
-	err = ioutil.WriteFile(configutils.GetConfigFilePath(), []byte(jsonConfig), 0600)
+	err = ioutil.WriteFile(configutils.GetConfigFilePath(base), []byte(jsonConfig), 0600)
 	Check("cannot write sample configutils", err)
 }
 

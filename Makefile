@@ -49,13 +49,10 @@ unit :
 sshd_build :
 		make -C integrations/sshd
 
-integration: install
+integration:
 		-gpstop -ai
 		gpstart -a
-		-pkill gp_upgrade_hub
-		$(prefix)/bin/gp_upgrade prepare start-hub
-		$(prefix)/bin/gp_upgrade check config
-		ginkgo -r -randomizeAllSpecs -race integrations
+		ginkgo -v -r -randomizeAllSpecs -race integrations
 
 test : format lint unit integration
 

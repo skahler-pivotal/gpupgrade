@@ -1,23 +1,49 @@
 package integrations_test
 
 import (
-	"gp_upgrade/testutils"
-	"io/ioutil"
-
-	"gp_upgrade/hub/configutils"
-
 	"fmt"
+	"io/ioutil"
+	"os"
+
+	"gp_upgrade/hub/cluster"
+	"gp_upgrade/hub/configutils"
+	"gp_upgrade/hub/services"
+	"gp_upgrade/testutils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"google.golang.org/grpc"
 )
 
 // needs the cli and the hub
 var _ = Describe("check", func() {
+	var (
+		dir string
+		hub *services.HubClient
+	)
 
 	BeforeEach(func() {
-		ensureHubIsUp()
+		var err error
+		dir, err = ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
+
+		conf := &services.HubConfig{
+			CliToHubPort:   7527,
+			HubToAgentPort: 6416,
+			StateDir:       dir,
+		}
+		reader := configutils.NewReader()
+		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, conf)
+
+		Expect(checkPortIsAvailable(7527)).To(BeTrue())
+		go hub.Start()
+	})
+
+	AfterEach(func() {
+		hub.Stop()
+		Expect(checkPortIsAvailable(7527)).To(BeTrue())
+		os.RemoveAll(dir)
 	})
 
 	Describe("when a greenplum master db on localhost is up and running", func() {
@@ -30,11 +56,11 @@ var _ = Describe("check", func() {
 			Eventually(session).Should(Exit(0))
 			// check file
 
-			_, err := ioutil.ReadFile(configutils.GetConfigFilePath())
+			_, err := ioutil.ReadFile(configutils.GetConfigFilePath(dir))
 			testutils.Check("cannot read file", err)
 
 			reader := configutils.Reader{}
-			reader.OfOldClusterConfig()
+			reader.OfOldClusterConfig(dir)
 			err = reader.Read()
 			testutils.Check("cannot read config", err)
 
@@ -76,5 +102,4 @@ var _ = Describe("check", func() {
 			Eventually(runStatusUpgrade).Should(ContainSubstring("COMPLETE - Install binaries on segments"))
 		})
 	})
-
 })

@@ -30,8 +30,7 @@ func NewClusterSsher(cw ChecklistWriter, ap AgentPinger) *ClusterSsher {
 }
 
 func (c *ClusterSsher) VerifySoftware(hostnames []string) {
-	hubPath, _ := os.Executable()
-	agentPath := filepath.Join(filepath.Dir(hubPath), "gp_upgrade_agent")
+	agentPath := filepath.Join(os.Getenv("GPHOME"), "bin", "gp_upgrade_agent")
 	statedir := "seginstall"
 	anyFailed := c.remoteExec(hostnames, statedir, []string{"ls", agentPath})
 	handleStatusLogging(c, statedir, anyFailed)
@@ -40,10 +39,9 @@ func (c *ClusterSsher) VerifySoftware(hostnames []string) {
 func (c *ClusterSsher) Start(hostnames []string) {
 	// ssh -o "StrictHostKeyChecking=no" hostname /path/to/gp_upgrade_agent
 	statedir := "start-agents"
-	hubPath, _ := os.Executable()
-	agentPath := filepath.Join(filepath.Dir(hubPath), "gp_upgrade_agent")
+	agentPath := filepath.Join(os.Getenv("GPHOME"), "bin", "gp_upgrade_agent")
 	////ssh -n -f user@host "sh -c 'cd /whereever; nohup ./whatever > /dev/null 2>&1 &'"
-	completeCommandString := fmt.Sprintf("sh -c 'nohup %s > /dev/null 2>&1 & '", agentPath)
+	completeCommandString := fmt.Sprintf(`sh -c 'nohup %s > /dev/null 2>&1 & '`, agentPath)
 	c.remoteExec(hostnames, statedir, []string{completeCommandString})
 
 	//check that all the agents are running

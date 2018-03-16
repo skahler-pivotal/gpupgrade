@@ -5,31 +5,23 @@ import (
 
 	"golang.org/x/net/context"
 
-	"errors"
-	"gp_upgrade/utils"
 	"path"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
 
-func (s *HubClient) PrepareShutdownClusters(ctx context.Context,
-	in *pb.PrepareShutdownClustersRequest) (*pb.PrepareShutdownClustersReply, error) {
+func (h *HubClient) PrepareShutdownClusters(ctx context.Context, in *pb.PrepareShutdownClustersRequest) (*pb.PrepareShutdownClustersReply, error) {
 	gplog.Info("starting PrepareShutdownClusters()")
 
 	// will be initialized for future uses also? We think so -- it should
-	initErr := s.clusterPair.Init(in.OldBinDir, in.NewBinDir)
+	initErr := h.clusterPair.Init(h.conf.StateDir, in.OldBinDir, in.NewBinDir)
 	if initErr != nil {
 		gplog.Error("An occurred during cluster pair init: %v", initErr)
 		return nil, initErr
 	}
 
-	homeDirectory := utils.System.Getenv("HOME")
-	if homeDirectory == "" {
-		return nil, errors.New("could not find the home directory environment variable")
-
-	}
-	pathToGpstopStateDir := path.Join(homeDirectory, ".gp_upgrade", "gpstop")
-	go s.clusterPair.StopEverything(pathToGpstopStateDir)
+	pathToGpstopStateDir := path.Join(h.conf.StateDir, "gpstop")
+	go h.clusterPair.StopEverything(pathToGpstopStateDir)
 
 	/* TODO: gpstop may take a while.
 	 * How do we check if everything is stopped?

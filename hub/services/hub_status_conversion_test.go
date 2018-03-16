@@ -21,9 +21,8 @@ import (
 
 var _ = Describe("hub", func() {
 	var (
-		hubClient   *services.HubClient
-		shutdownHub func()
-		agentA      *testutils.MockAgentServer
+		hubClient *services.HubClient
+		agentA    *testutils.MockAgentServer
 	)
 
 	BeforeEach(func() {
@@ -32,26 +31,29 @@ var _ = Describe("hub", func() {
 
 		agentA = testutils.NewMockAgentServer()
 
-		reader := spyReader{}
-		reader.hostnames = []string{"localhost", "localhost"}
-		reader.segmentConfiguration = configutils.SegmentConfiguration{
-			{
-				Content:  0,
-				DBID:     2,
-				Hostname: "localhost",
-			}, {
-				Content:  1,
-				DBID:     3,
-				Hostname: "localhost",
+		reader := &spyReader{
+			hostnames: []string{"localhost", "localhost"},
+			segmentConfiguration: configutils.SegmentConfiguration{
+				{
+					Content:  0,
+					DBID:     2,
+					Hostname: "localhost",
+				}, {
+					Content:  1,
+					DBID:     3,
+					Hostname: "localhost",
+				},
 			},
 		}
 
-		hubClient, shutdownHub = services.NewHub(nil, &reader, grpc.DialContext)
+		conf := &services.HubConfig{
+			HubToAgentPort: 6416,
+		}
+
+		hubClient = services.NewHub(nil, reader, grpc.DialContext, conf)
 	})
 
 	AfterEach(func() {
-		shutdownHub()
-
 		agentA.Stop()
 	})
 

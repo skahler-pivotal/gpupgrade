@@ -12,7 +12,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func (s *HubClient) CheckConfig(ctx context.Context,
+func (h *HubClient) CheckConfig(ctx context.Context,
 	in *pb.CheckConfigRequest) (*pb.CheckConfigReply, error) {
 
 	gplog.Info("starting CheckConfig()")
@@ -29,7 +29,7 @@ func (s *HubClient) CheckConfig(ctx context.Context,
 		mode, status, port, hostname, address, datadir
 		from gp_segment_configuration`
 	err = SaveQueryResultToJSON(databaseHandler, configQuery,
-		configutils.NewWriter(configutils.GetConfigFilePath()))
+		configutils.NewWriter(h.conf.StateDir, configutils.GetConfigFilePath(h.conf.StateDir)))
 	if err != nil {
 		gplog.Error(err.Error())
 		return nil, err
@@ -37,7 +37,7 @@ func (s *HubClient) CheckConfig(ctx context.Context,
 
 	versionQuery := `show gp_server_version_num`
 	err = SaveQueryResultToJSON(databaseHandler, versionQuery,
-		configutils.NewWriter(configutils.GetVersionFilePath()))
+		configutils.NewWriter(h.conf.StateDir, configutils.GetVersionFilePath(h.conf.StateDir)))
 	if err != nil {
 		gplog.Error(err.Error())
 		return nil, err

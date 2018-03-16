@@ -4,8 +4,9 @@ import (
 	"os"
 
 	"encoding/json"
-	"github.com/pkg/errors"
 	"gp_upgrade/utils"
+
+	"github.com/pkg/errors"
 )
 
 type Store interface {
@@ -18,47 +19,51 @@ type Writer struct {
 	Formatter     Formatter
 	FileWriter    FileWriter
 	PathToFile    string
+	BaseDir       string
 }
 
-func NewWriter(PathToFile string) *Writer {
+func NewWriter(baseDir, PathToFile string) *Writer {
 	return &Writer{
 		Formatter:  NewJSONFormatter(),
 		FileWriter: NewRealFileWriter(),
 		PathToFile: PathToFile,
+		BaseDir:    baseDir,
 	}
 }
 
-func (configWriter *Writer) Load(rows utils.RowsWrapper) error {
+func (w *Writer) Load(rows utils.RowsWrapper) error {
 	var err error
-	configWriter.TableJSONData, err = translateColumnsIntoGenericStructure(rows)
+	w.TableJSONData, err = translateColumnsIntoGenericStructure(rows)
 	return err
 }
 
-func (configWriter *Writer) Write() error {
-	jsonData, err := json.Marshal(configWriter.TableJSONData)
+func (w *Writer) Write() error {
+	jsonData, err := json.Marshal(w.TableJSONData)
 	if err != nil {
 		return errors.New(err.Error())
 	}
 
-	pretty, err := configWriter.Formatter.Format(jsonData)
+	pretty, err := w.Formatter.Format(jsonData)
 	if err != nil {
 		return errors.New(err.Error())
 	}
 
-	err = os.MkdirAll(GetConfigDir(), 0700)
+	err = os.MkdirAll(w.BaseDir, 0700)
 	if err != nil {
 		return errors.New(err.Error())
 	}
-	f, err := os.Create(configWriter.PathToFile)
+
+	f, err := os.Create(w.PathToFile)
 	if err != nil {
 		return errors.New(err.Error())
 	}
 	defer f.Close()
 
-	err = configWriter.FileWriter.Write(f, pretty)
+	err = w.FileWriter.Write(f, pretty)
 	if err != nil {
 		return errors.New(err.Error())
 	}
+
 	return nil
 }
 

@@ -16,12 +16,12 @@ func NewReader() Reader {
 	return Reader{}
 }
 
-func (reader *Reader) OfOldClusterConfig() {
-	reader.fileLocation = GetConfigFilePath()
+func (reader *Reader) OfOldClusterConfig(base string) {
+	reader.fileLocation = GetConfigFilePath(base)
 }
 
-func (reader *Reader) OfNewClusterConfig() {
-	reader.fileLocation = GetNewClusterConfigFilePath()
+func (reader *Reader) OfNewClusterConfig(base string) {
+	reader.fileLocation = GetNewClusterConfigFilePath(base)
 }
 
 func (reader *Reader) Read() error {

@@ -1,12 +1,12 @@
 package services_test
 
 import (
+	"io/ioutil"
+	"os"
+
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
 	pb "gp_upgrade/idl"
-	"gp_upgrade/testutils"
-
-	"time"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
@@ -22,13 +22,24 @@ var _ = Describe("hub", func() {
 			hub                         *services.HubClient
 			fakeUpgradeShareOidsRequest *pb.UpgradeShareOidsRequest
 			testStdout                  *gbytes.Buffer
+			dir                         string
 		)
+
 		BeforeEach(func() {
 			reader = configutils.NewReader()
-			hub, _ = services.NewHub(nil, &reader, grpc.DialContext)
+			var err error
+			dir, err = ioutil.TempDir("", "")
+			Expect(err).ToNot(HaveOccurred())
+			hub = services.NewHub(nil, &reader, grpc.DialContext, &services.HubConfig{
+				StateDir: dir,
+			})
+
 			fakeUpgradeShareOidsRequest = &pb.UpgradeShareOidsRequest{}
 			testStdout, _, _ = testhelper.SetupTestLogger()
-			testutils.CleanUpDirectory("share-oids")
+		})
+
+		AfterEach(func() {
+			os.RemoveAll(dir)
 		})
 
 		It("Reports status PENDING when no share-oids request has been made", func() {
@@ -38,18 +49,17 @@ var _ = Describe("hub", func() {
 
 			var stepStatusSaved *pb.UpgradeStepStatus
 			for _, stepStatus := range stepStatuses {
-
 				if stepStatus.GetStep() == pb.UpgradeSteps_SHARE_OIDS {
 					stepStatusSaved = stepStatus
 				}
 			}
+
 			Expect(stepStatusSaved.GetStep()).ToNot(BeZero())
 			Expect(stepStatusSaved.GetStatus()).To(Equal(pb.StepStatus_PENDING))
 		})
 
 		It("Reports status COMPLETED when a share-oids request has been made", func() {
 			hub.UpgradeShareOids(nil, fakeUpgradeShareOidsRequest)
-			time.Sleep(3 * time.Second)
 			reply, err := hub.StatusUpgrade(nil, &pb.StatusUpgradeRequest{})
 
 			Expect(err).To(BeNil())
@@ -57,20 +67,16 @@ var _ = Describe("hub", func() {
 
 			var stepStatusSaved *pb.UpgradeStepStatus
 			for _, stepStatus := range stepStatuses {
-
 				if stepStatus.GetStep() == pb.UpgradeSteps_SHARE_OIDS {
 					stepStatusSaved = stepStatus
 				}
 			}
+
 			Expect(stepStatusSaved.GetStep()).ToNot(BeZero())
 			Eventually(stepStatusSaved.GetStatus()).Should(Equal(pb.StepStatus_COMPLETE))
-
 		})
 
 		It("Starts sharing OID files across cluster without error", func() {
-
-			reader := configutils.NewReader()
-			hub, _ := services.NewHub(nil, &reader, grpc.DialContext)
 			_, err := hub.UpgradeShareOids(nil, fakeUpgradeShareOidsRequest)
 			Eventually(testStdout).Should(gbytes.Say("Started processing share-oids request"))
 			Expect(err).To(BeNil())

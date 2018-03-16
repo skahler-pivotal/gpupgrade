@@ -12,7 +12,7 @@ import (
 )
 
 type PairOperator interface {
-	Init(string, string) error
+	Init(string, string, string) error
 	StopEverything(string)
 }
 
@@ -26,12 +26,12 @@ type Pair struct {
 	newBinDir              string
 }
 
-func (cp *Pair) Init(oldBinDir string, newBinDir string) error {
+func (cp *Pair) Init(baseDir, oldBinDir, newBinDir string) error {
 	var err error
 	cp.oldBinDir = oldBinDir
 	cp.newBinDir = newBinDir
 
-	cp.upgradeConfig, err = configutils.GetUpgradeConfig()
+	cp.upgradeConfig, err = configutils.GetUpgradeConfig(baseDir)
 	if err != nil {
 		return fmt.Errorf("couldn't read config files: %v", err)
 	}

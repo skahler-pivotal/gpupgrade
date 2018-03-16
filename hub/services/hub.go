@@ -2,24 +2,22 @@ package services
 
 import (
 	"context"
-	"os"
-	"path/filepath"
+	"fmt"
+	"net"
+	"strconv"
+	"strings"
+	"sync"
 	"time"
 
 	"gp_upgrade/hub/cluster"
-	"gp_upgrade/hub/upgradestatus"
-
-	"fmt"
 	"gp_upgrade/hub/configutils"
-	"strings"
+	"gp_upgrade/hub/upgradestatus"
+	pb "gp_upgrade/idl"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
-)
-
-const (
-	port = "6416"
+	"google.golang.org/grpc/reflection"
 )
 
 var DialTimeout = 3 * time.Second
@@ -29,7 +27,22 @@ type dialer func(ctx context.Context, target string, opts ...grpc.DialOption) (*
 type reader interface {
 	GetHostnames() ([]string, error)
 	GetSegmentConfiguration() configutils.SegmentConfiguration
-	OfOldClusterConfig()
+	OfOldClusterConfig(baseDir string)
+}
+
+type HubClient struct {
+	Bootstrapper
+	conf *HubConfig
+
+	agentConns   []*Connection
+	clusterPair  cluster.PairOperator
+	configreader reader
+	grpcDialer   dialer
+
+	mu      sync.Mutex
+	server  *grpc.Server
+	lis     net.Listener
+	stopped chan struct{}
 }
 
 type Connection struct {
@@ -37,32 +50,70 @@ type Connection struct {
 	Hostname string
 }
 
-type HubClient struct {
-	Bootstrapper
-
-	agentConns   []*Connection
-	clusterPair  cluster.PairOperator
-	configreader reader
-	grpcDialer   dialer
+type HubConfig struct {
+	CliToHubPort   int
+	HubToAgentPort int
+	StateDir       string
+	LogDir         string
 }
 
-func NewHub(pair cluster.PairOperator, configReader reader, grpcDialer dialer) (*HubClient, func()) {
+func NewHub(pair cluster.PairOperator, configReader reader, grpcDialer dialer, conf *HubConfig) *HubClient {
 	// refactor opportunity -- don't use this pattern,
 	// use different types or separate functions for old/new or set the config path at reader initialization time
-	configReader.OfOldClusterConfig()
-	gpUpgradeDir := filepath.Join(os.Getenv("HOME"), ".gp_upgrade")
+	configReader.OfOldClusterConfig(conf.StateDir)
 
 	h := &HubClient{
+		stopped:      make(chan struct{}, 1),
+		conf:         conf,
 		clusterPair:  pair,
 		configreader: configReader,
 		grpcDialer:   grpcDialer,
 		Bootstrapper: Bootstrapper{
 			hostnameGetter: configReader,
-			remoteExecutor: NewClusterSsher(upgradestatus.NewChecklistManager(gpUpgradeDir), NewPingerManager(500*time.Millisecond)),
+			remoteExecutor: NewClusterSsher(
+				upgradestatus.NewChecklistManager(conf.StateDir),
+				NewPingerManager(conf.StateDir, 500*time.Millisecond),
+			),
 		},
 	}
 
-	return h, h.closeConns
+	return h
+}
+
+func (h *HubClient) Start() {
+	gplog.InitializeLogging("gp_upgrade_hub", h.conf.LogDir)
+
+	lis, err := net.Listen("tcp", ":"+strconv.Itoa(h.conf.CliToHubPort))
+	if err != nil {
+		gplog.Fatal(err, "failed to listen")
+	}
+
+	server := grpc.NewServer()
+	h.mu.Lock()
+	h.server = server
+	h.lis = lis
+	h.mu.Unlock()
+
+	pb.RegisterCliToHubServer(server, h)
+	reflection.Register(server)
+
+	err = server.Serve(lis)
+	if err != nil {
+		gplog.Fatal(err, "failed to serve", err)
+	}
+
+	h.stopped <- struct{}{}
+}
+
+func (h *HubClient) Stop() {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	if h.server != nil {
+		h.closeConns()
+		h.server.Stop()
+		<-h.stopped
+	}
 }
 
 func (h *HubClient) AgentConns() ([]*Connection, error) {
@@ -82,7 +133,7 @@ func (h *HubClient) AgentConns() ([]*Connection, error) {
 
 	for _, host := range hostnames {
 		ctx, _ := context.WithTimeout(context.TODO(), DialTimeout)
-		conn, err := h.grpcDialer(ctx, host+":"+port, grpc.WithInsecure(), grpc.WithBlock())
+		conn, err := h.grpcDialer(ctx, host+":"+strconv.Itoa(h.conf.HubToAgentPort), grpc.WithInsecure(), grpc.WithBlock())
 		if err != nil {
 			return nil, err
 		}

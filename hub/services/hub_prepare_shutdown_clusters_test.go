@@ -1,13 +1,14 @@
 package services_test
 
 import (
+	"errors"
+	"io/ioutil"
+	"os"
+
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
 	pb "gp_upgrade/idl"
 	"gp_upgrade/utils"
-
-	"errors"
-	"os"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
@@ -16,11 +17,9 @@ import (
 	"google.golang.org/grpc"
 )
 
-var _ = Describe("object count tests", func() {
+var _ = Describe("PrepareShutdownClusters", func() {
 	var (
-		listener                    pb.CliToHubServer
-		fakeShutdownClustersRequest *pb.PrepareShutdownClustersRequest
-		stdout                      *gbytes.Buffer
+		stdout *gbytes.Buffer
 	)
 
 	BeforeEach(func() {
@@ -31,68 +30,52 @@ var _ = Describe("object count tests", func() {
 		utils.System = utils.InitializeSystemFunctions()
 	})
 
-	Describe("PrepareShutdownClusters", func() {
-		Describe("ignoring the go routine", func() {
-			initialSetup := func() (pb.CliToHubServer, *pb.PrepareShutdownClustersRequest) {
-				reader := configutils.NewReader()
-				listener, shutdownHub := services.NewHub(&fakeStubClusterPair{}, &reader, grpc.DialContext)
-				defer shutdownHub()
+	// ignoring the go routine
+	It("returns successfully", func() {
+		utils.System.RemoveAll = func(s string) error { return nil }
+		utils.System.MkdirAll = func(s string, perm os.FileMode) error { return nil }
 
-				fakeShutdownClustersRequest := &pb.PrepareShutdownClustersRequest{OldBinDir: "/old/path/bin",
-					NewBinDir: "/new/path/bin"}
+		reader := configutils.NewReader()
+		dir, err := ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
+		conf := &services.HubConfig{
+			StateDir: dir,
+		}
+		hub := services.NewHub(&mockClusterPair{}, &reader, grpc.DialContext, conf)
 
-				return listener, fakeShutdownClustersRequest
-			}
+		_, err = hub.PrepareShutdownClusters(nil, &pb.PrepareShutdownClustersRequest{})
+		Expect(err).To(BeNil())
 
-			BeforeEach(func() {
-				listener, fakeShutdownClustersRequest = initialSetup()
-			})
+		Eventually(stdout.Contents()).Should(ContainSubstring("starting PrepareShutdownClusters()"))
+	})
 
-			It("returns successfully", func() {
-				utils.System.Getenv = func(s string) string { return "foo" }
-				utils.System.RemoveAll = func(s string) error { return nil }
-				utils.System.MkdirAll = func(s string, perm os.FileMode) error { return nil }
+	It("fails if the cluster configuration setup can't be loaded", func() {
+		utils.System.RemoveAll = func(s string) error { return nil }
+		utils.System.MkdirAll = func(s string, perm os.FileMode) error { return nil }
 
-				_, err := listener.PrepareShutdownClusters(nil, fakeShutdownClustersRequest)
-				Expect(err).To(BeNil())
-				Eventually(stdout.Contents()).Should(ContainSubstring("starting PrepareShutdownClusters()"))
-			})
+		reader := configutils.NewReader()
+		dir, err := ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
+		conf := &services.HubConfig{
+			StateDir: dir,
+		}
+		clusterPair := &mockClusterPair{
+			InitErr: errors.New("boom"),
+		}
+		hub := services.NewHub(clusterPair, &reader, grpc.DialContext, conf)
 
-			It("fails if home directory not available in environment", func() {
-				utils.System.Getenv = func(s string) string { return "" }
+		_, err = hub.PrepareShutdownClusters(nil, &pb.PrepareShutdownClustersRequest{})
+		Expect(err).To(MatchError("boom"))
 
-				_, err := listener.PrepareShutdownClusters(nil, fakeShutdownClustersRequest)
-				Expect(err).ToNot(BeNil())
-				Expect(err.Error()).To(ContainSubstring("home directory environment variable"))
-				Eventually(stdout.Contents()).Should(ContainSubstring("starting PrepareShutdownClusters()"))
-			})
-
-			It("fails if the cluster configuration setup can't be loaded", func() {
-				utils.System.Getenv = func(s string) string { return "foo" }
-				utils.System.RemoveAll = func(s string) error { return nil }
-				utils.System.MkdirAll = func(s string, perm os.FileMode) error { return nil }
-
-				reader := configutils.NewReader()
-				failingListener, shutdownHub := services.NewHub(&fakeFailingClusterPair{}, &reader, grpc.DialContext)
-				defer shutdownHub()
-
-				_, err := failingListener.PrepareShutdownClusters(nil, fakeShutdownClustersRequest)
-				Expect(err).ToNot(BeNil())
-				Expect(err.Error()).To(ContainSubstring("boom"))
-				Eventually(stdout.Contents()).Should(ContainSubstring("starting PrepareShutdownClusters()"))
-			})
-		})
+		Eventually(stdout.Contents()).Should(ContainSubstring("starting PrepareShutdownClusters()"))
 	})
 })
 
-type fakeStubClusterPair struct{}
+type mockClusterPair struct {
+	InitErr error
+}
 
-func (c *fakeStubClusterPair) StopEverything(str string)                 {}
-func (c *fakeStubClusterPair) Init(oldPath string, newPath string) error { return nil }
-
-type fakeFailingClusterPair struct{}
-
-func (c *fakeFailingClusterPair) StopEverything(str string) {}
-func (c *fakeFailingClusterPair) Init(oldPath string, newPath string) error {
-	return errors.New("boom")
+func (c *mockClusterPair) StopEverything(str string) {}
+func (c *mockClusterPair) Init(baseDir, oldPath, newPath string) error {
+	return c.InitErr
 }

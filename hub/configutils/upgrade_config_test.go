@@ -1,6 +1,9 @@
 package configutils_test
 
 import (
+	"io/ioutil"
+	"os"
+
 	"gp_upgrade/utils"
 
 	. "github.com/onsi/ginkgo"
@@ -45,9 +48,19 @@ const (
 )
 
 var _ = Describe("ConfigutilsReader", func() {
+	var dir string
+
+	BeforeEach(func() {
+		var err error
+		dir, err = ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
+	})
+
 	AfterEach(func() {
 		utils.System = utils.InitializeSystemFunctions()
+		os.RemoveAll(dir)
 	})
+
 	Describe("#UpgradeConfig", func() {
 		Describe("reads a configuration for both clusters", func() {
 			utils.System.ReadFile = func(filename string) ([]byte, error) {
@@ -58,7 +71,7 @@ var _ = Describe("ConfigutilsReader", func() {
 				}
 				return nil, nil
 			}
-			upgradeConfig, err := configutils.GetUpgradeConfig()
+			upgradeConfig, err := configutils.GetUpgradeConfig(dir)
 			It("reads both configs properly", func() {
 				Expect(err).To(BeNil())
 			})
@@ -91,7 +104,7 @@ var _ = Describe("ConfigutilsReader", func() {
 				}
 				return nil, nil
 			}
-			upgradeConfig, err := configutils.GetUpgradeConfig()
+			upgradeConfig, err := configutils.GetUpgradeConfig(dir)
 			It("reads both configs properly", func() {
 				Expect(err).To(BeNil())
 			})

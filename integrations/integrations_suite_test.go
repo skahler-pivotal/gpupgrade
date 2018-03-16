@@ -1,15 +1,14 @@
 package integrations_test
 
 import (
-	"gp_upgrade/cli/commanders"
-	"gp_upgrade/testutils"
-
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
-	"runtime"
+	"strconv"
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -25,9 +24,6 @@ var (
 	cliBinaryPath            string
 	hubBinaryPath            string
 	agentBinaryPath          string
-	sshd                     *exec.Cmd
-	fixture_path             string
-	sshdPath                 string
 	userPreviousPathVariable string
 )
 
@@ -57,32 +53,19 @@ var _ = BeforeSuite(func() {
 	// put the gp_upgrade_hub on the path don't need to rename the cli nor put
 	// it on the path: integration tests should use RunCommand() below
 	userPreviousPathVariable = os.Getenv("PATH")
-	os.Setenv("PATH", hubDirectoryPath+":"+userPreviousPathVariable)
+	os.Setenv("PATH", cliBinaryPath+":"+userPreviousPathVariable)
+})
 
-	sshdPath, err = Build("gp_upgrade/integrations/sshd")
-	Expect(err).NotTo(HaveOccurred())
-
-	/* Tests that need a hub up in a specific home directory should start their
-	* own. Other tests don't need a hub; don't start a fresh one automatically
-	* because it might be a waste. */
-	killHub()
-
-	_, this_file_path, _, _ := runtime.Caller(0)
-	fixture_path = path.Join(path.Dir(this_file_path), "fixtures")
+var _ = BeforeEach(func() {
+	killAll()
 })
 
 var _ = AfterSuite(func() {
 	/* for a developer who runs `make integration` and then goes on to manually
 	* test things out they should start their own up under a different HOME dir
 	* setting than what ginkgo has been using */
-	killHub()
-	killAllAgents()
-
+	killAll()
 	CleanupBuildArtifacts()
-})
-
-var _ = BeforeEach(func() {
-	testutils.EnsureHomeDirIsTempAndClean()
 })
 
 func runCommand(args ...string) *Session {
@@ -97,33 +80,38 @@ func runCommand(args ...string) *Session {
 	return session
 }
 
-func ensureHubIsUp() {
-	countHubs, _ := commanders.HowManyHubsRunning()
-
-	if countHubs == 0 {
-		cmd := exec.Command("gp_upgrade_hub", "&")
-		Start(cmd, GinkgoWriter, GinkgoWriter)
-	}
-}
-
-func killHub() {
-	//pkill gp_upgrade_ will kill both gp_upgrade_hub and gp_upgrade_agent
-	pkillCmd := exec.Command("pkill", "gp_upgrade_hub")
-	pkillCmd.Run()
-}
-
 func ensureAgentIsUp() {
-	killAllAgents()
+	killAll()
 
 	cmd := exec.Command("gp_upgrade_agent", "&")
 	Start(cmd, GinkgoWriter, GinkgoWriter)
 }
 
-func killAllAgents() {
-	pkillCmd := exec.Command("pkill", "gp_upgrade_agent")
+func killAll() {
+	pkillCmd := exec.Command("pkill", "-9", "gp_upgrade_*")
 	pkillCmd.Run()
 }
 
 func runStatusUpgrade() string {
 	return string(runCommand("status", "upgrade").Out.Contents())
+}
+
+func checkPortIsAvailable(port int) bool {
+	t := time.After(2 * time.Second)
+	select {
+	case <-t:
+		fmt.Println("timed out")
+		break
+	default:
+		cmd := exec.Command("/bin/sh", "-c", "'lsof | grep "+strconv.Itoa(port)+"'")
+		err := cmd.Run()
+		output, _ := cmd.CombinedOutput()
+		if _, ok := err.(*exec.ExitError); ok && string(output) == "" {
+			return true
+		}
+
+		time.Sleep(250 * time.Millisecond)
+	}
+
+	return false
 }

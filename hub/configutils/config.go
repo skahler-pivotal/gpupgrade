@@ -1,8 +1,7 @@
 package configutils
 
 import (
-	"os"
-	"path"
+	"path/filepath"
 )
 
 //"address": "briarwood",
@@ -27,18 +26,14 @@ type Segment struct {
 	Port     int    `json:"port"`
 }
 
-func GetConfigDir() string {
-	return path.Join(os.Getenv("HOME"), ".gp_upgrade")
+func GetConfigFilePath(base string) string {
+	return filepath.Join(base, "cluster_config.json")
 }
 
-func GetConfigFilePath() string {
-	return path.Join(GetConfigDir(), "cluster_config.json")
+func GetVersionFilePath(base string) string {
+	return filepath.Join(base, "cluster_version.json")
 }
 
-func GetVersionFilePath() string {
-	return path.Join(GetConfigDir(), "cluster_version.json")
-}
-
-func GetNewClusterConfigFilePath() string {
-	return path.Join(GetConfigDir(), "new_cluster_config.json")
+func GetNewClusterConfigFilePath(base string) string {
+	return filepath.Join(base, "new_cluster_config.json")
 }

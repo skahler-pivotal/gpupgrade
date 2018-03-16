@@ -2,12 +2,15 @@ package integrations_test
 
 import (
 	"fmt"
+	"gp_upgrade/hub/cluster"
 	"gp_upgrade/hub/configutils"
+	"gp_upgrade/hub/services"
 	"gp_upgrade/testutils"
 	"io/ioutil"
 	"os"
 
 	"github.com/onsi/gomega/gbytes"
+	"google.golang.org/grpc"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -16,9 +19,32 @@ import (
 
 // the `prepare start-hub` tests are currently in master_only_integration_test
 var _ = Describe("prepare", func() {
+	var (
+		dir string
+		hub *services.HubClient
+	)
 
 	BeforeEach(func() {
-		ensureHubIsUp()
+		var err error
+		dir, err = ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
+
+		conf := &services.HubConfig{
+			CliToHubPort:   7527,
+			HubToAgentPort: 6416,
+			StateDir:       dir,
+		}
+		reader := configutils.NewReader()
+		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, conf)
+
+		Expect(checkPortIsAvailable(7527)).To(BeTrue())
+		go hub.Start()
+	})
+
+	AfterEach(func() {
+		hub.Stop()
+		Expect(checkPortIsAvailable(7527)).To(BeTrue())
+		os.RemoveAll(dir)
 	})
 
 	/* This is demonstrating the limited implementation of init-cluster.
@@ -47,11 +73,11 @@ var _ = Describe("prepare", func() {
 			Eventually(statusSession).Should(gbytes.Say("COMPLETE - Initialize upgrade target cluster"))
 
 			// check file
-			_, err := ioutil.ReadFile(configutils.GetNewClusterConfigFilePath())
+			_, err := ioutil.ReadFile(configutils.GetNewClusterConfigFilePath(dir))
 			testutils.Check("cannot read file", err)
 
 			reader := configutils.NewReader()
-			reader.OfNewClusterConfig()
+			reader.OfNewClusterConfig(dir)
 			err = reader.Read()
 			testutils.Check("cannot read config", err)
 

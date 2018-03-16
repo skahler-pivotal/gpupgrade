@@ -3,7 +3,7 @@ package configutils_test
 import (
 	"encoding/json"
 	"gp_upgrade/testutils"
-	"os"
+	"io/ioutil"
 
 	"gp_upgrade/hub/configutils"
 	"regexp"
@@ -24,53 +24,53 @@ var _ = Describe("configutils reader", func() {
 	)
 
 	var (
-		saved_old_home string
-		subject        configutils.Reader
+		configReader   configutils.Reader
 		json_structure []map[string]interface{}
+		dir            string
 	)
 
 	BeforeEach(func() {
-		saved_old_home = os.Getenv("HOME")
-		testutils.EnsureHomeDirIsTempAndClean()
 		err := json.Unmarshal([]byte(expected_json), &json_structure)
 		Expect(err).NotTo(HaveOccurred())
-		subject = configutils.Reader{}
-		subject.OfOldClusterConfig()
-	})
 
-	AfterEach(func() {
+		dir, err = ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
 
-		os.Setenv("HOME", saved_old_home)
+		configReader = configutils.Reader{}
+		configReader.OfOldClusterConfig(dir)
 	})
 
 	Describe("#Read", func() {
 		It("reads a configuration", func() {
-			testutils.WriteSampleConfig()
-			err := subject.Read()
+			testutils.WriteSampleConfig(dir)
+			err := configReader.Read()
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(subject.GetPortForSegment(7)).ToNot(BeNil())
+			Expect(configReader.GetPortForSegment(7)).ToNot(BeNil())
 		})
+
 		It("returns an error if configutils cannot be read", func() {
-			err := subject.Read()
+			err := configReader.Read()
 			Expect(err).To(HaveOccurred())
 		})
+
 		It("returns list of hostnames", func() {
-			testutils.WriteSampleConfig()
-			err := subject.Read()
+			testutils.WriteSampleConfig(dir)
+			err := configReader.Read()
 			Expect(err).NotTo(HaveOccurred())
-			Expect(subject.GetHostnames()).Should(ContainElement("briarwood"))
-			Expect(subject.GetHostnames()).Should(ContainElement("aspen.pivotal"))
+			Expect(configReader.GetHostnames()).Should(ContainElement("briarwood"))
+			Expect(configReader.GetHostnames()).Should(ContainElement("aspen.pivotal"))
 		})
+
 		It("returns list of hostnames without duplicates", func() {
 			re := regexp.MustCompile("aspen.pivotal")
 			configWithDupe := re.ReplaceAllLiteralString(testutils.SAMPLE_JSON, "briarwood")
-			testutils.WriteProvidedConfig(configWithDupe)
-			err := subject.Read()
+			testutils.WriteProvidedConfig(dir, configWithDupe)
+			err := configReader.Read()
 			Expect(err).NotTo(HaveOccurred())
-			hostnames, err := subject.GetHostnames()
+			hostnames, err := configReader.GetHostnames()
 			Expect(len(hostnames)).Should(Equal(1))
-			Expect(subject.GetHostnames()).Should(ContainElement("briarwood"))
+			Expect(configReader.GetHostnames()).Should(ContainElement("briarwood"))
 		})
 	})
 })

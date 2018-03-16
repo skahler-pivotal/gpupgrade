@@ -1,12 +1,48 @@
 package integrations_test
 
 import (
+	"io/ioutil"
+	"os"
+
+	"gp_upgrade/hub/cluster"
+	"gp_upgrade/hub/configutils"
+	"gp_upgrade/hub/services"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"google.golang.org/grpc"
 )
 
 var _ = Describe("upgrade", func() {
+	var (
+		dir string
+		hub *services.HubClient
+	)
+
+	BeforeEach(func() {
+		var err error
+		dir, err = ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
+
+		conf := &services.HubConfig{
+			CliToHubPort:   7527,
+			HubToAgentPort: 6416,
+			StateDir:       dir,
+		}
+		reader := configutils.NewReader()
+		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, conf)
+
+		Expect(checkPortIsAvailable(7527)).To(BeTrue())
+		go hub.Start()
+	})
+
+	AfterEach(func() {
+		hub.Stop()
+		Expect(checkPortIsAvailable(7527)).To(BeTrue())
+		os.RemoveAll(dir)
+	})
+
 	Describe("share-oids", func() {
 		It("updates status PENDING to RUNNING then to COMPLETE if successful", func() {
 			runCommand("check", "config")

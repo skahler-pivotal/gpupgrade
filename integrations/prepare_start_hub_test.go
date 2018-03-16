@@ -1,10 +1,8 @@
 package integrations_test
 
 import (
-	"log"
 	"os"
 	"os/exec"
-	"path"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -12,55 +10,45 @@ import (
 )
 
 var _ = Describe("integration tests running on master only", func() {
+	BeforeEach(func() {
+		killCommand := exec.Command("pkill", "-9", "gp_upgrade_hub")
+		Start(killCommand, GinkgoWriter, GinkgoWriter)
 
-	Describe("gp_upgrade prepare", func() {
-		Describe("start-hub", func() {
-			basicHappyPathCheck := func() {
-				killHub()
-				gpUpgradeSession := runCommand("prepare", "start-hub")
-				Eventually(gpUpgradeSession).Should(Exit(0))
+		Expect(checkPortIsAvailable(7527)).To(BeTrue())
+	})
 
-				verificationCmd := exec.Command("bash", "-c", `ps -ef | grep -q "[g]p_upgrade_hub"`)
-				verificationSession, err := Start(verificationCmd, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
-				Eventually(verificationSession).Should(Exit(0))
-			}
+	AfterEach(func() {
+		killCommand := exec.Command("pkill", "-9", "gp_upgrade_hub")
+		Start(killCommand, GinkgoWriter, GinkgoWriter)
 
-			It("finds the right hub binary and starts a daemonized process", basicHappyPathCheck)
+		Expect(checkPortIsAvailable(7527)).To(BeTrue())
+	})
 
-			It("works even if run from the same directory as where the binaries are", func() {
-				// because we don't want the grep to shell expand
-				hubDirectoryPath := path.Dir(hubBinaryPath)
-				previousDirectory, err := os.Getwd()
-				if err != nil {
-					log.Fatal(err)
-				}
-				defer os.Chdir(previousDirectory)
+	Describe("start-hub", func() {
+		It("finds the right hub binary and starts a daemonized process", func() {
+			gpUpgradeSession := runCommand("prepare", "start-hub")
+			Eventually(gpUpgradeSession).Should(Exit(0))
 
-				err = os.Chdir(hubDirectoryPath)
-				if err != nil {
-					log.Fatal(err)
-				}
+			verificationCmd := exec.Command("bash", "-c", `ps -ef | grep -q "[g]p_upgrade_hub"`)
+			verificationSession, err := Start(verificationCmd, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+			Eventually(verificationSession).Should(Exit(0))
+		})
 
-				basicHappyPathCheck()
-			})
+		It("returns error if gp_upgrade_hub is already running", func() {
+			firstSession := runCommand("prepare", "start-hub")
+			Eventually(firstSession).Should(Exit(0))
+			//second start should return error
+			secondSession := runCommand("prepare", "start-hub")
+			Eventually(secondSession).Should(Exit(1))
+		})
 
-			It("returns error if gp_upgrade_hub is already running", func() {
-				//start a hub if necessary
-				ensureHubIsUp()
-
-				//second start should return error
-				secondSession := runCommand("prepare", "start-hub")
-				Eventually(secondSession).Should(Exit(1))
-			})
-
-			It("errs out if doesn't find gp_upgrade_hub on the path", func() {
-				origPath := os.Getenv("PATH")
-				os.Setenv("PATH", "")
-				gpUpgradeSession := runCommand("prepare", "start-hub")
-				Eventually(gpUpgradeSession).ShouldNot(Exit(0))
-				os.Setenv("PATH", origPath)
-			})
+		It("errs out if doesn't find gp_upgrade_hub on the path", func() {
+			origPath := os.Getenv("PATH")
+			os.Setenv("PATH", "")
+			gpUpgradeSession := runCommand("prepare", "start-hub")
+			Eventually(gpUpgradeSession).ShouldNot(Exit(0))
+			os.Setenv("PATH", origPath)
 		})
 	})
 })

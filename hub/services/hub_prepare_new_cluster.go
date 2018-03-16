@@ -10,7 +10,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func (s *HubClient) PrepareInitCluster(ctx context.Context,
+func (h *HubClient) PrepareInitCluster(ctx context.Context,
 	in *pb.PrepareInitClusterRequest) (*pb.PrepareInitClusterReply, error) {
 
 	gplog.Info("starting PrepareInitCluster()")
@@ -27,7 +27,7 @@ func (s *HubClient) PrepareInitCluster(ctx context.Context,
 		mode, status, port, hostname, address, datadir
 		from gp_segment_configuration`
 	err = SaveQueryResultToJSON(databaseHandler, configQuery,
-		configutils.NewWriter(configutils.GetNewClusterConfigFilePath()))
+		configutils.NewWriter(h.conf.StateDir, configutils.GetNewClusterConfigFilePath(h.conf.StateDir)))
 	if err != nil {
 		gplog.Error(err.Error())
 		return nil, err

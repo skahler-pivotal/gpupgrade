@@ -1,9 +1,10 @@
 package configutils
 
 import (
+	pb "gp_upgrade/idl"
+
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"google.golang.org/grpc"
-	pb "gp_upgrade/idl"
 )
 
 const (
@@ -17,9 +18,9 @@ type ClientAndHostname struct {
 	Hostname string
 }
 
-func GetClients() ([]ClientAndHostname, error) {
+func GetClients(baseDir string) ([]ClientAndHostname, error) {
 	reader := NewReader()
-	reader.OfOldClusterConfig()
+	reader.OfOldClusterConfig(baseDir)
 	hostnames, err := reader.GetHostnames()
 	if err != nil {
 		return nil, err

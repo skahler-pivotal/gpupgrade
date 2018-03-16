@@ -19,6 +19,7 @@ type MockAgentServer struct {
 }
 
 func NewMockAgentServer() *MockAgentServer {
+	// TODO refactor to return the port that we're listening on
 	lis, err := net.Listen("tcp", "localhost:6416")
 	if err != nil {
 		panic(err)

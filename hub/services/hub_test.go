@@ -29,9 +29,13 @@ var _ = Describe("HubClient", func() {
 		agentA.Stop()
 	})
 
-	It("closes open connections when shutting down", func() {
+	It("closes open connections when shutting down", func(done Done) {
+		defer close(done)
 		reader.hostnames = []string{"localhost"}
-		hub, shutdown := services.NewHub(nil, reader, grpc.DialContext)
+		hub := services.NewHub(nil, reader, grpc.DialContext, &services.HubConfig{
+			HubToAgentPort: 6416,
+		})
+		go hub.Start()
 
 		By("creating connections")
 		conns, err := hub.AgentConns()
@@ -40,7 +44,7 @@ var _ = Describe("HubClient", func() {
 		Eventually(func() connectivity.State { return conns[0].Conn.GetState() }).Should(Equal(connectivity.Ready))
 
 		By("closing the connections")
-		shutdown()
+		hub.Stop()
 		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(func() connectivity.State { return conns[0].Conn.GetState() }).Should(Equal(connectivity.Shutdown))
@@ -48,8 +52,9 @@ var _ = Describe("HubClient", func() {
 
 	It("retrieves the agent connections from the config file reader", func() {
 		reader.hostnames = []string{"localhost", "localhost"}
-		hub, shutdownHub := services.NewHub(nil, reader, grpc.DialContext)
-		defer shutdownHub()
+		hub := services.NewHub(nil, reader, grpc.DialContext, &services.HubConfig{
+			HubToAgentPort: 6416,
+		})
 
 		conns, err := hub.AgentConns()
 		Expect(err).ToNot(HaveOccurred())
@@ -63,8 +68,9 @@ var _ = Describe("HubClient", func() {
 	It("saves grpc connections for future calls", func() {
 		reader.hostnames = []string{"localhost"}
 
-		hub, shutdownHub := services.NewHub(nil, reader, grpc.DialContext)
-		defer shutdownHub()
+		hub := services.NewHub(nil, reader, grpc.DialContext, &services.HubConfig{
+			HubToAgentPort: 6416,
+		})
 
 		newConns, err := hub.AgentConns()
 		Expect(err).ToNot(HaveOccurred())
@@ -79,8 +85,9 @@ var _ = Describe("HubClient", func() {
 
 	It("returns an error if any connections have non-ready states", func() {
 		reader.hostnames = []string{"localhost"}
-		hub, shutdownHub := services.NewHub(nil, reader, grpc.DialContext)
-		defer shutdownHub()
+		hub := services.NewHub(nil, reader, grpc.DialContext, &services.HubConfig{
+			HubToAgentPort: 6416,
+		})
 
 		conns, err := hub.AgentConns()
 		Expect(err).ToNot(HaveOccurred())
@@ -96,8 +103,9 @@ var _ = Describe("HubClient", func() {
 
 	It("returns an error if any connections have non-ready states when first dialing", func() {
 		reader.hostnames = []string{"localhost"}
-		hub, shutdownHub := services.NewHub(nil, reader, grpc.DialContext)
-		defer shutdownHub()
+		hub := services.NewHub(nil, reader, grpc.DialContext, &services.HubConfig{
+			HubToAgentPort: 6416,
+		})
 
 		agentA.Stop()
 
@@ -109,8 +117,9 @@ var _ = Describe("HubClient", func() {
 		agentA.Stop()
 
 		reader.hostnames = []string{"example"}
-		hub, shutdownHub := services.NewHub(nil, reader, grpc.DialContext)
-		defer shutdownHub()
+		hub := services.NewHub(nil, reader, grpc.DialContext, &services.HubConfig{
+			HubToAgentPort: 6416,
+		})
 
 		_, err := hub.AgentConns()
 		Expect(err).To(HaveOccurred())
@@ -118,8 +127,7 @@ var _ = Describe("HubClient", func() {
 
 	It("returns an error if the config reader fails", func() {
 		reader.hostnamesErr = errors.New("error occurred while getting hostnames")
-		hub, shutdownHub := services.NewHub(nil, reader, nil)
-		defer shutdownHub()
+		hub := services.NewHub(nil, reader, nil, &services.HubConfig{})
 
 		_, err := hub.AgentConns()
 		Expect(err).To(HaveOccurred())
@@ -144,4 +152,4 @@ func (m *spyReader) GetSegmentConfiguration() configutils.SegmentConfiguration {
 	return m.segmentConfiguration
 }
 
-func (m *spyReader) OfOldClusterConfig() {}
+func (m *spyReader) OfOldClusterConfig(string) {}

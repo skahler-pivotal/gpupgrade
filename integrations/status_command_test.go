@@ -1,9 +1,16 @@
 package integrations_test
 
 import (
+	"io/ioutil"
+	"os"
+
+	"gp_upgrade/hub/cluster"
+	"gp_upgrade/hub/configutils"
+	"gp_upgrade/hub/services"
 	"gp_upgrade/testutils"
 
 	"github.com/onsi/gomega/gbytes"
+	"google.golang.org/grpc"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -11,9 +18,36 @@ import (
 )
 
 var _ = Describe("status", func() {
+	var (
+		dir string
+		hub *services.HubClient
+	)
+
+	BeforeEach(func() {
+		var err error
+		dir, err = ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
+
+		conf := &services.HubConfig{
+			CliToHubPort:   7527,
+			HubToAgentPort: 6416,
+			StateDir:       dir,
+		}
+		reader := configutils.NewReader()
+		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, conf)
+
+		Expect(checkPortIsAvailable(7527)).To(BeTrue())
+		go hub.Start()
+	})
+
+	AfterEach(func() {
+		hub.Stop()
+		Expect(checkPortIsAvailable(7527)).To(BeTrue())
+		os.RemoveAll(dir)
+	})
+
 	Describe("conversion", func() {
 		It("Displays status information for all segments", func() {
-			ensureHubIsUp()
 			ensureAgentIsUp()
 
 			config := `[{
@@ -27,7 +61,7 @@ var _ = Describe("status", func() {
   			  "hostname": "localhost"
   			}]`
 
-			testutils.WriteProvidedConfig(config)
+			testutils.WriteProvidedConfig(dir, config)
 
 			statusSession := runCommand("status", "conversion")
 			Eventually(statusSession).Should(Exit(0))
@@ -39,7 +73,6 @@ var _ = Describe("status", func() {
 
 	Describe("upgrade", func() {
 		It("Reports some demo status from the hub", func() {
-			ensureHubIsUp()
 			statusSession := runCommand("status", "upgrade")
 			Eventually(statusSession).Should(Exit(0))
 
@@ -49,8 +82,8 @@ var _ = Describe("status", func() {
 
 		// ultimately, the status command isn't uniquely responsible for the cases where the hub is down
 		// consider moving this case alongside the `prepare start-hub` integration tests
-		It("Explodes if the hub isn't up", func() {
-			killHub()
+		XIt("Explodes if the hub isn't up", func() {
+			//killHub()
 			statusSession := runCommand("status", "upgrade")
 			Eventually(statusSession.Err).Should(gbytes.Say("Unable to connect to hub:"))
 			Eventually(statusSession).Should(Exit(1))

@@ -9,15 +9,15 @@ type UpgradeConfig struct {
 	newClusterReader Reader
 }
 
-func GetUpgradeConfig() (UpgradeConfig, error) {
+func GetUpgradeConfig(baseDir string) (UpgradeConfig, error) {
 	oldConfReader := Reader{}
-	oldConfReader.OfOldClusterConfig()
+	oldConfReader.OfOldClusterConfig(baseDir)
 	err := oldConfReader.Read()
 	if err != nil {
 		return UpgradeConfig{}, err
 	}
 	newConfReader := Reader{}
-	newConfReader.OfNewClusterConfig()
+	newConfReader.OfNewClusterConfig(baseDir)
 	err = newConfReader.Read()
 	if err != nil {
 		return UpgradeConfig{}, err

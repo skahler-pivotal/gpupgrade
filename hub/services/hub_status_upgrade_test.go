@@ -22,9 +22,9 @@ import (
 
 var _ = Describe("status upgrade", func() {
 	var (
-		listener                 *services.HubClient
+		hub                      *services.HubClient
 		fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
-		shutdownHub              func()
+		dir                      string
 	)
 
 	BeforeEach(func() {
@@ -33,27 +33,30 @@ var _ = Describe("status upgrade", func() {
 		utils.System = utils.InitializeSystemFunctions()
 
 		reader := configutils.NewReader()
-		listener, shutdownHub = services.NewHub(nil, &reader, grpc.DialContext)
+
+		var err error
+		dir, err = ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
+		conf := &services.HubConfig{
+			StateDir: dir,
+		}
+		hub = services.NewHub(nil, &reader, grpc.DialContext, conf)
 	})
 
 	AfterEach(func() {
-		shutdownHub()
+		os.RemoveAll(dir)
+		utils.System = utils.InitializeSystemFunctions()
 	})
 
 	It("responds with the statuses of the steps based on files on disk", func() {
-		dir, err := ioutil.TempDir("", "")
-		Expect(err).ToNot(HaveOccurred())
-		defer os.RemoveAll(dir)
-		services.HomeDir = dir
-
 		setStateFile(dir, "seginstall", "completed")
 		setStateFile(dir, "share-oids", "failed")
 
-		f, err := os.Create(filepath.Join(dir, ".gp_upgrade", "cluster_config.json"))
+		f, err := os.Create(filepath.Join(dir, "cluster_config.json"))
 		Expect(err).ToNot(HaveOccurred())
 		f.Close()
 
-		resp, err := listener.StatusUpgrade(nil, &pb.StatusUpgradeRequest{})
+		resp, err := hub.StatusUpgrade(nil, &pb.StatusUpgradeRequest{})
 		Expect(err).To(BeNil())
 
 		Expect(resp.ListOfUpgradeStepStatuses).To(ConsistOf(
@@ -87,7 +90,7 @@ var _ = Describe("status upgrade", func() {
 	// TODO: Get rid of these tests once full rewritten test coverage exists
 	Describe("creates a reply", func() {
 		It("sends status messages under good condition", func() {
-			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
+			formulatedResponse, err := hub.StatusUpgrade(nil, fakeStatusUpgradeRequest)
 			Expect(err).To(BeNil())
 			countOfStatuses := len(formulatedResponse.GetListOfUpgradeStepStatuses())
 			Expect(countOfStatuses).ToNot(BeZero())
@@ -100,7 +103,7 @@ var _ = Describe("status upgrade", func() {
 
 			var fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
 
-			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
+			formulatedResponse, err := hub.StatusUpgrade(nil, fakeStatusUpgradeRequest)
 			Expect(err).To(BeNil())
 
 			stepStatuses := formulatedResponse.GetListOfUpgradeStepStatuses()
@@ -129,7 +132,7 @@ var _ = Describe("status upgrade", func() {
 				return nil, nil
 			}
 			pollStatusUpgrade := func() pb.StepStatus {
-				response, _ := listener.StatusUpgrade(nil, &pb.StatusUpgradeRequest{})
+				response, _ := hub.StatusUpgrade(nil, &pb.StatusUpgradeRequest{})
 
 				stepStatuses := response.GetListOfUpgradeStepStatuses()
 
@@ -153,7 +156,7 @@ var _ = Describe("status upgrade", func() {
 				return true
 			}
 
-			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
+			formulatedResponse, err := hub.StatusUpgrade(nil, fakeStatusUpgradeRequest)
 			Expect(err).To(BeNil())
 
 			stepStatuses := formulatedResponse.GetListOfUpgradeStepStatuses()
@@ -176,7 +179,7 @@ var _ = Describe("status upgrade", func() {
 				return []byte("123"), nil
 			}
 
-			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
+			formulatedResponse, err := hub.StatusUpgrade(nil, fakeStatusUpgradeRequest)
 			Expect(err).To(BeNil())
 
 			stepStatuses := formulatedResponse.GetListOfUpgradeStepStatuses()
@@ -223,7 +226,7 @@ var _ = Describe("status upgrade", func() {
 
 			}
 
-			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
+			formulatedResponse, err := hub.StatusUpgrade(nil, fakeStatusUpgradeRequest)
 			Expect(err).To(BeNil())
 
 			stepStatuses := formulatedResponse.GetListOfUpgradeStepStatuses()
@@ -262,7 +265,7 @@ var _ = Describe("status upgrade", func() {
 				return os.Open(filename)
 
 			}
-			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
+			formulatedResponse, err := hub.StatusUpgrade(nil, fakeStatusUpgradeRequest)
 			Expect(err).To(BeNil())
 
 			stepStatuses := formulatedResponse.GetListOfUpgradeStepStatuses()
@@ -280,7 +283,7 @@ var _ = Describe("status upgrade", func() {
 			utils.System.Stat = func(filename string) (os.FileInfo, error) {
 				return nil, errors.New("cannot find file") /* This is normally a PathError */
 			}
-			stepStatus, err := services.GetPrepareNewClusterConfigStatus()
+			stepStatus, err := services.GetPrepareNewClusterConfigStatus(dir)
 			Expect(err).To(BeNil()) // convert file-not-found errors into stepStatus
 			Expect(stepStatus.Step).To(Equal(pb.UpgradeSteps_PREPARE_INIT_CLUSTER))
 			Expect(stepStatus.Status).To(Equal(pb.StepStatus_PENDING))
@@ -291,7 +294,7 @@ var _ = Describe("status upgrade", func() {
 				return nil, nil
 			}
 
-			stepStatus, err := services.GetPrepareNewClusterConfigStatus()
+			stepStatus, err := services.GetPrepareNewClusterConfigStatus(dir)
 			Expect(err).To(BeNil())
 			Expect(stepStatus.Step).To(Equal(pb.UpgradeSteps_PREPARE_INIT_CLUSTER))
 			Expect(stepStatus.Status).To(Equal(pb.StepStatus_COMPLETE))
@@ -302,7 +305,7 @@ var _ = Describe("status upgrade", func() {
 
 	Describe("Status of ShutdownClusters", func() {
 		It("We're sending the status of shutdown clusters", func() {
-			formulatedResponse, err := listener.StatusUpgrade(nil, fakeStatusUpgradeRequest)
+			formulatedResponse, err := hub.StatusUpgrade(nil, fakeStatusUpgradeRequest)
 			Expect(err).To(BeNil())
 			countOfStatuses := len(formulatedResponse.GetListOfUpgradeStepStatuses())
 			Expect(countOfStatuses).ToNot(BeZero())
@@ -318,10 +321,10 @@ var _ = Describe("status upgrade", func() {
 })
 
 func setStateFile(dir string, step string, state string) {
-	err := os.MkdirAll(filepath.Join(dir, ".gp_upgrade", step), os.ModePerm)
+	err := os.MkdirAll(filepath.Join(dir, step), os.ModePerm)
 	Expect(err).ToNot(HaveOccurred())
 
-	f, err := os.Create(filepath.Join(dir, ".gp_upgrade", step, state))
+	f, err := os.Create(filepath.Join(dir, step, state))
 	Expect(err).ToNot(HaveOccurred())
 	f.Close()
 }
