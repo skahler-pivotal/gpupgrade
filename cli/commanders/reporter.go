@@ -61,16 +61,18 @@ func (r *Reporter) OverallUpgradeStatus() error {
 }
 
 func (r *Reporter) OverallConversionStatus() error {
-	status, err := r.client.StatusConversion(context.Background(), &pb.StatusConversionRequest{})
+	conversionStatus, err := r.client.StatusConversion(context.Background(), &pb.StatusConversionRequest{})
 	if err != nil {
 		return errors.New("hub returned an error when checking overall conversion status: " + err.Error())
 	}
 
-	if status.GetConversionStatus() == "" {
-		return errors.New("Received no conversion status from hub")
+	if len(conversionStatus.GetConversionStatuses()) == 0 {
+		return errors.New("Received no list of conversion statuses from hub")
 	}
 
-	gplog.Info(status.GetConversionStatus())
+	for _, status := range conversionStatus.GetConversionStatuses() {
+		gplog.Info(status)
+	}
 
 	return nil
 }

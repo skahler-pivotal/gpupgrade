@@ -2,10 +2,10 @@ package services
 
 import (
 	"fmt"
-	"strings"
+
+	pb "gp_upgrade/idl"
 
 	"golang.org/x/net/context"
-	pb "gp_upgrade/idl"
 )
 
 func (h *HubClient) StatusConversion(ctx context.Context, in *pb.StatusConversionRequest) (*pb.StatusConversionReply, error) {
@@ -38,6 +38,6 @@ func (h *HubClient) StatusConversion(ctx context.Context, in *pb.StatusConversio
 	}
 
 	return &pb.StatusConversionReply{
-		ConversionStatus: strings.Join(statuses, "\n"),
+		ConversionStatuses: statuses,
 	}, nil
 }

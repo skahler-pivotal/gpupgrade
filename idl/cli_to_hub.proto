@@ -27,7 +27,7 @@ message PingReply {}
 message StatusConversionRequest {}
 
 message StatusConversionReply {
-    string ConversionStatus = 1;
+    repeated string conversionStatuses = 1;
 }
 
 message StatusUpgradeRequest {}

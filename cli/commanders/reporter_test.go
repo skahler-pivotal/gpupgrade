@@ -37,16 +37,16 @@ var _ = Describe("Reporter", func() {
 
 	Describe("StatusConversion", func() {
 		It("prints cluster status returned from hub", func() {
-			status := "cluster status"
+			status := []string{"cluster status"}
 			spyClient.statusConversionReply = &pb.StatusConversionReply{
-				ConversionStatus: status,
+				ConversionStatuses: status,
 			}
 
 			err := reporter.OverallConversionStatus()
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(spyClient.statusConversionCount).To(Equal(1))
-			Expect(testLogFile.Contents()).To(ContainSubstring(status))
+			Expect(testLogFile.Contents()).To(ContainSubstring("cluster status"))
 		})
 
 		It("returns an error upon a failure", func() {

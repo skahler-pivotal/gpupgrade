@@ -2,8 +2,6 @@ package services_test
 
 import (
 	"errors"
-	"strings"
-
 	"gp_upgrade/testutils"
 	"gp_upgrade/utils"
 
@@ -66,8 +64,7 @@ var _ = Describe("hub", func() {
 		status, err := hubClient.StatusConversion(nil, &pb.StatusConversionRequest{})
 		Expect(err).ToNot(HaveOccurred())
 
-		statusList := strings.Split(status.GetConversionStatus(), "\n")
-		Expect(statusList).To(Equal([]string{"status", "status", "status", "status"}))
+		Expect(status.GetConversionStatuses()).To(Equal([]string{"status", "status", "status", "status"}))
 		Expect(agentA.StatusConversionRequest.GetHostname()).To(Equal("localhost"))
 		Expect(agentA.StatusConversionRequest.GetSegments()).To(ConsistOf([]*pb.SegmentInfo{
 			{
