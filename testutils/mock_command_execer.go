@@ -58,11 +58,13 @@ func (c *FakeCommandExecer) Exec(command string, args ...string) helpers.Command
 }
 
 type FakeCommand struct {
-	Err error
-	Out []byte
+	numInvocations int
+	Err            error
+	Out            []byte
 }
 
 func (c *FakeCommand) Output() ([]byte, error) {
+	c.numInvocations++
 	return c.Out, c.Err
 }
 
@@ -76,4 +78,8 @@ func (c *FakeCommand) Start() error {
 
 func (c *FakeCommand) Run() error {
 	return c.Err
+}
+
+func (c *FakeCommand) GetNumInvocations() int {
+	return c.numInvocations
 }

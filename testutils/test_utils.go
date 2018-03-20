@@ -3,6 +3,9 @@ package testutils
 import (
 	"fmt"
 	"gp_upgrade/hub/configutils"
+	"gp_upgrade/hub/services"
+	pb "gp_upgrade/idl"
+
 	"io/ioutil"
 	"os"
 )
@@ -51,4 +54,16 @@ func WriteProvidedConfig(base, jsonConfig string) {
 	Check("cannot create sample dir", err)
 	err = ioutil.WriteFile(configutils.GetConfigFilePath(base), []byte(jsonConfig), 0600)
 	Check("cannot write sample configutils", err)
+}
+
+func GetUpgradeStatus(hub *services.HubClient, step pb.UpgradeSteps) (pb.StepStatus, error) {
+	reply, err := hub.StatusUpgrade(nil, &pb.StatusUpgradeRequest{})
+	stepStatuses := reply.GetListOfUpgradeStepStatuses()
+	var stepStatusSaved *pb.UpgradeStepStatus
+	for _, stepStatus := range stepStatuses {
+		if stepStatus.GetStep() == step {
+			stepStatusSaved = stepStatus
+		}
+	}
+	return stepStatusSaved.GetStatus(), err
 }
