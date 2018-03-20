@@ -52,7 +52,7 @@ sshd_build :
 integration:
 		-gpstop -ai
 		gpstart -a
-		ginkgo -v -r -randomizeAllSpecs -race integrations
+		ginkgo -r -randomizeAllSpecs -race integrations
 
 test : format lint unit integration
 

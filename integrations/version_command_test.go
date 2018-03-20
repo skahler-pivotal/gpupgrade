@@ -10,6 +10,7 @@ import (
 	"gp_upgrade/hub/cluster"
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
+	"gp_upgrade/testutils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,8 +21,9 @@ import (
 
 var _ = Describe("version command", func() {
 	var (
-		dir string
-		hub *services.HubClient
+		dir           string
+		hub           *services.HubClient
+		commandExecer *testutils.FakeCommandExecer
 	)
 
 	BeforeEach(func() {
@@ -35,7 +37,11 @@ var _ = Describe("version command", func() {
 			StateDir:       dir,
 		}
 		reader := configutils.NewReader()
-		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, conf)
+
+		commandExecer = &testutils.FakeCommandExecer{}
+		commandExecer.SetOutput(&testutils.FakeCommand{})
+
+		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
 
 		Expect(checkPortIsAvailable(7527)).To(BeTrue())
 		go hub.Start()

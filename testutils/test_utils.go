@@ -5,10 +5,6 @@ import (
 	"gp_upgrade/hub/configutils"
 	"io/ioutil"
 	"os"
-
-	"gp_upgrade/hub/upgradestatus"
-	"path"
-	"path/filepath"
 )
 
 const (
@@ -46,20 +42,6 @@ func Check(msg string, e error) {
 	}
 }
 
-func EnsureHomeDirIsTempAndClean() {
-	configDir := path.Join(TempHomeDir, ".gp_upgrade")
-	if _, err := os.Stat(configDir); !os.IsNotExist(err) {
-		err = os.Chmod(configDir, 0700)
-		Check("cannot change mod", err)
-	}
-	err := os.RemoveAll(TempHomeDir)
-	Check("cannot remove temp home", err)
-	err = os.MkdirAll(TempHomeDir, 0700)
-	Check("cannot create home temp dir", err)
-	err = os.Setenv("HOME", TempHomeDir)
-	Check("cannot set home dir", err)
-}
-
 func WriteSampleConfig(base string) {
 	WriteProvidedConfig(base, SAMPLE_JSON)
 }
@@ -69,10 +51,4 @@ func WriteProvidedConfig(base, jsonConfig string) {
 	Check("cannot create sample dir", err)
 	err = ioutil.WriteFile(configutils.GetConfigFilePath(base), []byte(jsonConfig), 0600)
 	Check("cannot write sample configutils", err)
-}
-
-func CleanUpDirectory(directory string) {
-	gpUpgradeDir := filepath.Join(os.Getenv("HOME"), ".gp_upgrade")
-	c := upgradestatus.NewChecklistManager(gpUpgradeDir)
-	c.ResetStateDir(directory)
 }

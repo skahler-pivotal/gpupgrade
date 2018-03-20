@@ -50,7 +50,7 @@ var _ = Describe("hub", func() {
 			HubToAgentPort: 6416,
 		}
 
-		hubClient = services.NewHub(nil, reader, grpc.DialContext, conf)
+		hubClient = services.NewHub(nil, reader, grpc.DialContext, nil, conf)
 	})
 
 	AfterEach(func() {

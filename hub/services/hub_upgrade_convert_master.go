@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"gp_upgrade/hub/configutils"
 	pb "gp_upgrade/idl"
-	"gp_upgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"golang.org/x/net/context"
@@ -19,11 +19,10 @@ var (
 )
 
 func (h *HubClient) UpgradeConvertMaster(ctx context.Context, in *pb.UpgradeConvertMasterRequest) (*pb.UpgradeConvertMasterReply, error) {
-
 	gplog.Info("Starting master upgrade")
 	//need to remember where we ran, i.e. pathToUpgradeWD, b/c pg_upgrade generates some files that need to be copied to QE nodes later
 	//this is also where the 1.done, 2.inprogress ... files will be written
-	err := ConvertMaster(h.conf.StateDir, "pg_upgrade", in.OldBinDir, in.NewBinDir)
+	err := h.ConvertMaster(h.conf.StateDir, "pg_upgrade", in.OldBinDir, in.NewBinDir)
 	if err != nil {
 		gplog.Error("%v", err)
 		return nil, err
@@ -32,7 +31,7 @@ func (h *HubClient) UpgradeConvertMaster(ctx context.Context, in *pb.UpgradeConv
 	return &pb.UpgradeConvertMasterReply{}, nil
 }
 
-func ConvertMaster(baseDir, upgradeFileName, oldBinDir, newBinDir string) error {
+func (h *HubClient) ConvertMaster(baseDir, upgradeFileName, oldBinDir, newBinDir string) error {
 	pathToUpgradeWD := filepath.Join(baseDir, upgradeFileName)
 	err := os.Mkdir(pathToUpgradeWD, 0700)
 	if err != nil {
@@ -51,11 +50,12 @@ func ConvertMaster(baseDir, upgradeFileName, oldBinDir, newBinDir string) error 
 		pathToUpgradeWD, newBinDir+"/pg_upgrade", oldBinDir, oldMasterDataDir, newBinDir, newMasterDataDir)
 
 	//export ENV VARS instead of passing on cmd line?
-	upgradeCommand := utils.System.ExecCommand("bash", "-c", upgradeCmdArgs)
-
-	// redirect both stdout and stderr to the log file
-	upgradeCommand.Stdout = f
-	upgradeCommand.Stderr = f
+	upgradeCommand := h.commandExecer("bash", "-c", upgradeCmdArgs)
+	cmd, ok := upgradeCommand.(*exec.Cmd)
+	if ok {
+		cmd.Stdout = f
+		cmd.Stderr = f
+	}
 
 	//TODO check the rc on this? keep a pid?
 	err = upgradeCommand.Start()
@@ -63,6 +63,7 @@ func ConvertMaster(baseDir, upgradeFileName, oldBinDir, newBinDir string) error 
 		gplog.Error("An error occured: %v", err)
 		return err
 	}
+
 	gplog.Info("Upgrade command: %v", upgradeCommand)
 	gplog.Info("Found no errors when starting the upgrade")
 

@@ -16,6 +16,7 @@ var _ = Describe("upgradestatus/ChecklistManager", func() {
 	AfterEach(func() {
 		utils.System = utils.InitializeSystemFunctions()
 	})
+
 	Describe("MarkInProgress", func() {
 		It("Leaves an in-progress file in the state dir", func() {
 			tempdir, _ := ioutil.TempDir("", "")
@@ -124,9 +125,6 @@ var _ = Describe("upgradestatus/ChecklistManager", func() {
 	})
 
 	Describe("MarkComplete", func() {
-		BeforeEach(func() {
-			utils.InitializeSystemFunctions()
-		})
 		It("errors if in.progress file can't be removed", func() {
 			utils.System.Remove = func(string) error {
 				return errors.New("remove failed")

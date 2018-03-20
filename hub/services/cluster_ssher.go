@@ -2,9 +2,10 @@ package services
 
 import (
 	"fmt"
-	"gp_upgrade/utils"
 	"os"
 	"path/filepath"
+
+	"gp_upgrade/helpers"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
@@ -12,6 +13,7 @@ import (
 type ClusterSsher struct {
 	checklistWriter ChecklistWriter
 	AgentPinger     AgentPinger
+	commandExecer   helpers.CommandExecer
 }
 
 type ChecklistWriter interface {
@@ -25,8 +27,12 @@ type AgentPinger interface {
 	PingPollAgents() error
 }
 
-func NewClusterSsher(cw ChecklistWriter, ap AgentPinger) *ClusterSsher {
-	return &ClusterSsher{checklistWriter: cw, AgentPinger: ap}
+func NewClusterSsher(cw ChecklistWriter, ap AgentPinger, commandExecer helpers.CommandExecer) *ClusterSsher {
+	return &ClusterSsher{
+		checklistWriter: cw,
+		AgentPinger:     ap,
+		commandExecer:   commandExecer,
+	}
 }
 
 func (c *ClusterSsher) VerifySoftware(hostnames []string) {
@@ -71,7 +77,7 @@ func (c *ClusterSsher) remoteExec(hostnames []string, statedir string, command [
 	for _, hostname := range hostnames {
 		sshArgs := []string{"-o", "StrictHostKeyChecking=no", hostname}
 		sshArgs = append(sshArgs, command...)
-		output, err := utils.System.ExecCmdCombinedOutput("ssh", sshArgs...)
+		output, err := c.commandExecer("ssh", sshArgs...).CombinedOutput()
 		if err != nil {
 			errText := "Couldn't run %s on %s:"
 			if output != nil {

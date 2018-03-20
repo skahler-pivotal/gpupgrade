@@ -23,15 +23,16 @@ type Reporter struct {
 //logger.Info("PENDING - Validate cluster start")
 //logger.Info("PENDING - Adjust upgrade cluster ports")
 var UpgradeStepsMessage = map[pb.UpgradeSteps]string{
-	pb.UpgradeSteps_UNKNOWN_STEP:         "- Unknown step",
-	pb.UpgradeSteps_CHECK_CONFIG:         "- Configuration Check",
-	pb.UpgradeSteps_SEGINSTALL:           "- Install binaries on segments",
-	pb.UpgradeSteps_PREPARE_INIT_CLUSTER: "- Initialize upgrade target cluster",
-	pb.UpgradeSteps_PREPARE_START_AGENTS: "- Agents Started on Cluster",
-	pb.UpgradeSteps_MASTERUPGRADE:        "- Run pg_upgrade on master",
-	pb.UpgradeSteps_STOPPED_CLUSTER:      "- Shutdown clusters",
-	pb.UpgradeSteps_CONVERSION:           "- Run pg_upgrade on segments",
-	pb.UpgradeSteps_SHARE_OIDS:           "- Copy OID files from master to segments",
+	pb.UpgradeSteps_UNKNOWN_STEP:           "- Unknown step",
+	pb.UpgradeSteps_CHECK_CONFIG:           "- Configuration Check",
+	pb.UpgradeSteps_SEGINSTALL:             "- Install binaries on segments",
+	pb.UpgradeSteps_PREPARE_INIT_CLUSTER:   "- Initialize upgrade target cluster",
+	pb.UpgradeSteps_PREPARE_START_AGENTS:   "- Agents Started on Cluster",
+	pb.UpgradeSteps_MASTERUPGRADE:          "- Run pg_upgrade on master",
+	pb.UpgradeSteps_STOPPED_CLUSTER:        "- Shutdown clusters",
+	pb.UpgradeSteps_CONVERSION:             "- Run pg_upgrade on segments",
+	pb.UpgradeSteps_SHARE_OIDS:             "- Copy OID files from master to segments",
+	pb.UpgradeSteps_VALIDATE_START_CLUSTER: "- Validate the upgraded cluster can start up",
 }
 
 func NewReporter(client pb.CliToHubClient) *Reporter {

@@ -2,12 +2,14 @@ package services_test
 
 import (
 	pb "gp_upgrade/idl"
+	"gp_upgrade/testutils"
 	"gp_upgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 
-	"github.com/onsi/gomega/gbytes"
 	"gp_upgrade/agent/services"
+
+	"github.com/onsi/gomega/gbytes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,14 +17,18 @@ import (
 
 var _ = Describe("CommandListener", func() {
 	var (
-		testLogFile *gbytes.Buffer
-		agent       *services.AgentServer
+		testLogFile   *gbytes.Buffer
+		agent         *services.AgentServer
+		commandExecer *testutils.FakeCommandExecer
 	)
 
 	BeforeEach(func() {
 		_, _, testLogFile = testhelper.SetupTestLogger()
 
-		agent = services.NewAgentServer()
+		commandExecer = &testutils.FakeCommandExecer{}
+		commandExecer.SetOutput(&testutils.FakeCommand{})
+
+		agent = services.NewAgentServer(commandExecer.Exec)
 	})
 
 	AfterEach(func() {

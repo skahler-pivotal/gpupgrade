@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
+	"sync"
 
 	"gp_upgrade/hub/cluster"
 	"gp_upgrade/hub/configutils"
@@ -19,8 +22,9 @@ import (
 // needs the cli and the hub
 var _ = Describe("check", func() {
 	var (
-		dir string
-		hub *services.HubClient
+		dir           string
+		hub           *services.HubClient
+		commandExecer *testutils.FakeCommandExecer
 	)
 
 	BeforeEach(func() {
@@ -34,7 +38,11 @@ var _ = Describe("check", func() {
 			StateDir:       dir,
 		}
 		reader := configutils.NewReader()
-		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, conf)
+
+		commandExecer = &testutils.FakeCommandExecer{}
+		commandExecer.SetOutput(&testutils.FakeCommand{})
+
+		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
 
 		Expect(checkPortIsAvailable(7527)).To(BeTrue())
 		go hub.Start()
@@ -81,24 +89,46 @@ var _ = Describe("check", func() {
 	//
 	// TODO: This test might be interesting to run multi-node; for that, figure out how "installation" should be done
 	Describe("seginstall", func() {
-		It("updates status PENDING to RUNNING then to COMPLETE if successful", func() {
-			runCommand("check", "config")
+		It("updates status PENDING to RUNNING then to COMPLETE if successful", func(done Done) {
+			defer close(done)
+
+			config := `[{
+  			  "content": 2,
+  			  "dbid": 7,
+  			  "hostname": "localhost"
+  			}]`
+			testutils.WriteProvidedConfig(dir, config)
+
+			f, err := os.Create(filepath.Join(dir, "new_cluster_config.json"))
+			Expect(err).ToNot(HaveOccurred())
+			f.Close()
+
 			Expect(runStatusUpgrade()).To(ContainSubstring("PENDING - Install binaries on segments"))
 
-			expectationsDuringCommandInFlight := make(chan bool)
+			trigger := make(chan struct{}, 1)
+			commandExecer.SetTrigger(trigger)
+			commandExecer.SetOutput(&testutils.FakeCommand{
+				Err: nil,
+				Out: []byte("some output"),
+			})
 
+			wg := &sync.WaitGroup{}
+			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				defer GinkgoRecover()
-				// TODO: Can this flake? if the in-progress window is shorter than the frequency of Eventually(), then yea
+
 				Eventually(runStatusUpgrade).Should(ContainSubstring("RUNNING - Install binaries on segments"))
-				//close channel here
-				expectationsDuringCommandInFlight <- true
+				trigger <- struct{}{}
 			}()
 
-			session := runCommand("check", "seginstall")
-			Eventually(session).Should(Exit(0))
-			<-expectationsDuringCommandInFlight
+			checkSeginstallSession := runCommand("check", "seginstall")
 
+			Eventually(checkSeginstallSession).Should(Exit(0))
+			wg.Wait()
+
+			Expect(commandExecer.Command()).To(Equal("ssh"))
+			Expect(strings.Join(commandExecer.Args(), "")).To(ContainSubstring("ls"))
 			Eventually(runStatusUpgrade).Should(ContainSubstring("COMPLETE - Install binaries on segments"))
 		})
 	})

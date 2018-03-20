@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"gp_upgrade/hub/cluster"
+	"gp_upgrade/helpers"
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/upgradestatus"
 	pb "gp_upgrade/idl"
@@ -30,14 +30,20 @@ type reader interface {
 	OfOldClusterConfig(baseDir string)
 }
 
+type pairOperator interface {
+	Init(string, string, string, helpers.CommandExecer) error
+	StopEverything(string)
+}
+
 type HubClient struct {
 	Bootstrapper
 	conf *HubConfig
 
-	agentConns   []*Connection
-	clusterPair  cluster.PairOperator
-	configreader reader
-	grpcDialer   dialer
+	agentConns    []*Connection
+	clusterPair   pairOperator
+	configreader  reader
+	grpcDialer    dialer
+	commandExecer helpers.CommandExecer
 
 	mu      sync.Mutex
 	server  *grpc.Server
@@ -57,22 +63,24 @@ type HubConfig struct {
 	LogDir         string
 }
 
-func NewHub(pair cluster.PairOperator, configReader reader, grpcDialer dialer, conf *HubConfig) *HubClient {
+func NewHub(pair pairOperator, configReader reader, grpcDialer dialer, execer helpers.CommandExecer, conf *HubConfig) *HubClient {
 	// refactor opportunity -- don't use this pattern,
 	// use different types or separate functions for old/new or set the config path at reader initialization time
 	configReader.OfOldClusterConfig(conf.StateDir)
 
 	h := &HubClient{
-		stopped:      make(chan struct{}, 1),
-		conf:         conf,
-		clusterPair:  pair,
-		configreader: configReader,
-		grpcDialer:   grpcDialer,
+		stopped:       make(chan struct{}, 1),
+		conf:          conf,
+		clusterPair:   pair,
+		configreader:  configReader,
+		grpcDialer:    grpcDialer,
+		commandExecer: execer,
 		Bootstrapper: Bootstrapper{
 			hostnameGetter: configReader,
 			remoteExecutor: NewClusterSsher(
 				upgradestatus.NewChecklistManager(conf.StateDir),
 				NewPingerManager(conf.StateDir, 500*time.Millisecond),
+				execer,
 			),
 		},
 	}
@@ -81,8 +89,6 @@ func NewHub(pair cluster.PairOperator, configReader reader, grpcDialer dialer, c
 }
 
 func (h *HubClient) Start() {
-	gplog.InitializeLogging("gp_upgrade_hub", h.conf.LogDir)
-
 	lis, err := net.Listen("tcp", ":"+strconv.Itoa(h.conf.CliToHubPort))
 	if err != nil {
 		gplog.Fatal(err, "failed to listen")

@@ -2,9 +2,11 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime/debug"
 
+	"gp_upgrade/helpers"
 	"gp_upgrade/hub/cluster"
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
@@ -24,16 +26,22 @@ func main() {
 		Short: "Start the gp_upgrade_hub (blocks)",
 		Long:  `Start the gp_upgrade_hub (blocks)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			stateDir := filepath.Join(os.Getenv("HOME"), ".gp_upgrade")
+			gplog.InitializeLogging("gp_upgrade_hub", stateDir)
 			debug.SetTraceback("all")
 
 			conf := &services.HubConfig{
 				CliToHubPort:   7527,
 				HubToAgentPort: 6416,
-				StateDir:       filepath.Join(os.Getenv("HOME"), ".gp_upgrade"),
+				StateDir:       stateDir,
 				LogDir:         logdir,
 			}
 			reader := configutils.NewReader()
-			hub := services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, conf)
+
+			commandExecer := func(command string, vars ...string) helpers.Command {
+				return exec.Command(command, vars...)
+			}
+			hub := services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer, conf)
 			hub.Start()
 			defer hub.Stop()
 

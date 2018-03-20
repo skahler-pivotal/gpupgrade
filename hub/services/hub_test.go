@@ -32,7 +32,7 @@ var _ = Describe("HubClient", func() {
 	It("closes open connections when shutting down", func(done Done) {
 		defer close(done)
 		reader.hostnames = []string{"localhost"}
-		hub := services.NewHub(nil, reader, grpc.DialContext, &services.HubConfig{
+		hub := services.NewHub(nil, reader, grpc.DialContext, nil, &services.HubConfig{
 			HubToAgentPort: 6416,
 		})
 		go hub.Start()
@@ -52,7 +52,7 @@ var _ = Describe("HubClient", func() {
 
 	It("retrieves the agent connections from the config file reader", func() {
 		reader.hostnames = []string{"localhost", "localhost"}
-		hub := services.NewHub(nil, reader, grpc.DialContext, &services.HubConfig{
+		hub := services.NewHub(nil, reader, grpc.DialContext, nil, &services.HubConfig{
 			HubToAgentPort: 6416,
 		})
 
@@ -68,7 +68,7 @@ var _ = Describe("HubClient", func() {
 	It("saves grpc connections for future calls", func() {
 		reader.hostnames = []string{"localhost"}
 
-		hub := services.NewHub(nil, reader, grpc.DialContext, &services.HubConfig{
+		hub := services.NewHub(nil, reader, grpc.DialContext, nil, &services.HubConfig{
 			HubToAgentPort: 6416,
 		})
 
@@ -85,7 +85,7 @@ var _ = Describe("HubClient", func() {
 
 	It("returns an error if any connections have non-ready states", func() {
 		reader.hostnames = []string{"localhost"}
-		hub := services.NewHub(nil, reader, grpc.DialContext, &services.HubConfig{
+		hub := services.NewHub(nil, reader, grpc.DialContext, nil, &services.HubConfig{
 			HubToAgentPort: 6416,
 		})
 
@@ -103,7 +103,7 @@ var _ = Describe("HubClient", func() {
 
 	It("returns an error if any connections have non-ready states when first dialing", func() {
 		reader.hostnames = []string{"localhost"}
-		hub := services.NewHub(nil, reader, grpc.DialContext, &services.HubConfig{
+		hub := services.NewHub(nil, reader, grpc.DialContext, nil, &services.HubConfig{
 			HubToAgentPort: 6416,
 		})
 
@@ -117,7 +117,7 @@ var _ = Describe("HubClient", func() {
 		agentA.Stop()
 
 		reader.hostnames = []string{"example"}
-		hub := services.NewHub(nil, reader, grpc.DialContext, &services.HubConfig{
+		hub := services.NewHub(nil, reader, grpc.DialContext, nil, &services.HubConfig{
 			HubToAgentPort: 6416,
 		})
 
@@ -127,7 +127,7 @@ var _ = Describe("HubClient", func() {
 
 	It("returns an error if the config reader fails", func() {
 		reader.hostnamesErr = errors.New("error occurred while getting hostnames")
-		hub := services.NewHub(nil, reader, nil, &services.HubConfig{})
+		hub := services.NewHub(nil, reader, nil, nil, &services.HubConfig{})
 
 		_, err := hub.AgentConns()
 		Expect(err).To(HaveOccurred())

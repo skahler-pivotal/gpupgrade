@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -58,6 +59,7 @@ var _ = BeforeSuite(func() {
 
 var _ = BeforeEach(func() {
 	killAll()
+	testhelper.SetupTestLogger()
 })
 
 var _ = AfterSuite(func() {

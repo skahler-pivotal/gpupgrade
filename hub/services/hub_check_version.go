@@ -13,7 +13,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func (s *HubClient) CheckVersion(ctx context.Context,
+func (h *HubClient) CheckVersion(ctx context.Context,
 	in *pb.CheckVersionRequest) (*pb.CheckVersionReply, error) {
 
 	gplog.Info("starting CheckVersion")

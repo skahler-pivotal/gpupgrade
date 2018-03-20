@@ -2,12 +2,13 @@ package integrations_test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+
 	"gp_upgrade/hub/cluster"
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
 	"gp_upgrade/testutils"
-	"io/ioutil"
-	"os"
 
 	"github.com/onsi/gomega/gbytes"
 	"google.golang.org/grpc"
@@ -20,8 +21,9 @@ import (
 // the `prepare start-hub` tests are currently in master_only_integration_test
 var _ = Describe("prepare", func() {
 	var (
-		dir string
-		hub *services.HubClient
+		dir           string
+		hub           *services.HubClient
+		commandExecer *testutils.FakeCommandExecer
 	)
 
 	BeforeEach(func() {
@@ -35,7 +37,11 @@ var _ = Describe("prepare", func() {
 			StateDir:       dir,
 		}
 		reader := configutils.NewReader()
-		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, conf)
+
+		commandExecer = &testutils.FakeCommandExecer{}
+		commandExecer.SetOutput(&testutils.FakeCommand{})
+
+		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
 
 		Expect(checkPortIsAvailable(7527)).To(BeTrue())
 		go hub.Start()

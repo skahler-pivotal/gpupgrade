@@ -34,11 +34,11 @@ func (h *HubClient) StatusUpgrade(ctx context.Context, in *pb.StatusUpgradeReque
 	seginstallStatus, _ := seginstallState.GetStatus()
 
 	gpstopStatePath := filepath.Join(h.conf.StateDir, "gpstop")
-	clusterPair := upgradestatus.NewShutDownClusters(gpstopStatePath)
+	clusterPair := upgradestatus.NewShutDownClusters(gpstopStatePath, h.commandExecer)
 	shutdownClustersStatus, _ := clusterPair.GetStatus()
 
 	pgUpgradePath := filepath.Join(h.conf.StateDir, "pg_upgrade")
-	convertMaster := upgradestatus.NewConvertMaster(pgUpgradePath)
+	convertMaster := upgradestatus.NewConvertMaster(pgUpgradePath, h.commandExecer)
 	masterUpgradeStatus, _ := convertMaster.GetStatus()
 
 	startAgentsStatePath := filepath.Join(h.conf.StateDir, "start-agents")
@@ -49,6 +49,10 @@ func (h *HubClient) StatusUpgrade(ctx context.Context, in *pb.StatusUpgradeReque
 	shareOidsState := upgradestatus.NewStateCheck(shareOidsPath, pb.UpgradeSteps_SHARE_OIDS)
 	shareOidsStatus, _ := shareOidsState.GetStatus()
 
+	validateStartClusterPath := filepath.Join(h.conf.StateDir, "validate-start-cluster")
+	validateStartClusterState := upgradestatus.NewStateCheck(validateStartClusterPath, pb.UpgradeSteps_VALIDATE_START_CLUSTER)
+	validateStartClusterStatus, _ := validateStartClusterState.GetStatus()
+
 	return &pb.StatusUpgradeReply{
 		ListOfUpgradeStepStatuses: []*pb.UpgradeStepStatus{
 			checkconfigStatus,
@@ -58,6 +62,7 @@ func (h *HubClient) StatusUpgrade(ctx context.Context, in *pb.StatusUpgradeReque
 			masterUpgradeStatus,
 			startAgentsStatus,
 			shareOidsStatus,
+			validateStartClusterStatus,
 		},
 	}, nil
 }

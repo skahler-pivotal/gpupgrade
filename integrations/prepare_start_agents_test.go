@@ -3,10 +3,13 @@ package integrations_test
 import (
 	"io/ioutil"
 	"os"
+	"strings"
+	"sync"
 
 	"gp_upgrade/hub/cluster"
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
+	"gp_upgrade/testutils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,11 +17,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-// needs the cli and the hub
 var _ = Describe("prepare", func() {
 	var (
-		dir string
-		hub *services.HubClient
+		dir           string
+		hub           *services.HubClient
+		commandExecer *testutils.FakeCommandExecer
 	)
 
 	BeforeEach(func() {
@@ -32,7 +35,11 @@ var _ = Describe("prepare", func() {
 			StateDir:       dir,
 		}
 		reader := configutils.NewReader()
-		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, conf)
+
+		commandExecer = &testutils.FakeCommandExecer{}
+		commandExecer.SetOutput(&testutils.FakeCommand{})
+
+		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
 
 		Expect(checkPortIsAvailable(7527)).To(BeTrue())
 		go hub.Start()
@@ -46,25 +53,31 @@ var _ = Describe("prepare", func() {
 		os.RemoveAll(dir)
 	})
 
-	// TODO: This test might be interesting to run multi-node; for that, figure out how "installation" should be done
 	Describe("start-agents", func() {
-		// afiak the reason done Done is not used here is because the we are waiting for both the go routine and the
-		// main thread to finish. Calling close(done) could theoretically end the test early.
-		It("updates status PENDING to RUNNING then to COMPLETE if successful", func() {
+		It("updates status PENDING to RUNNING then to COMPLETE if successful", func(done Done) {
+			defer close(done)
 			Expect(runStatusUpgrade()).To(ContainSubstring("PENDING - Agents Started on Cluster"))
-			expectationsDuringCommandInFlight := make(chan bool)
+
+			trigger := make(chan struct{}, 1)
+			commandExecer.SetTrigger(trigger)
+
+			wg := &sync.WaitGroup{}
+			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				defer GinkgoRecover()
-				// TODO: Can this flake? if the in-progress window is shorter than the frequency of Eventually(), then yea
+
 				Eventually(runStatusUpgrade).Should(ContainSubstring("RUNNING - Agents Started on Cluster"))
-				expectationsDuringCommandInFlight <- true
+				trigger <- struct{}{}
 			}()
 
-			session := runCommand("prepare", "start-agents")
-			Eventually(session).Should(Exit(0))
-			<-expectationsDuringCommandInFlight
-			Eventually(runStatusUpgrade, 3).Should(ContainSubstring("COMPLETE - Agents Started on Cluster"))
+			prepareStartAgentsSession := runCommand("prepare", "start-agents")
+			Eventually(prepareStartAgentsSession).Should(Exit(0))
+			wg.Wait()
+
+			Expect(commandExecer.Command()).To(Equal("ssh"))
+			Expect(strings.Join(commandExecer.Args(), "")).To(ContainSubstring("nohup"))
+			Eventually(runStatusUpgrade).Should(ContainSubstring("COMPLETE - Agents Started on Cluster"))
 		})
 	})
-
 })

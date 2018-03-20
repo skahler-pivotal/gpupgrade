@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"gp_upgrade/helpers"
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
 	pb "gp_upgrade/idl"
@@ -41,7 +42,7 @@ var _ = Describe("PrepareShutdownClusters", func() {
 		conf := &services.HubConfig{
 			StateDir: dir,
 		}
-		hub := services.NewHub(&mockClusterPair{}, &reader, grpc.DialContext, conf)
+		hub := services.NewHub(&mockClusterPair{}, &reader, grpc.DialContext, nil, conf)
 
 		_, err = hub.PrepareShutdownClusters(nil, &pb.PrepareShutdownClustersRequest{})
 		Expect(err).To(BeNil())
@@ -62,7 +63,7 @@ var _ = Describe("PrepareShutdownClusters", func() {
 		clusterPair := &mockClusterPair{
 			InitErr: errors.New("boom"),
 		}
-		hub := services.NewHub(clusterPair, &reader, grpc.DialContext, conf)
+		hub := services.NewHub(clusterPair, &reader, grpc.DialContext, nil, conf)
 
 		_, err = hub.PrepareShutdownClusters(nil, &pb.PrepareShutdownClustersRequest{})
 		Expect(err).To(MatchError("boom"))
@@ -76,6 +77,6 @@ type mockClusterPair struct {
 }
 
 func (c *mockClusterPair) StopEverything(str string) {}
-func (c *mockClusterPair) Init(baseDir, oldPath, newPath string) error {
+func (c *mockClusterPair) Init(baseDir, oldPath, newPath string, execer helpers.CommandExecer) error {
 	return c.InitErr
 }

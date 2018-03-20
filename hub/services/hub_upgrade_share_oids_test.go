@@ -9,20 +9,20 @@ import (
 	pb "gp_upgrade/idl"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"google.golang.org/grpc"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("hub", func() {
 	Describe("UpgradeShareOids", func() {
 		var (
-			reader                      configutils.Reader
-			hub                         *services.HubClient
-			fakeUpgradeShareOidsRequest *pb.UpgradeShareOidsRequest
-			testStdout                  *gbytes.Buffer
-			dir                         string
+			reader     configutils.Reader
+			hub        *services.HubClient
+			testStdout *gbytes.Buffer
+			dir        string
 		)
 
 		BeforeEach(func() {
@@ -30,11 +30,10 @@ var _ = Describe("hub", func() {
 			var err error
 			dir, err = ioutil.TempDir("", "")
 			Expect(err).ToNot(HaveOccurred())
-			hub = services.NewHub(nil, &reader, grpc.DialContext, &services.HubConfig{
+			hub = services.NewHub(nil, &reader, grpc.DialContext, nil, &services.HubConfig{
 				StateDir: dir,
 			})
 
-			fakeUpgradeShareOidsRequest = &pb.UpgradeShareOidsRequest{}
 			testStdout, _, _ = testhelper.SetupTestLogger()
 		})
 
@@ -59,7 +58,7 @@ var _ = Describe("hub", func() {
 		})
 
 		It("Reports status COMPLETED when a share-oids request has been made", func() {
-			hub.UpgradeShareOids(nil, fakeUpgradeShareOidsRequest)
+			hub.UpgradeShareOids(nil, &pb.UpgradeShareOidsRequest{})
 			reply, err := hub.StatusUpgrade(nil, &pb.StatusUpgradeRequest{})
 
 			Expect(err).To(BeNil())
@@ -77,7 +76,7 @@ var _ = Describe("hub", func() {
 		})
 
 		It("Starts sharing OID files across cluster without error", func() {
-			_, err := hub.UpgradeShareOids(nil, fakeUpgradeShareOidsRequest)
+			_, err := hub.UpgradeShareOids(nil, &pb.UpgradeShareOidsRequest{})
 			Eventually(testStdout).Should(gbytes.Say("Started processing share-oids request"))
 			Expect(err).To(BeNil())
 		})

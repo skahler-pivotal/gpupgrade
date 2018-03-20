@@ -8,16 +8,16 @@ import (
 	"strings"
 
 	"gp_upgrade/hub/configutils"
+	"gp_upgrade/hub/services"
 	pb "gp_upgrade/idl"
+	"gp_upgrade/testutils"
 	"gp_upgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"google.golang.org/grpc"
 
-	"gp_upgrade/hub/services"
-	"gp_upgrade/testutils"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("status upgrade", func() {
@@ -25,10 +25,11 @@ var _ = Describe("status upgrade", func() {
 		hub                      *services.HubClient
 		fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
 		dir                      string
+		commandExecer            *testutils.FakeCommandExecer
 	)
 
 	BeforeEach(func() {
-		testhelper.SetupTestLogger() // extend to capture the values in a var if future tests need it
+		testhelper.SetupTestLogger()
 		//any mocking of utils.System function pointers should be reset by calling InitializeSystemFunctions
 		utils.System = utils.InitializeSystemFunctions()
 
@@ -40,7 +41,10 @@ var _ = Describe("status upgrade", func() {
 		conf := &services.HubConfig{
 			StateDir: dir,
 		}
-		hub = services.NewHub(nil, &reader, grpc.DialContext, conf)
+
+		commandExecer = &testutils.FakeCommandExecer{}
+		commandExecer.SetOutput(&testutils.FakeCommand{})
+		hub = services.NewHub(nil, &reader, grpc.DialContext, commandExecer.Exec, conf)
 	})
 
 	AfterEach(func() {
@@ -82,6 +86,9 @@ var _ = Describe("status upgrade", func() {
 				}, {
 					Step:   pb.UpgradeSteps_SHARE_OIDS,
 					Status: pb.StepStatus_FAILED,
+				}, {
+					Step:   pb.UpgradeSteps_VALIDATE_START_CLUSTER,
+					Status: pb.StepStatus_PENDING,
 				},
 			},
 		))
@@ -175,9 +182,10 @@ var _ = Describe("status upgrade", func() {
 			utils.System.FilePathGlob = func(string) ([]string, error) {
 				return []string{"somefile.inprogress"}, nil
 			}
-			utils.System.ExecCmdOutput = func(cmd string, args ...string) ([]byte, error) {
-				return []byte("123"), nil
-			}
+			commandExecer.SetOutput(&testutils.FakeCommand{
+				Out: []byte("123"),
+				Err: nil,
+			})
 
 			formulatedResponse, err := hub.StatusUpgrade(nil, fakeStatusUpgradeRequest)
 			Expect(err).To(BeNil())
@@ -204,9 +212,11 @@ var _ = Describe("status upgrade", func() {
 
 				return nil, errors.New("test not configured for this glob")
 			}
-			utils.System.ExecCmdOutput = func(cmd string, args ...string) ([]byte, error) {
-				return []byte(""), errors.New("bogus error")
-			}
+			commandExecer.SetOutput(&testutils.FakeCommand{
+				Out: []byte("stdout/stderr message"),
+				Err: errors.New("bogus error"),
+			})
+
 			utils.System.Stat = func(filename string) (os.FileInfo, error) {
 				if strings.Contains(filename, "found something") {
 					return &testutils.FakeFileInfo{}, nil
@@ -251,9 +261,12 @@ var _ = Describe("status upgrade", func() {
 
 				return nil, errors.New("test not configured for this glob")
 			}
-			utils.System.ExecCmdOutput = func(cmd string, args ...string) ([]byte, error) {
-				return []byte(""), errors.New("bogus error")
-			}
+
+			commandExecer.SetOutput(&testutils.FakeCommand{
+				Out: []byte("stdout/stderr message"),
+				Err: errors.New("bogus error"),
+			})
+
 			utils.System.Open = func(name string) (*os.File, error) {
 				// Temporarily create a file that we can read as a real file descriptor
 				fd, err := ioutil.TempFile("/tmp", "hub_status_upgrade_test")

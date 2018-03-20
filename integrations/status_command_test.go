@@ -19,8 +19,9 @@ import (
 
 var _ = Describe("status", func() {
 	var (
-		dir string
-		hub *services.HubClient
+		dir           string
+		hub           *services.HubClient
+		commandExecer *testutils.FakeCommandExecer
 	)
 
 	BeforeEach(func() {
@@ -34,7 +35,11 @@ var _ = Describe("status", func() {
 			StateDir:       dir,
 		}
 		reader := configutils.NewReader()
-		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, conf)
+
+		commandExecer = &testutils.FakeCommandExecer{}
+		commandExecer.SetOutput(&testutils.FakeCommand{})
+
+		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
 
 		Expect(checkPortIsAvailable(7527)).To(BeTrue())
 		go hub.Start()
@@ -78,15 +83,6 @@ var _ = Describe("status", func() {
 
 			Eventually(statusSession).Should(gbytes.Say("PENDING - Configuration Check"))
 			Eventually(statusSession).Should(gbytes.Say("PENDING - Install binaries on segments"))
-		})
-
-		// ultimately, the status command isn't uniquely responsible for the cases where the hub is down
-		// consider moving this case alongside the `prepare start-hub` integration tests
-		XIt("Explodes if the hub isn't up", func() {
-			//killHub()
-			statusSession := runCommand("status", "upgrade")
-			Eventually(statusSession.Err).Should(gbytes.Say("Unable to connect to hub:"))
-			Eventually(statusSession).Should(Exit(1))
 		})
 	})
 })

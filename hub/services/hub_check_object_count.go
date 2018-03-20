@@ -11,7 +11,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func (s *HubClient) CheckObjectCount(ctx context.Context,
+func (h *HubClient) CheckObjectCount(ctx context.Context,
 	in *pb.CheckObjectCountRequest) (*pb.CheckObjectCountReply, error) {
 
 	gplog.Info("starting CheckObjectCount")

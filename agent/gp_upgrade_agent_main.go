@@ -1,11 +1,13 @@
 package main
 
 import (
+	"net"
 	"os"
+	"os/exec"
 
 	"gp_upgrade/agent/services"
+	"gp_upgrade/helpers"
 	pb "gp_upgrade/idl"
-	"net"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"github.com/spf13/cobra"
@@ -41,7 +43,11 @@ func main() {
 			}
 
 			server := grpc.NewServer()
-			agentServer := services.NewAgentServer()
+
+			commandExecer := func(command string, vars ...string) helpers.Command {
+				return exec.Command(command, vars...)
+			}
+			agentServer := services.NewAgentServer(commandExecer)
 			pb.RegisterAgentServer(server, agentServer)
 			reflection.Register(server)
 

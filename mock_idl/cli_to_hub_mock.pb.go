@@ -269,6 +269,24 @@ func (mr *MockCliToHubClientMockRecorder) UpgradeShareOids(ctx, in interface{}, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeShareOids", reflect.TypeOf((*MockCliToHubClient)(nil).UpgradeShareOids), varargs...)
 }
 
+// UpgradeValidateStartCluster mocks base method
+func (m *MockCliToHubClient) UpgradeValidateStartCluster(ctx context.Context, in *UpgradeValidateStartClusterRequest, opts ...grpc.CallOption) (*UpgradeValidateStartClusterReply, error) {
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpgradeValidateStartCluster", varargs...)
+	ret0, _ := ret[0].(*UpgradeValidateStartClusterReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpgradeValidateStartCluster indicates an expected call of UpgradeValidateStartCluster
+func (mr *MockCliToHubClientMockRecorder) UpgradeValidateStartCluster(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeValidateStartCluster", reflect.TypeOf((*MockCliToHubClient)(nil).UpgradeValidateStartCluster), varargs...)
+}
+
 // MockCliToHubServer is a mock of CliToHubServer interface
 type MockCliToHubServer struct {
 	ctrl     *gomock.Controller
@@ -459,4 +477,17 @@ func (m *MockCliToHubServer) UpgradeShareOids(arg0 context.Context, arg1 *Upgrad
 // UpgradeShareOids indicates an expected call of UpgradeShareOids
 func (mr *MockCliToHubServerMockRecorder) UpgradeShareOids(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeShareOids", reflect.TypeOf((*MockCliToHubServer)(nil).UpgradeShareOids), arg0, arg1)
+}
+
+// UpgradeValidateStartCluster mocks base method
+func (m *MockCliToHubServer) UpgradeValidateStartCluster(arg0 context.Context, arg1 *UpgradeValidateStartClusterRequest) (*UpgradeValidateStartClusterReply, error) {
+	ret := m.ctrl.Call(m, "UpgradeValidateStartCluster", arg0, arg1)
+	ret0, _ := ret[0].(*UpgradeValidateStartClusterReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpgradeValidateStartCluster indicates an expected call of UpgradeValidateStartCluster
+func (mr *MockCliToHubServerMockRecorder) UpgradeValidateStartCluster(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeValidateStartCluster", reflect.TypeOf((*MockCliToHubServer)(nil).UpgradeValidateStartCluster), arg0, arg1)
 }

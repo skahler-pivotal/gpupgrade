@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"gp_upgrade/agent/services"
+	"gp_upgrade/testutils"
 	"gp_upgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
@@ -16,11 +17,18 @@ import (
 
 var _ = Describe("CommandListener", func() {
 	var (
-		testLogFile *gbytes.Buffer
+		testLogFile   *gbytes.Buffer
+		agent         *services.AgentServer
+		commandExecer *testutils.FakeCommandExecer
 	)
 
 	BeforeEach(func() {
 		_, _, testLogFile = testhelper.SetupTestLogger()
+
+		commandExecer = &testutils.FakeCommandExecer{}
+		commandExecer.SetOutput(&testutils.FakeCommand{})
+
+		agent = services.NewAgentServer(commandExecer.Exec)
 	})
 
 	AfterEach(func() {
@@ -29,25 +37,25 @@ var _ = Describe("CommandListener", func() {
 	})
 
 	It("returns the shell command output", func() {
-		utils.System.ExecCmdOutput = func(name string, args ...string) ([]byte, error) {
-			return []byte("shell command output"), nil
-		}
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Out: []byte("shell command output"),
+		})
 
-		listener := services.NewAgentServer()
-		resp, err := listener.CheckUpgradeStatus(context.TODO(), nil)
+		resp, err := agent.CheckUpgradeStatus(context.TODO(), nil)
+		Expect(err).ToNot(HaveOccurred())
+
 		Expect(resp.ProcessList).To(Equal("shell command output"))
-		Expect(err).To(BeNil())
 	})
 
 	It("returns only err if anything is reported as an error", func() {
-		utils.System.ExecCmdOutput = func(name string, args ...string) ([]byte, error) {
-			return []byte("stdout during error"), errors.New("couldn't find bash")
-		}
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Err: errors.New("couldn't find bash"),
+		})
 
-		listener := services.NewAgentServer()
-		resp, err := listener.CheckUpgradeStatus(context.TODO(), nil)
+		resp, err := agent.CheckUpgradeStatus(context.TODO(), nil)
+		Expect(err).To(HaveOccurred())
+
 		Expect(resp).To(BeNil())
-		Expect(err.Error()).To(Equal("couldn't find bash"))
-		Expect(string(testLogFile.Contents())).To(ContainSubstring("couldn't find bash"))
+		Expect(testLogFile.Contents()).To(ContainSubstring("couldn't find bash"))
 	})
 })

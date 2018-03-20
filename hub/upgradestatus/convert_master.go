@@ -1,6 +1,7 @@
 package upgradestatus
 
 import (
+	"gp_upgrade/helpers"
 	pb "gp_upgrade/idl"
 	"gp_upgrade/utils"
 
@@ -14,10 +15,14 @@ import (
 
 type ConvertMaster struct {
 	pgUpgradePath string
+	commandExecer helpers.CommandExecer
 }
 
-func NewConvertMaster(pgUpgradePath string) ConvertMaster {
-	return ConvertMaster{pgUpgradePath: pgUpgradePath}
+func NewConvertMaster(pgUpgradePath string, execer helpers.CommandExecer) ConvertMaster {
+	return ConvertMaster{
+		pgUpgradePath: pgUpgradePath,
+		commandExecer: execer,
+	}
 }
 
 /*
@@ -25,7 +30,7 @@ func NewConvertMaster(pgUpgradePath string) ConvertMaster {
 	- pg_upgrade will not fail without error before writing an inprogress file
 	- when a new pg_upgrade is started it deletes all *.done and *.inprogress files
 */
-func (c ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
+func (c *ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 	var masterUpgradeStatus *pb.UpgradeStepStatus
 	pgUpgradePath := c.pgUpgradePath
 
@@ -38,7 +43,7 @@ func (c ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 		return masterUpgradeStatus, nil
 	}
 
-	if pgUpgradeRunning() {
+	if c.pgUpgradeRunning() {
 		gplog.Info("setting status to RUNNING")
 		masterUpgradeStatus = &pb.UpgradeStepStatus{
 			Step:   pb.UpgradeSteps_MASTERUPGRADE,
@@ -65,9 +70,9 @@ func (c ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 	return masterUpgradeStatus, nil
 }
 
-func pgUpgradeRunning() bool {
+func (c *ConvertMaster) pgUpgradeRunning() bool {
 	//if pgrep doesnt find target, ExecCmdOutput will return empty byte array and err.Error()="exit status 1"
-	pgUpgradePids, err := utils.System.ExecCmdOutput("pgrep", "pg_upgrade")
+	pgUpgradePids, err := c.commandExecer("pgrep", "pg_upgrade").Output()
 	if err == nil && len(pgUpgradePids) != 0 {
 		return true
 	}
@@ -89,7 +94,6 @@ func inProgressFilesExist(pgUpgradePath string) bool {
 }
 
 func (c ConvertMaster) IsUpgradeComplete(pgUpgradePath string) bool {
-
 	doneFiles, doneErr := utils.System.FilePathGlob(pgUpgradePath + "/*.done")
 	if doneFiles == nil {
 		return false
