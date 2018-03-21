@@ -23,6 +23,8 @@ var _ = Describe("prepare validate-start-cluster", func() {
 		dir           string
 		hub           *services.HubClient
 		commandExecer *testutils.FakeCommandExecer
+		outChan       chan []byte
+		errChan       chan error
 	)
 
 	BeforeEach(func() {
@@ -37,8 +39,14 @@ var _ = Describe("prepare validate-start-cluster", func() {
 		}
 		reader := configutils.NewReader()
 
+		outChan = make(chan []byte, 2)
+		errChan = make(chan error, 2)
+
 		commandExecer = &testutils.FakeCommandExecer{}
-		commandExecer.SetOutput(&testutils.FakeCommand{})
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Out: outChan,
+			Err: errChan,
+		})
 
 		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
 
@@ -91,10 +99,7 @@ var _ = Describe("prepare validate-start-cluster", func() {
 
 		Expect(runStatusUpgrade()).To(ContainSubstring("PENDING - Validate the upgraded cluster can start up"))
 
-		commandExecer.SetOutput(&testutils.FakeCommand{
-			Err: errors.New("start failed"),
-			Out: nil,
-		})
+		errChan <- errors.New("start failed")
 
 		prepareStartAgentsSession := runCommand("upgrade", "validate-start-cluster", "--new-bindir", newBinDir, "--new-datadir", newDataDir)
 		Eventually(prepareStartAgentsSession).Should(Exit(1))

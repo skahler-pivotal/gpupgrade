@@ -25,6 +25,8 @@ var _ = Describe("hub", func() {
 			hub           *services.HubClient
 			dir           string
 			commandExecer *testutils.FakeCommandExecer
+			errChan       chan error
+			outChan       chan []byte
 		)
 
 		BeforeEach(func() {
@@ -45,8 +47,15 @@ var _ = Describe("hub", func() {
 			var err error
 			dir, err = ioutil.TempDir("", "")
 			Expect(err).ToNot(HaveOccurred())
+
+			errChan = make(chan error, 2)
+			outChan = make(chan []byte, 2)
 			commandExecer = &testutils.FakeCommandExecer{}
-			commandExecer.SetOutput(&testutils.FakeCommand{})
+			commandExecer.SetOutput(&testutils.FakeCommand{
+				Err: errChan,
+				Out: outChan,
+			})
+
 			hub = services.NewHub(nil, reader, grpc.DialContext, commandExecer.Exec, &services.HubConfig{
 				StateDir: dir,
 			})
@@ -64,26 +73,18 @@ var _ = Describe("hub", func() {
 			Eventually(stepStatus).Should(Equal(pb.StepStatus_PENDING))
 		})
 
-		It("marks step as FAILED if rsync fails for all hosts", func() {
+		It("marks step as FAILED if rsync fails for any host", func() {
 			numHosts := len(reader.hostnames)
 
-			//numInvocations := 0
-			//utils.System.ExecCmdOutput = func(string, ...string) ([]byte, error) {
-			//	numInvocations++
-			//	if numInvocations == 1 {
-			//		return nil, errors.New("failed")
-			//	} else {
-			//		return []byte("soemthing"), nil
-			//	}
-			//}
-			fakeCommand := &testutils.FakeCommand{
-				Out: nil,
-				Err: errors.New("failed"),
-			}
-			commandExecer.SetOutput(fakeCommand)
+			errChan <- errors.New("failure")
+			outChan <- nil
+
+			errChan <- nil
+			outChan <- []byte("success")
 
 			hub.ShareOidFilesStub(dir)
-			Eventually(fakeCommand.GetNumInvocations()).Should(Equal(numHosts))
+
+			Eventually(commandExecer.GetNumInvocations()).Should(Equal(numHosts))
 
 			stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
 			Expect(err).To(BeNil())
@@ -94,19 +95,15 @@ var _ = Describe("hub", func() {
 		It("marks step as COMPLETE if rsync succeeds for all hosts", func() {
 			numHosts := len(reader.hostnames)
 
-			//var numInvocations int
-			//utils.System.ExecCmdOutput = func(string, ...string) ([]byte, error) {
-			//	numInvocations++
-			//	return []byte("success"), nil
-			//}
-			fakeCommand := &testutils.FakeCommand{
-				Out: []byte("success"),
-				Err: nil,
-			}
-			commandExecer.SetOutput(fakeCommand)
+			errChan <- nil
+			outChan <- []byte("success")
+
+			errChan <- nil
+			outChan <- []byte("success")
 
 			hub.ShareOidFilesStub(dir)
-			Eventually(fakeCommand.GetNumInvocations()).Should(Equal(numHosts))
+
+			Eventually(commandExecer.GetNumInvocations()).Should(Equal(numHosts))
 
 			stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
 			Expect(err).To(BeNil())

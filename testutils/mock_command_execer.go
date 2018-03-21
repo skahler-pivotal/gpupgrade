@@ -8,9 +8,10 @@ import (
 )
 
 type FakeCommandExecer struct {
-	command string
-	args    []string
-	calls   []string
+	command        string
+	args           []string
+	calls          []string
+	numInvocations int
 
 	mu      sync.Mutex
 	output  helpers.Command
@@ -52,9 +53,15 @@ func (c *FakeCommandExecer) Args() []string {
 	return c.args
 }
 
+func (c *FakeCommandExecer) GetNumInvocations() int {
+	return c.numInvocations
+}
+
 func (c *FakeCommandExecer) Exec(command string, args ...string) helpers.Command {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
+	c.numInvocations++
 
 	c.command = command
 	c.args = args
@@ -70,34 +77,61 @@ func (c *FakeCommandExecer) Exec(command string, args ...string) helpers.Command
 }
 
 type FakeCommand struct {
-	numInvocations int
-	Err            error
-	Out            []byte
-	Trigger        chan struct{}
+	Err     chan error
+	Out     chan []byte
+	Trigger chan struct{}
 }
 
 func (c *FakeCommand) Output() ([]byte, error) {
-	c.numInvocations++
+	var err error
+	var out []byte
 
-	return c.Out, c.Err
+	if len(c.Err) != 0 {
+		err = <-c.Err
+	}
+
+	if len(c.Out) != 0 {
+		out = <-c.Out
+	}
+
+	return out, err
 }
 
 func (c *FakeCommand) CombinedOutput() ([]byte, error) {
-	return c.Out, c.Err
+	var err error
+	var out []byte
+
+	if len(c.Err) != 0 {
+		err = <-c.Err
+	}
+
+	if len(c.Out) != 0 {
+		out = <-c.Out
+	}
+
+	return out, err
 }
 
 func (c *FakeCommand) Start() error {
-	return c.Err
+	var err error
+
+	if len(c.Err) != 0 {
+		err = <-c.Err
+	}
+
+	return err
 }
 
 func (c *FakeCommand) Run() error {
+	var err error
+
+	if len(c.Err) != 0 {
+		err = <-c.Err
+	}
+
 	if c.Trigger != nil {
 		<-c.Trigger
 	}
 
-	return c.Err
-}
-
-func (c *FakeCommand) GetNumInvocations() int {
-	return c.numInvocations
+	return err
 }

@@ -39,11 +39,18 @@ var _ = Describe("ClusterPair", func() {
 
 		filesLaidDown []string
 		commandExecer *testutils.FakeCommandExecer
+		errChan       chan error
+		outChan       chan []byte
 	)
 
 	BeforeEach(func() {
 		commandExecer = &testutils.FakeCommandExecer{}
-		commandExecer.SetOutput(&testutils.FakeCommand{})
+		errChan = make(chan error, 2)
+		outChan = make(chan []byte, 2)
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Err: errChan,
+			Out: outChan,
+		})
 	})
 
 	AfterEach(func() {
@@ -77,9 +84,12 @@ var _ = Describe("ClusterPair", func() {
 		It("Logs successful when things work", func() {
 			mockedExitStatus = 0
 			mockedOutput = "Something that's not bad"
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Out: []byte("some output"),
-			})
+
+			outChan <- []byte("some output")
+			errChan <- nil
+
+			outChan <- nil
+			errChan <- nil
 
 			subject := cluster.Pair{}
 			err := subject.Init(dir, "old/path", "new/path", commandExecer.Exec)
@@ -111,9 +121,11 @@ var _ = Describe("ClusterPair", func() {
 			mockedExitStatus = 127
 			mockedOutput = "gpstop failed us" // what gpstop puts in its own logs
 
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Err: errors.New("failed"),
-			})
+			errChan <- errors.New("failed")
+			outChan <- nil
+
+			errChan <- nil
+			outChan <- nil
 
 			subject := cluster.Pair{}
 			err := subject.Init(dir, "old/path", "new/path", commandExecer.Exec)

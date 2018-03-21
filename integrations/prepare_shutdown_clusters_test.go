@@ -24,6 +24,8 @@ var _ = Describe("prepare shutdown-clusters", func() {
 		dir           string
 		hub           *services.HubClient
 		commandExecer *testutils.FakeCommandExecer
+		outChan       chan []byte
+		errChan       chan error
 	)
 
 	BeforeEach(func() {
@@ -59,8 +61,14 @@ var _ = Describe("prepare shutdown-clusters", func() {
 		}
 		reader := configutils.NewReader()
 
+		outChan = make(chan []byte, 2)
+		errChan = make(chan error, 2)
+
 		commandExecer = &testutils.FakeCommandExecer{}
-		commandExecer.SetOutput(&testutils.FakeCommand{})
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Out: outChan,
+			Err: errChan,
+		})
 
 		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
 
@@ -85,9 +93,11 @@ var _ = Describe("prepare shutdown-clusters", func() {
 
 		trigger := make(chan struct{}, 10)
 		commandExecer.SetOutput(&testutils.FakeCommand{
-			Out:     []byte("pid1"),
+			Out:     outChan,
+			Err:     errChan,
 			Trigger: trigger,
 		})
+		outChan <- []byte("pid1")
 
 		// Trigger for old stop so an in.progress file is written
 		trigger <- struct{}{}
@@ -121,10 +131,7 @@ var _ = Describe("prepare shutdown-clusters", func() {
 
 		Expect(runStatusUpgrade()).To(ContainSubstring("PENDING - Shutdown clusters"))
 
-		commandExecer.SetOutput(&testutils.FakeCommand{
-			Err: errors.New("start failed"),
-			Out: nil,
-		})
+		errChan <- errors.New("start failed")
 
 		prepareShutdownClustersSession := runCommand("prepare", "shutdown-clusters", "--old-bindir", oldBinDir, "--new-bindir", newBinDir)
 		Expect(prepareShutdownClustersSession).Should(Exit(0))

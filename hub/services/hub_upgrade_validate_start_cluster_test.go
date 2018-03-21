@@ -16,10 +16,11 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	"google.golang.org/grpc"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"strings"
 	"sync"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("upgrade validate start cluster", func() {
@@ -29,6 +30,8 @@ var _ = Describe("upgrade validate start cluster", func() {
 		reader        configutils.Reader
 		dir           string
 		commandExecer *testutils.FakeCommandExecer
+		errChan       chan error
+		outChan       chan []byte
 	)
 
 	BeforeEach(func() {
@@ -37,8 +40,14 @@ var _ = Describe("upgrade validate start cluster", func() {
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
+		errChan = make(chan error, 1)
+		outChan = make(chan []byte, 1)
+
 		commandExecer = &testutils.FakeCommandExecer{}
-		commandExecer.SetOutput(&testutils.FakeCommand{})
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Err: errChan,
+			Out: outChan,
+		})
 
 		hub = services.NewHub(nil, &reader, grpc.DialContext, commandExecer.Exec, &services.HubConfig{
 			StateDir: dir,
@@ -91,9 +100,8 @@ var _ = Describe("upgrade validate start cluster", func() {
 	})
 
 	It("sets status to FAILED when the validate start cluster request returns an error", func() {
-		commandExecer.SetOutput(&testutils.FakeCommand{
-			Err: errors.New("some error"),
-		})
+		errChan <- errors.New("some error")
+		outChan <- nil
 
 		_, err := hub.UpgradeValidateStartCluster(nil, &pb.UpgradeValidateStartClusterRequest{
 			NewBinDir:  "bin",

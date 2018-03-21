@@ -19,13 +19,15 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("hub", func() {
+var _ = Describe("ConvertMasterHub", func() {
 	var (
 		testStdout    *gbytes.Buffer
 		testStdErr    *gbytes.Buffer
 		dir           string
 		commandExecer *testutils.FakeCommandExecer
 		hub           *services.HubClient
+		errChan       chan error
+		outChan       chan []byte
 	)
 
 	BeforeEach(func() {
@@ -41,9 +43,13 @@ var _ = Describe("hub", func() {
 			StateDir: dir,
 		}
 
+		errChan = make(chan error, 2)
+		outChan = make(chan []byte, 2)
 		commandExecer = &testutils.FakeCommandExecer{}
-		commandExecer.SetOutput(&testutils.FakeCommand{})
-
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Err: errChan,
+			Out: outChan,
+		})
 		hub = services.NewHub(nil, &reader, grpc.DialContext, commandExecer.Exec, conf)
 	})
 
@@ -54,7 +60,8 @@ var _ = Describe("hub", func() {
 
 		fakeUpgradeConvertMasterRequest := &pb.UpgradeConvertMasterRequest{
 			OldBinDir: "/old/path/bin",
-			NewBinDir: "/new/path/bin"}
+			NewBinDir: "/new/path/bin",
+		}
 
 		_, err := hub.UpgradeConvertMaster(nil, fakeUpgradeConvertMasterRequest)
 		Expect(err).ToNot(HaveOccurred())
@@ -71,11 +78,10 @@ var _ = Describe("hub", func() {
 	It("returns an error when pg_upgrade fails", func() {
 		fakeUpgradeConvertMasterRequest := &pb.UpgradeConvertMasterRequest{
 			OldBinDir: "/old/path/bin",
-			NewBinDir: "/new/path/bin"}
+			NewBinDir: "/new/path/bin",
+		}
 
-		commandExecer.SetOutput(&testutils.FakeCommand{
-			Err: errors.New("failed to start"),
-		})
+		errChan <- errors.New("failed to start")
 
 		_, err := hub.UpgradeConvertMaster(nil, fakeUpgradeConvertMasterRequest)
 		Expect(err).To(HaveOccurred())

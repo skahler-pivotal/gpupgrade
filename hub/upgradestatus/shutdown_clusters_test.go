@@ -19,13 +19,21 @@ import (
 var _ = Describe("hub", func() {
 	var (
 		commandExecer *testutils.FakeCommandExecer
+		errChan       chan error
+		outChan       chan []byte
 	)
 
 	BeforeEach(func() {
 		testhelper.SetupTestLogger() // extend to capture the values in a var if future tests need it
 
+		errChan = make(chan error, 2)
+		outChan = make(chan []byte, 2)
+
 		commandExecer = &testutils.FakeCommandExecer{}
-		commandExecer.SetOutput(&testutils.FakeCommand{})
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Err: errChan,
+			Out: outChan,
+		})
 	})
 
 	AfterEach(func() {
@@ -54,9 +62,11 @@ var _ = Describe("hub", func() {
 				return false
 			}
 
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Out: []byte("I'm running"),
-			})
+			outChan <- []byte("I'm running")
+			errChan <- nil
+
+			outChan <- nil
+			errChan <- nil
 
 			utils.System.FilePathGlob = func(glob string) ([]string, error) {
 				if strings.Contains(glob, "in.progress") {
@@ -77,9 +87,12 @@ var _ = Describe("hub", func() {
 			utils.System.IsNotExist = func(error) bool {
 				return false
 			}
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Err: errors.New("exit status 1"),
-			})
+
+			errChan <- errors.New("exit status 1")
+			outChan <- nil
+
+			errChan <- nil
+			outChan <- nil
 
 			utils.System.FilePathGlob = func(glob string) ([]string, error) {
 				if strings.Contains(glob, "inprogress") {
@@ -112,9 +125,11 @@ var _ = Describe("hub", func() {
 				return false
 			}
 
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Err: errors.New("gpstop failed"),
-			})
+			errChan <- errors.New("gpstop failed")
+			outChan <- nil
+
+			errChan <- nil
+			outChan <- nil
 
 			subject := upgradestatus.NewShutDownClusters("/tmp", commandExecer.Exec)
 			status, err := subject.GetStatus()

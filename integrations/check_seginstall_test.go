@@ -24,6 +24,8 @@ var _ = Describe("check", func() {
 		dir           string
 		hub           *services.HubClient
 		commandExecer *testutils.FakeCommandExecer
+		outChan       chan []byte
+		errChan       chan error
 	)
 
 	BeforeEach(func() {
@@ -38,8 +40,14 @@ var _ = Describe("check", func() {
 		}
 		reader := configutils.NewReader()
 
+		outChan = make(chan []byte, 2)
+		errChan = make(chan error, 2)
+
 		commandExecer = &testutils.FakeCommandExecer{}
-		commandExecer.SetOutput(&testutils.FakeCommand{})
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Out: outChan,
+			Err: errChan,
+		})
 
 		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
 
@@ -81,10 +89,7 @@ var _ = Describe("check", func() {
 
 			trigger := make(chan struct{}, 1)
 			commandExecer.SetTrigger(trigger)
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Err: nil,
-				Out: []byte("some output"),
-			})
+			outChan <- []byte("some output")
 
 			wg := &sync.WaitGroup{}
 			wg.Add(1)

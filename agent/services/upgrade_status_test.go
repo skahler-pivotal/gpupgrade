@@ -20,13 +20,21 @@ var _ = Describe("CommandListener", func() {
 		testLogFile   *gbytes.Buffer
 		agent         *services.AgentServer
 		commandExecer *testutils.FakeCommandExecer
+		errChan       chan error
+		outChan       chan []byte
 	)
 
 	BeforeEach(func() {
 		_, _, testLogFile = testhelper.SetupTestLogger()
 
+		errChan = make(chan error, 2)
+		outChan = make(chan []byte, 2)
+
 		commandExecer = &testutils.FakeCommandExecer{}
-		commandExecer.SetOutput(&testutils.FakeCommand{})
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Err: errChan,
+			Out: outChan,
+		})
 
 		agent = services.NewAgentServer(commandExecer.Exec)
 	})
@@ -37,9 +45,11 @@ var _ = Describe("CommandListener", func() {
 	})
 
 	It("returns the shell command output", func() {
-		commandExecer.SetOutput(&testutils.FakeCommand{
-			Out: []byte("shell command output"),
-		})
+		outChan <- []byte("shell command output")
+		errChan <- nil
+
+		outChan <- nil
+		errChan <- nil
 
 		resp, err := agent.CheckUpgradeStatus(context.TODO(), nil)
 		Expect(err).ToNot(HaveOccurred())
@@ -48,9 +58,11 @@ var _ = Describe("CommandListener", func() {
 	})
 
 	It("returns only err if anything is reported as an error", func() {
-		commandExecer.SetOutput(&testutils.FakeCommand{
-			Err: errors.New("couldn't find bash"),
-		})
+		errChan <- errors.New("couldn't find bash")
+		outChan <- nil
+
+		errChan <- nil
+		outChan <- nil
 
 		resp, err := agent.CheckUpgradeStatus(context.TODO(), nil)
 		Expect(err).To(HaveOccurred())

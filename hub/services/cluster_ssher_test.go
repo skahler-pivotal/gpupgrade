@@ -17,8 +17,21 @@ import (
 )
 
 var _ = Describe("ClusterSsher", func() {
+	var (
+		errChan       chan error
+		outChan       chan []byte
+		commandExecer *testutils.FakeCommandExecer
+	)
 	BeforeEach(func() {
 		testhelper.SetupTestLogger()
+
+		errChan = make(chan error, 2)
+		outChan = make(chan []byte, 2)
+		commandExecer = &testutils.FakeCommandExecer{}
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Err: errChan,
+			Out: outChan,
+		})
 	})
 
 	AfterEach(func() {
@@ -27,11 +40,11 @@ var _ = Describe("ClusterSsher", func() {
 
 	Describe("VerifySoftware", func() {
 		It("indicates that it is in progress, failed on the hub filesystem", func() {
-			commandExecer := &testutils.FakeCommandExecer{}
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Out: []byte("stdout/stderr message"),
-				Err: errors.New("host not found"),
-			})
+			outChan <- []byte("stdout/stderr message")
+			errChan <- errors.New("host not found")
+
+			outChan <- nil
+			errChan <- nil
 
 			cw := newSpyChecklistWriter()
 			clusterSsher := services.NewClusterSsher(cw, newSpyAgentPinger(), commandExecer.Exec)
@@ -43,11 +56,11 @@ var _ = Describe("ClusterSsher", func() {
 			Expect(cw.stepsMarkedCompleted).ToNot(ContainElement("seginstall"))
 		})
 		It("indicates that it is in progress, completed on the hub filesystem", func() {
-			commandExecer := &testutils.FakeCommandExecer{}
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Out: []byte("completed"),
-				Err: nil,
-			})
+			outChan <- []byte("completed")
+			errChan <- nil
+
+			outChan <- nil
+			errChan <- nil
 
 			cw := newSpyChecklistWriter()
 			clusterSsher := services.NewClusterSsher(cw, newSpyAgentPinger(), commandExecer.Exec)
@@ -72,11 +85,11 @@ var _ = Describe("ClusterSsher", func() {
 
 	Describe("Start", func() {
 		It("starts the agents", func() {
-			commandExecer := &testutils.FakeCommandExecer{}
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Out: []byte("stdout/stderr message"),
-				Err: errors.New("host not found"),
-			})
+			outChan <- []byte("stdout/stderr message")
+			errChan <- errors.New("host not found")
+
+			outChan <- nil
+			errChan <- nil
 
 			cw := newSpyChecklistWriter()
 			clusterSsher := services.NewClusterSsher(cw, newSpyAgentPinger(), commandExecer.Exec)

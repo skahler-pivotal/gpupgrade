@@ -20,13 +20,21 @@ import (
 var _ = Describe("hub", func() {
 	var (
 		commandExecer *testutils.FakeCommandExecer
+		errChan       chan error
+		outChan       chan []byte
 	)
 
 	BeforeEach(func() {
 		testhelper.SetupTestLogger() // extend to capture the values in a var if future tests need it
 
+		outChan = make(chan []byte, 1)
+		errChan = make(chan error, 1)
+
 		commandExecer = &testutils.FakeCommandExecer{}
-		commandExecer.SetOutput(&testutils.FakeCommand{})
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Err: errChan,
+			Out: outChan,
+		})
 	})
 
 	AfterEach(func() {
@@ -56,10 +64,7 @@ var _ = Describe("hub", func() {
 				return false
 			}
 
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Out: []byte("I'm running"),
-				Err: nil,
-			})
+			outChan <- []byte("I'm running")
 
 			subject := upgradestatus.NewConvertMaster("/tmp", commandExecer.Exec)
 			status, err := subject.GetStatus()
@@ -76,9 +81,7 @@ var _ = Describe("hub", func() {
 				return false
 			}
 
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Err: errors.New("exit status 1"),
-			})
+			errChan <- errors.New("exit status 1")
 
 			utils.System.FilePathGlob = func(glob string) ([]string, error) {
 				if strings.Contains(glob, "inprogress") {
@@ -122,9 +125,7 @@ var _ = Describe("hub", func() {
 				return false
 			}
 
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Err: errors.New("pg_upgrade failed"),
-			})
+			errChan <- errors.New("pg_upgrade failed")
 
 			subject := upgradestatus.NewConvertMaster("/tmp", commandExecer.Exec)
 			status, err := subject.GetStatus()

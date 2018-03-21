@@ -28,6 +28,9 @@ var _ = Describe("upgrade convert master", func() {
 		oldBinDir     string
 		newDataDir    string
 		newBinDir     string
+
+		outChan chan []byte
+		errChan chan error
 	)
 
 	BeforeEach(func() {
@@ -73,6 +76,9 @@ var _ = Describe("upgrade convert master", func() {
 		}
 		reader := configutils.NewReader()
 
+		outChan = make(chan []byte, 2)
+		errChan = make(chan error, 2)
+
 		commandExecer = &testutils.FakeCommandExecer{}
 		commandExecer.SetOutput(&testutils.FakeCommand{})
 
@@ -91,9 +97,7 @@ var _ = Describe("upgrade convert master", func() {
 	It("updates status PENDING to RUNNING then to COMPLETE if successful", func() {
 		Expect(runStatusUpgrade()).To(ContainSubstring("PENDING - Run pg_upgrade on master"))
 
-		commandExecer.SetOutput(&testutils.FakeCommand{
-			Out: []byte("pid1"),
-		})
+		outChan <- []byte("pid1")
 
 		upgradeConvertMasterSession := runCommand(
 			"upgrade",
@@ -109,7 +113,7 @@ var _ = Describe("upgrade convert master", func() {
 
 		f, err := os.Create(filepath.Join(dir, "pg_upgrade", "fakeUpgradeFile.done"))
 		Expect(err).ToNot(HaveOccurred())
-		f.Write([]byte("Upgrade complete\n")) //need t
+		f.Write([]byte("Upgrade complete\n")) //need for status upgrade validation
 		f.Close()
 
 		commandExecer.SetOutput(&testutils.FakeCommand{})
@@ -124,10 +128,7 @@ var _ = Describe("upgrade convert master", func() {
 	It("updates status to FAILED if it fails to run", func() {
 		Expect(runStatusUpgrade()).To(ContainSubstring("PENDING - Run pg_upgrade on master"))
 
-		commandExecer.SetOutput(&testutils.FakeCommand{
-			Err: errors.New("start failed"),
-			Out: nil,
-		})
+		errChan <- errors.New("start failed")
 
 		upgradeConvertMasterSession := runCommand(
 			"upgrade",

@@ -26,6 +26,8 @@ var _ = Describe("status upgrade", func() {
 		fakeStatusUpgradeRequest *pb.StatusUpgradeRequest
 		dir                      string
 		commandExecer            *testutils.FakeCommandExecer
+		errChan                  chan error
+		outChan                  chan []byte
 	)
 
 	BeforeEach(func() {
@@ -42,8 +44,14 @@ var _ = Describe("status upgrade", func() {
 			StateDir: dir,
 		}
 
+		errChan = make(chan error, 2)
+		outChan = make(chan []byte, 2)
+
 		commandExecer = &testutils.FakeCommandExecer{}
-		commandExecer.SetOutput(&testutils.FakeCommand{})
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Err: errChan,
+			Out: outChan,
+		})
 		hub = services.NewHub(nil, &reader, grpc.DialContext, commandExecer.Exec, conf)
 	})
 
@@ -127,6 +135,12 @@ var _ = Describe("status upgrade", func() {
 		})
 
 		It("reports that prepare start-agents is running and then complete", func() {
+			errChan <- nil
+			outChan <- nil
+
+			errChan <- nil
+			outChan <- nil
+
 			var numInvocations int
 			utils.System.FilePathGlob = func(input string) ([]string, error) {
 				numInvocations += 1
@@ -159,6 +173,12 @@ var _ = Describe("status upgrade", func() {
 		})
 
 		It("reports that master upgrade is pending when pg_upgrade dir does not exist", func() {
+			errChan <- nil
+			outChan <- nil
+
+			errChan <- nil
+			outChan <- nil
+
 			utils.System.IsNotExist = func(error) bool {
 				return true
 			}
@@ -176,16 +196,18 @@ var _ = Describe("status upgrade", func() {
 		})
 
 		It("reports that master upgrade is running when pg_upgrade/*.inprogress files exists", func() {
+			outChan <- []byte("123")
+			errChan <- nil
+
+			outChan <- []byte("123")
+			errChan <- nil
+
 			utils.System.IsNotExist = func(error) bool {
 				return false
 			}
 			utils.System.FilePathGlob = func(string) ([]string, error) {
 				return []string{"somefile.inprogress"}, nil
 			}
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Out: []byte("123"),
-				Err: nil,
-			})
 
 			formulatedResponse, err := hub.StatusUpgrade(nil, fakeStatusUpgradeRequest)
 			Expect(err).To(BeNil())
@@ -200,6 +222,12 @@ var _ = Describe("status upgrade", func() {
 		})
 
 		It("reports that master upgrade is done when no *.inprogress files exist in ~/.gp_upgrade/pg_upgrade", func() {
+			outChan <- []byte("stdout/stderr message")
+			errChan <- errors.New("bogus error")
+
+			outChan <- nil
+			errChan <- nil
+
 			utils.System.IsNotExist = func(error) bool {
 				return false
 			}
@@ -212,10 +240,6 @@ var _ = Describe("status upgrade", func() {
 
 				return nil, errors.New("test not configured for this glob")
 			}
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Out: []byte("stdout/stderr message"),
-				Err: errors.New("bogus error"),
-			})
 
 			utils.System.Stat = func(filename string) (os.FileInfo, error) {
 				if strings.Contains(filename, "found something") {
@@ -249,6 +273,12 @@ var _ = Describe("status upgrade", func() {
 		})
 
 		It("reports pg_upgrade has failed", func() {
+			outChan <- []byte("stdout/stderr message")
+			errChan <- errors.New("bogus error")
+
+			outChan <- nil
+			errChan <- nil
+
 			utils.System.IsNotExist = func(error) bool {
 				return false
 			}
@@ -261,11 +291,6 @@ var _ = Describe("status upgrade", func() {
 
 				return nil, errors.New("test not configured for this glob")
 			}
-
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Out: []byte("stdout/stderr message"),
-				Err: errors.New("bogus error"),
-			})
 
 			utils.System.Open = func(name string) (*os.File, error) {
 				// Temporarily create a file that we can read as a real file descriptor
