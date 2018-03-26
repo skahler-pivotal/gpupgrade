@@ -54,6 +54,9 @@ func (c *FakeCommandExecer) Args() []string {
 }
 
 func (c *FakeCommandExecer) GetNumInvocations() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	return c.numInvocations
 }
 

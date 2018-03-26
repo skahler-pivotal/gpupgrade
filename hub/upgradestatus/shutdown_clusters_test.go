@@ -63,10 +63,6 @@ var _ = Describe("hub", func() {
 			}
 
 			outChan <- []byte("I'm running")
-			errChan <- nil
-
-			outChan <- nil
-			errChan <- nil
 
 			utils.System.FilePathGlob = func(glob string) ([]string, error) {
 				if strings.Contains(glob, "in.progress") {
@@ -89,10 +85,6 @@ var _ = Describe("hub", func() {
 			}
 
 			errChan <- errors.New("exit status 1")
-			outChan <- nil
-
-			errChan <- nil
-			outChan <- nil
 
 			utils.System.FilePathGlob = func(glob string) ([]string, error) {
 				if strings.Contains(glob, "inprogress") {
@@ -126,10 +118,6 @@ var _ = Describe("hub", func() {
 			}
 
 			errChan <- errors.New("gpstop failed")
-			outChan <- nil
-
-			errChan <- nil
-			outChan <- nil
 
 			subject := upgradestatus.NewShutDownClusters("/tmp", commandExecer.Exec)
 			status, err := subject.GetStatus()

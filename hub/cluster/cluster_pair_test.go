@@ -86,10 +86,6 @@ var _ = Describe("ClusterPair", func() {
 			mockedOutput = "Something that's not bad"
 
 			outChan <- []byte("some output")
-			errChan <- nil
-
-			outChan <- nil
-			errChan <- nil
 
 			subject := cluster.Pair{}
 			err := subject.Init(dir, "old/path", "new/path", commandExecer.Exec)
@@ -122,10 +118,6 @@ var _ = Describe("ClusterPair", func() {
 			mockedOutput = "gpstop failed us" // what gpstop puts in its own logs
 
 			errChan <- errors.New("failed")
-			outChan <- nil
-
-			errChan <- nil
-			outChan <- nil
 
 			subject := cluster.Pair{}
 			err := subject.Init(dir, "old/path", "new/path", commandExecer.Exec)

@@ -32,9 +32,6 @@ var _ = Describe("status upgrade", func() {
 
 	BeforeEach(func() {
 		testhelper.SetupTestLogger()
-		//any mocking of utils.System function pointers should be reset by calling InitializeSystemFunctions
-		utils.System = utils.InitializeSystemFunctions()
-
 		reader := configutils.NewReader()
 
 		var err error
@@ -135,12 +132,6 @@ var _ = Describe("status upgrade", func() {
 		})
 
 		It("reports that prepare start-agents is running and then complete", func() {
-			errChan <- nil
-			outChan <- nil
-
-			errChan <- nil
-			outChan <- nil
-
 			var numInvocations int
 			utils.System.FilePathGlob = func(input string) ([]string, error) {
 				numInvocations += 1
@@ -173,12 +164,6 @@ var _ = Describe("status upgrade", func() {
 		})
 
 		It("reports that master upgrade is pending when pg_upgrade dir does not exist", func() {
-			errChan <- nil
-			outChan <- nil
-
-			errChan <- nil
-			outChan <- nil
-
 			utils.System.IsNotExist = func(error) bool {
 				return true
 			}
@@ -197,10 +182,7 @@ var _ = Describe("status upgrade", func() {
 
 		It("reports that master upgrade is running when pg_upgrade/*.inprogress files exists", func() {
 			outChan <- []byte("123")
-			errChan <- nil
-
 			outChan <- []byte("123")
-			errChan <- nil
 
 			utils.System.IsNotExist = func(error) bool {
 				return false
@@ -224,9 +206,6 @@ var _ = Describe("status upgrade", func() {
 		It("reports that master upgrade is done when no *.inprogress files exist in ~/.gp_upgrade/pg_upgrade", func() {
 			outChan <- []byte("stdout/stderr message")
 			errChan <- errors.New("bogus error")
-
-			outChan <- nil
-			errChan <- nil
 
 			utils.System.IsNotExist = func(error) bool {
 				return false
@@ -275,9 +254,6 @@ var _ = Describe("status upgrade", func() {
 		It("reports pg_upgrade has failed", func() {
 			outChan <- []byte("stdout/stderr message")
 			errChan <- errors.New("bogus error")
-
-			outChan <- nil
-			errChan <- nil
 
 			utils.System.IsNotExist = func(error) bool {
 				return false

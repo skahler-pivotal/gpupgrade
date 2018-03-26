@@ -9,7 +9,6 @@ import (
 	"gp_upgrade/hub/services"
 	pb "gp_upgrade/idl"
 	"gp_upgrade/testutils"
-	"gp_upgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	"google.golang.org/grpc"
@@ -64,7 +63,6 @@ var _ = Describe("hub", func() {
 
 		AfterEach(func() {
 			os.RemoveAll(dir)
-			utils.InitializeSystemFunctions()
 		})
 
 		It("Reports status PENDING when no share-oids request has been made", func() {
@@ -73,41 +71,30 @@ var _ = Describe("hub", func() {
 			Eventually(stepStatus).Should(Equal(pb.StepStatus_PENDING))
 		})
 
-		It("marks step as FAILED if rsync fails for any host", func() {
-			numHosts := len(reader.hostnames)
-
-			errChan <- errors.New("failure")
-			outChan <- nil
-
-			errChan <- nil
-			outChan <- []byte("success")
-
-			hub.ShareOidFilesStub(dir)
-
-			Eventually(commandExecer.GetNumInvocations()).Should(Equal(numHosts))
-
-			stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
-			Expect(err).To(BeNil())
-			Eventually(stepStatus).Should(Equal(pb.StepStatus_FAILED))
-
-		})
-
 		It("marks step as COMPLETE if rsync succeeds for all hosts", func() {
-			numHosts := len(reader.hostnames)
-
-			errChan <- nil
+			outChan <- []byte("success")
 			outChan <- []byte("success")
 
-			errChan <- nil
-			outChan <- []byte("success")
+			hub.ShareOidFilesStub()
 
-			hub.ShareOidFilesStub(dir)
-
-			Eventually(commandExecer.GetNumInvocations()).Should(Equal(numHosts))
+			Eventually(commandExecer.GetNumInvocations).Should(Equal(len(reader.hostnames)))
 
 			stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
 			Expect(err).To(BeNil())
 			Eventually(stepStatus).Should(Equal(pb.StepStatus_COMPLETE))
+		})
+
+		It("marks step as FAILED if rsync fails for any host", func() {
+			errChan <- errors.New("failure")
+			outChan <- []byte("success")
+
+			hub.ShareOidFilesStub()
+
+			Eventually(commandExecer.GetNumInvocations).Should(Equal(len(reader.hostnames)))
+
+			stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(stepStatus).Should(Equal(pb.StepStatus_FAILED))
 		})
 	})
 })

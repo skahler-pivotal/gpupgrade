@@ -101,7 +101,6 @@ var _ = Describe("upgrade validate start cluster", func() {
 
 	It("sets status to FAILED when the validate start cluster request returns an error", func() {
 		errChan <- errors.New("some error")
-		outChan <- nil
 
 		_, err := hub.UpgradeValidateStartCluster(nil, &pb.UpgradeValidateStartClusterRequest{
 			NewBinDir:  "bin",

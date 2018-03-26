@@ -26,14 +26,13 @@ func main() {
 		Short: "Start the gp_upgrade_hub (blocks)",
 		Long:  `Start the gp_upgrade_hub (blocks)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			stateDir := filepath.Join(os.Getenv("HOME"), ".gp_upgrade")
-			gplog.InitializeLogging("gp_upgrade_hub", stateDir)
+			gplog.InitializeLogging("gp_upgrade_hub", logdir)
 			debug.SetTraceback("all")
 
 			conf := &services.HubConfig{
 				CliToHubPort:   7527,
 				HubToAgentPort: 6416,
-				StateDir:       stateDir,
+				StateDir:       filepath.Join(os.Getenv("HOME"), ".gp_upgrade"),
 				LogDir:         logdir,
 			}
 			reader := configutils.NewReader()

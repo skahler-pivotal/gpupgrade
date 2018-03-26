@@ -43,9 +43,6 @@ var _ = Describe("ClusterSsher", func() {
 			outChan <- []byte("stdout/stderr message")
 			errChan <- errors.New("host not found")
 
-			outChan <- nil
-			errChan <- nil
-
 			cw := newSpyChecklistWriter()
 			clusterSsher := services.NewClusterSsher(cw, newSpyAgentPinger(), commandExecer.Exec)
 			clusterSsher.VerifySoftware([]string{"doesnt matter"})
@@ -57,10 +54,6 @@ var _ = Describe("ClusterSsher", func() {
 		})
 		It("indicates that it is in progress, completed on the hub filesystem", func() {
 			outChan <- []byte("completed")
-			errChan <- nil
-
-			outChan <- nil
-			errChan <- nil
 
 			cw := newSpyChecklistWriter()
 			clusterSsher := services.NewClusterSsher(cw, newSpyAgentPinger(), commandExecer.Exec)
@@ -87,9 +80,6 @@ var _ = Describe("ClusterSsher", func() {
 		It("starts the agents", func() {
 			outChan <- []byte("stdout/stderr message")
 			errChan <- errors.New("host not found")
-
-			outChan <- nil
-			errChan <- nil
 
 			cw := newSpyChecklistWriter()
 			clusterSsher := services.NewClusterSsher(cw, newSpyAgentPinger(), commandExecer.Exec)

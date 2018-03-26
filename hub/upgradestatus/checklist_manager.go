@@ -10,21 +10,27 @@ import (
 
 type ChecklistManager struct {
 	pathToStateDir string
+	inProgress     string
+	failed         string
+	completed      string
 }
 
 func NewChecklistManager(stateDirPath string) *ChecklistManager {
 	return &ChecklistManager{
 		pathToStateDir: stateDirPath,
+		inProgress:     "in.progress",
+		failed:         "failed",
+		completed:      "completed",
 	}
 }
 
 func (c *ChecklistManager) MarkFailed(step string) error {
-	err := utils.System.Remove(filepath.Join(c.pathToStateDir, step, "in.progress"))
+	err := utils.System.Remove(filepath.Join(c.pathToStateDir, step, c.inProgress))
 	if err != nil {
 		return err
 	}
 
-	_, err = utils.System.OpenFile(path.Join(c.pathToStateDir, step, "failed"), os.O_CREATE, 0700)
+	_, err = utils.System.OpenFile(path.Join(c.pathToStateDir, step, c.failed), os.O_CREATE, 0700)
 	if err != nil {
 		return err
 	}
@@ -33,12 +39,12 @@ func (c *ChecklistManager) MarkFailed(step string) error {
 }
 
 func (c *ChecklistManager) MarkComplete(step string) error {
-	err := utils.System.Remove(filepath.Join(c.pathToStateDir, step, "in.progress"))
+	err := utils.System.Remove(filepath.Join(c.pathToStateDir, step, c.inProgress))
 	if err != nil {
 		return err
 	}
 
-	_, err = utils.System.OpenFile(path.Join(c.pathToStateDir, step, "completed"), os.O_CREATE, 0700)
+	_, err = utils.System.OpenFile(path.Join(c.pathToStateDir, step, c.completed), os.O_CREATE, 0700)
 	if err != nil {
 		return err
 	}
@@ -47,7 +53,7 @@ func (c *ChecklistManager) MarkComplete(step string) error {
 }
 
 func (c *ChecklistManager) MarkInProgress(step string) error {
-	_, err := utils.System.OpenFile(path.Join(c.pathToStateDir, step, "in.progress"), os.O_CREATE, 0700)
+	_, err := utils.System.OpenFile(path.Join(c.pathToStateDir, step, c.inProgress), os.O_CREATE, 0700)
 	if err != nil {
 		return err
 	}

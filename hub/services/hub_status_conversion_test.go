@@ -3,7 +3,6 @@ package services_test
 import (
 	"errors"
 	"gp_upgrade/testutils"
-	"gp_upgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 
@@ -27,7 +26,6 @@ var _ = Describe("hub", func() {
 
 	BeforeEach(func() {
 		testhelper.SetupTestLogger()
-		utils.System = utils.InitializeSystemFunctions()
 
 		agentA = testutils.NewMockAgentServer()
 

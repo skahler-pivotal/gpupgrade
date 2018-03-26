@@ -1,6 +1,7 @@
 package integrations_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -59,6 +60,31 @@ var _ = Describe("check", func() {
 		hub.Stop()
 		Expect(checkPortIsAvailable(7527)).To(BeTrue())
 		os.RemoveAll(dir)
+	})
+
+	Describe("when a greenplum master db on localhost is up and running", func() {
+		It("happy: the database configuration is saved to a specified location", func() {
+			session := runCommand("check", "config", "--master-host", "localhost")
+
+			if session.ExitCode() != 0 {
+				fmt.Println("make sure greenplum is running")
+			}
+			Eventually(session).Should(Exit(0))
+			// check file
+
+			_, err := ioutil.ReadFile(configutils.GetConfigFilePath(dir))
+			testutils.Check("cannot read file", err)
+
+			reader := configutils.Reader{}
+			reader.OfOldClusterConfig(dir)
+			err = reader.Read()
+			testutils.Check("cannot read config", err)
+
+			// for extra credit, read db and compare info
+			Expect(len(reader.GetSegmentConfiguration())).To(BeNumerically(">", 1))
+
+			// should there be something checking the version file being laid down as well?
+		})
 	})
 
 	// `gp_backup check seginstall` verifies that the user has installed the software on all hosts

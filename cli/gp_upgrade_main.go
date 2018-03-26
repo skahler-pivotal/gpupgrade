@@ -38,7 +38,7 @@ func main() {
 
 func confirmValidCommand() {
 	if len(os.Args[1:]) < 1 {
-		log.Fatal("Please specify one command of: prepare, check, status or upgrade")
+		log.Fatal("Please specify one command of: check, prepare, status, upgrade, or version")
 	}
 }
 

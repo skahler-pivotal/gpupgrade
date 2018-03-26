@@ -1,7 +1,6 @@
 package services
 
 import (
-	"os"
 	"path/filepath"
 
 	pb "gp_upgrade/idl"
@@ -14,12 +13,12 @@ import (
 
 func (h *HubClient) UpgradeShareOids(ctx context.Context, in *pb.UpgradeShareOidsRequest) (*pb.UpgradeShareOidsReply, error) {
 	gplog.Info("Started processing share-oids request")
-	go h.ShareOidFilesStub(h.conf.StateDir)
+	go h.ShareOidFilesStub()
 	return &pb.UpgradeShareOidsReply{}, nil
 }
 
-func (h *HubClient) ShareOidFilesStub(stateDir string) {
-	c := upgradestatus.NewChecklistManager(stateDir)
+func (h *HubClient) ShareOidFilesStub() {
+	c := upgradestatus.NewChecklistManager(h.conf.StateDir)
 	shareOidsStep := "share-oids"
 
 	err := c.ResetStateDir(shareOidsStep)
@@ -35,16 +34,15 @@ func (h *HubClient) ShareOidFilesStub(stateDir string) {
 
 	user := "gpadmin"
 	rsyncFlags := "-rzpogt"
-	sourceDir := filepath.Join(os.Getenv("HOME"), ".gp_upgrade", "pg_upgrade")
+	sourceDir := filepath.Join(h.conf.StateDir, "pg_upgrade")
 	gplog.Info("sourceDir" + sourceDir)
 
 	if err == nil {
 		anyFailed := false
 		for _, host := range hostnames {
-			destinationDirectory := user + "@" + host + ":" + filepath.Join(os.Getenv("HOME"), ".gp_upgrade")
+			destinationDirectory := user + "@" + host + ":" + h.conf.StateDir
 			gplog.Info("destinationDirectory" + destinationDirectory)
 
-			//output, err := utils.System.ExecCmdOutput("bash", "-c", "rsync", rsyncFlags, sourceDir, destinationDirectory)
 			output, err := h.commandExecer("bash", "-c", "rsync", rsyncFlags, sourceDir, destinationDirectory).Output()
 
 			if err != nil {
