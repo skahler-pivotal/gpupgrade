@@ -85,7 +85,7 @@ func (p Preparer) StartAgents() error {
 }
 
 func HowManyHubsRunning() (int, error) {
-	howToLookForHub := `ps -ef | grep -c "[g]p_upgrade_hub"` // use square brackets to avoid finding yourself in matches
+	howToLookForHub := `ps -ef | grep -Gc "[g]p_upgrade_hub$"` // use square brackets to avoid finding yourself in matches
 	output, err := exec.Command("bash", "-c", howToLookForHub).Output()
 	value, convErr := strconv.Atoi(strings.TrimSpace(string(output)))
 	if convErr != nil {
