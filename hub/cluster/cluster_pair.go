@@ -62,8 +62,8 @@ func (cp *Pair) StopEverything(pathToGpstopStateDir string) {
 	stopCluster(runNewStopCmd, "gpstop.new", checklistManager)
 }
 
-func stopCluster(stopCmd helpers.Command, baseName string, stateManager *upgradestatus.ChecklistManager) {
-	err := stateManager.MarkInProgress(baseName)
+func stopCluster(stopCmd helpers.Command, step string, stateManager *upgradestatus.ChecklistManager) {
+	err := stateManager.MarkInProgress(step)
 	if err != nil {
 		gplog.Error(err.Error())
 		return
@@ -71,12 +71,12 @@ func stopCluster(stopCmd helpers.Command, baseName string, stateManager *upgrade
 
 	err = stopCmd.Run()
 
-	gplog.Info("finished stopping %s", baseName)
-
+	gplog.Info("finished stopping %s", step)
 	if err != nil {
 		gplog.Error(err.Error())
-		stateManager.MarkFailed(baseName)
+		stateManager.MarkFailed(step)
 		return
 	}
-	stateManager.MarkComplete(baseName)
+
+	stateManager.MarkComplete(step)
 }

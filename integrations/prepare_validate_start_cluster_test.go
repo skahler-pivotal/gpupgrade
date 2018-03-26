@@ -103,4 +103,10 @@ var _ = Describe("prepare validate-start-cluster", func() {
 		Expect(strings.Join(commandExecer.Args(), "")).To(ContainSubstring("gpstart"))
 		Eventually(runStatusUpgrade).Should(ContainSubstring("FAILED - Validate the upgraded cluster can start up"))
 	})
+
+	It("fails if the --new-bindir or --new-datadir flags are missing", func() {
+		prepareStartAgentsSession := runCommand("upgrade", "validate-start-cluster")
+		Expect(prepareStartAgentsSession).Should(Exit(1))
+		Expect(string(prepareStartAgentsSession.Out.Contents())).To(Equal("Required flag(s) \"new-bindir\", \"new-datadir\" have/has not been set\n"))
+	})
 })

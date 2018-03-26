@@ -1,6 +1,7 @@
 package integrations_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -19,9 +20,11 @@ import (
 
 var _ = Describe("prepare", func() {
 	var (
-		dir           string
-		hub           *services.HubClient
-		commandExecer *testutils.FakeCommandExecer
+		dir            string
+		hub            *services.HubClient
+		commandExecer  *testutils.FakeCommandExecer
+		cliToHubPort   int
+		hubToAgentPort int
 	)
 
 	BeforeEach(func() {
@@ -29,9 +32,12 @@ var _ = Describe("prepare", func() {
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
+		cliToHubPort = 7527
+		hubToAgentPort = 6416
+
 		conf := &services.HubConfig{
-			CliToHubPort:   7527,
-			HubToAgentPort: 6416,
+			CliToHubPort:   cliToHubPort,
+			HubToAgentPort: hubToAgentPort,
 			StateDir:       dir,
 		}
 		reader := configutils.NewReader()
@@ -41,15 +47,29 @@ var _ = Describe("prepare", func() {
 
 		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
 
-		Expect(checkPortIsAvailable(7527)).To(BeTrue())
-		go hub.Start()
+		port := os.Getenv("PGPORT")
 
-		runCommand("check", "config")
+		clusterConfig := fmt.Sprintf(`[{
+              "content": -1,
+              "dbid": 1,
+              "hostname": "localhost",
+              "datadir": "%s",
+              "mode": "s",
+              "preferred_role": "m",
+              "role": "m",
+              "status": "u",
+              "port": %s
+        }]`, dir, port)
+
+		testutils.WriteProvidedConfig(dir, clusterConfig)
+
+		Expect(checkPortIsAvailable(conf.CliToHubPort)).To(BeTrue())
+		go hub.Start()
 	})
 
 	AfterEach(func() {
 		hub.Stop()
-		Expect(checkPortIsAvailable(7527)).To(BeTrue())
+		Expect(checkPortIsAvailable(cliToHubPort)).To(BeTrue())
 		os.RemoveAll(dir)
 	})
 

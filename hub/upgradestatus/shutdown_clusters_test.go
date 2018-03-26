@@ -2,6 +2,7 @@ package upgradestatus_test
 
 import (
 	"os"
+	"strings"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
@@ -11,7 +12,6 @@ import (
 	pb "gp_upgrade/idl"
 	"gp_upgrade/testutils"
 	"gp_upgrade/utils"
-	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -59,7 +59,7 @@ var _ = Describe("hub", func() {
 			})
 
 			utils.System.FilePathGlob = func(glob string) ([]string, error) {
-				if strings.Contains(glob, "inprogress") {
+				if strings.Contains(glob, "in.progress") {
 					return []string{"found something"}, nil
 				}
 				return nil, errors.New("Test not configured for this glob.")

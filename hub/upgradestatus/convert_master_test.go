@@ -3,7 +3,6 @@ package upgradestatus_test
 import (
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"gp_upgrade/hub/upgradestatus"
@@ -26,11 +25,6 @@ var _ = Describe("hub", func() {
 	BeforeEach(func() {
 		testhelper.SetupTestLogger() // extend to capture the values in a var if future tests need it
 
-		homeDirectory := os.Getenv("HOME")
-		// convert this eventually to a Expect
-		Eventually(homeDirectory).Should(Not(Equal("")))
-		err := os.RemoveAll(filepath.Join(homeDirectory, "/.gp_upgrade/pg_upgrade"))
-		Expect(err).To(BeNil())
 		commandExecer = &testutils.FakeCommandExecer{}
 		commandExecer.SetOutput(&testutils.FakeCommand{})
 	})

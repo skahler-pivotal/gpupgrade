@@ -35,7 +35,6 @@ func (c *ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 	pgUpgradePath := c.pgUpgradePath
 
 	if _, err := utils.System.Stat(pgUpgradePath); utils.System.IsNotExist(err) {
-		gplog.Info("setting status to PENDING")
 		masterUpgradeStatus = &pb.UpgradeStepStatus{
 			Step:   pb.UpgradeSteps_MASTERUPGRADE,
 			Status: pb.StepStatus_PENDING,
@@ -44,7 +43,6 @@ func (c *ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 	}
 
 	if c.pgUpgradeRunning() {
-		gplog.Info("setting status to RUNNING")
 		masterUpgradeStatus = &pb.UpgradeStepStatus{
 			Step:   pb.UpgradeSteps_MASTERUPGRADE,
 			Status: pb.StepStatus_RUNNING,
@@ -53,7 +51,6 @@ func (c *ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 	}
 
 	if !inProgressFilesExist(pgUpgradePath) && c.IsUpgradeComplete(pgUpgradePath) {
-		gplog.Info("setting status to COMPLETE")
 		masterUpgradeStatus = &pb.UpgradeStepStatus{
 			Step:   pb.UpgradeSteps_MASTERUPGRADE,
 			Status: pb.StepStatus_COMPLETE,
@@ -61,7 +58,6 @@ func (c *ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 		return masterUpgradeStatus, nil
 	}
 
-	gplog.Info("setting status to FAILED")
 	masterUpgradeStatus = &pb.UpgradeStepStatus{
 		Step:   pb.UpgradeSteps_MASTERUPGRADE,
 		Status: pb.StepStatus_FAILED,
@@ -105,7 +101,7 @@ func (c ConvertMaster) IsUpgradeComplete(pgUpgradePath string) bool {
 	}
 
 	/* Get the latest done file
-	 * Parse and find the "upgrade complete" and return true.
+	 * Parse and find the "Upgrade complete" and return true.
 	 * otherwise, return false.
 	 */
 
@@ -121,7 +117,7 @@ func (c ConvertMaster) IsUpgradeComplete(pgUpgradePath string) bool {
 		doneFile := doneFiles[i]
 		fi, err = os.Stat(doneFile)
 		if err != nil {
-			// TODO: What should we do here?
+			gplog.Error("Done file cannot be read: %v", doneFile)
 			continue
 		}
 
@@ -139,14 +135,16 @@ func (c ConvertMaster) IsUpgradeComplete(pgUpgradePath string) bool {
 	r := bufio.NewReader(f)
 	line, err := r.ReadString('\n')
 
-	// TODO: Needs more error checking
+	// It is possible for ReadString to return a valid line and
+	// be EOF if the file has only 1 line
+	re := regexp.MustCompile("Upgrade complete")
 	for err != io.EOF {
 		if err != nil {
 			gplog.Error("IsUpgradeComplete: %v", err)
 			return false
 		}
 		gplog.Debug(line)
-		re := regexp.MustCompile("Upgrade complete")
+
 		if re.FindString(line) != "" {
 			return true
 		}

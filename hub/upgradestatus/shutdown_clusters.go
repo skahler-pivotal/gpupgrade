@@ -30,7 +30,6 @@ func (s *ShutDownClusters) GetStatus() (*pb.UpgradeStepStatus, error) {
 	gpstopStatePath := s.gpstopStatePath
 
 	if _, err := utils.System.Stat(gpstopStatePath); utils.System.IsNotExist(err) {
-		gplog.Info("setting status to PENDING")
 		shutdownClustersStatus = &pb.UpgradeStepStatus{
 			Step:   pb.UpgradeSteps_STOPPED_CLUSTER,
 			Status: pb.StepStatus_PENDING,
@@ -44,7 +43,6 @@ func (s *ShutDownClusters) GetStatus() (*pb.UpgradeStepStatus, error) {
 	 * for this state processing to work.
 	 */
 	if s.isGpstopRunning() && s.inProgressFilesExist(gpstopStatePath) {
-		gplog.Info("setting status to RUNNING")
 		shutdownClustersStatus = &pb.UpgradeStepStatus{
 			Step:   pb.UpgradeSteps_STOPPED_CLUSTER,
 			Status: pb.StepStatus_RUNNING,
@@ -53,7 +51,6 @@ func (s *ShutDownClusters) GetStatus() (*pb.UpgradeStepStatus, error) {
 	}
 
 	if !s.inProgressFilesExist(gpstopStatePath) && s.IsStopComplete(gpstopStatePath) {
-		gplog.Info("setting status to COMPLETE")
 		shutdownClustersStatus = &pb.UpgradeStepStatus{
 			Step:   pb.UpgradeSteps_STOPPED_CLUSTER,
 			Status: pb.StepStatus_COMPLETE,
@@ -61,7 +58,6 @@ func (s *ShutDownClusters) GetStatus() (*pb.UpgradeStepStatus, error) {
 		return shutdownClustersStatus, nil
 	}
 
-	gplog.Info("setting status to FAILED")
 	shutdownClustersStatus = &pb.UpgradeStepStatus{
 		Step:   pb.UpgradeSteps_STOPPED_CLUSTER,
 		Status: pb.StepStatus_FAILED,
@@ -80,7 +76,7 @@ func (s *ShutDownClusters) isGpstopRunning() bool {
 }
 
 func (s *ShutDownClusters) inProgressFilesExist(gpstopStatePath string) bool {
-	files, err := utils.System.FilePathGlob(gpstopStatePath + "/*.inprogress")
+	files, err := utils.System.FilePathGlob(gpstopStatePath + "/*/in.progress")
 	if files == nil {
 		return false
 	}
@@ -95,7 +91,7 @@ func (s *ShutDownClusters) inProgressFilesExist(gpstopStatePath string) bool {
 
 func (s *ShutDownClusters) IsStopComplete(gpstopStatePath string) bool {
 
-	completeFiles, completeErr := utils.System.FilePathGlob(gpstopStatePath + "/*.complete")
+	completeFiles, completeErr := utils.System.FilePathGlob(gpstopStatePath + "/*/completed")
 	if completeFiles == nil {
 		return false
 	}

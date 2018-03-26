@@ -56,6 +56,13 @@ func WriteProvidedConfig(base, jsonConfig string) {
 	Check("cannot write sample configutils", err)
 }
 
+func WriteNewProvidedConfig(base, jsonConfig string) {
+	err := os.MkdirAll(base, 0700)
+	Check("cannot create sample dir", err)
+	err = ioutil.WriteFile(configutils.GetNewClusterConfigFilePath(base), []byte(jsonConfig), 0600)
+	Check("cannot write sample configutils", err)
+}
+
 func GetUpgradeStatus(hub *services.HubClient, step pb.UpgradeSteps) (pb.StepStatus, error) {
 	reply, err := hub.StatusUpgrade(nil, &pb.StatusUpgradeRequest{})
 	stepStatuses := reply.GetListOfUpgradeStepStatuses()

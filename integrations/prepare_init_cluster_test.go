@@ -91,4 +91,10 @@ var _ = Describe("prepare", func() {
 			Expect(len(reader.GetSegmentConfiguration())).To(BeNumerically(">", 1))
 		})
 	})
+
+	It("fails if the port flag is missing", func() {
+		prepareStartAgentsSession := runCommand("prepare", "init-cluster")
+		Expect(prepareStartAgentsSession).Should(Exit(1))
+		Expect(string(prepareStartAgentsSession.Out.Contents())).To(Equal("Required flag(s) \"port\" have/has not been set\n"))
+	})
 })

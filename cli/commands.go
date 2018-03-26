@@ -1,16 +1,15 @@
 package main
 
 import (
-	"gp_upgrade/cli/commanders"
-	pb "gp_upgrade/idl"
+	"fmt"
 	"os"
 
+	"gp_upgrade/cli/commanders"
+	pb "gp_upgrade/idl"
+
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
-
-	"fmt"
 )
 
 var masterHost string
@@ -36,13 +35,6 @@ var check = &cobra.Command{
 	Use:   "check",
 	Short: "collects information and validates the target Greenplum installation can be upgraded",
 	Long:  `collects information and validates the target Greenplum installation can be upgraded`,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if masterHost == "" {
-			return errors.New("the required flag '--master-host' was not specified")
-		}
-		return nil
-	},
-	Args: cobra.MinimumNArgs(0),
 }
 
 var version = &cobra.Command{
@@ -92,15 +84,6 @@ var subShutdownClusters = &cobra.Command{
 	Use:   "shutdown-clusters",
 	Short: "shuts down both old and new cluster",
 	Long:  "Current assumptions is both clusters exist.",
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if oldBinDir == "" {
-			return errors.New("the required flag '--old-bindir' was not specified")
-		}
-		if newBinDir == "" {
-			return errors.New("the required flag '--new-bindir' was not specified")
-		}
-		return nil
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		conn, connConfigErr := grpc.Dial("localhost:"+hubPort, grpc.WithInsecure())
 		if connConfigErr != nil {
@@ -141,12 +124,6 @@ var subInitCluster = &cobra.Command{
 	Use:   "init-cluster",
 	Short: "inits the cluster",
 	Long:  "Current assumptions is that the cluster already exists. And will only generate json config file for now.",
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if newClusterDbPort == -1 {
-			return errors.New("the required flag '--port' was not specified")
-		}
-		return nil
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		conn, connConfigErr := grpc.Dial("localhost:"+hubPort, grpc.WithInsecure())
 		if connConfigErr != nil {
@@ -345,16 +322,6 @@ var subValidateStartCluster = &cobra.Command{
 	Use:   "validate-start-cluster",
 	Short: "Attempt to start upgraded cluster",
 	Long:  `Use gpstart in order to validate that the new cluster can successfully transition from a stopped to running state`,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if newBinDir == "" {
-			return errors.New("the required flag '--new-bindir' was not specified")
-		}
-		if newDataDir == "" {
-			return errors.New("the required flag '--new-datadir' was not specified")
-		}
-
-		return nil
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		conn, connConfigErr := grpc.Dial("localhost:"+hubPort,
 			grpc.WithInsecure())
