@@ -90,7 +90,6 @@ func (s *ShutDownClusters) inProgressFilesExist(gpstopStatePath string) bool {
 }
 
 func (s *ShutDownClusters) IsStopComplete(gpstopStatePath string) bool {
-
 	completeFiles, completeErr := utils.System.FilePathGlob(gpstopStatePath + "/*/completed")
 	if completeFiles == nil {
 		return false

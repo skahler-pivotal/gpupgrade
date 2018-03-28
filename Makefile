@@ -50,8 +50,6 @@ sshd_build :
 		make -C integrations/sshd
 
 integration:
-		-gpstop -ai
-		gpstart -a
 		ginkgo -r -randomizeAllSpecs -race integrations
 
 test : format lint unit integration

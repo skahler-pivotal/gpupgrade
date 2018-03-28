@@ -13,7 +13,6 @@ import (
 	"gp_upgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
-	"github.com/onsi/gomega/gbytes"
 	"google.golang.org/grpc"
 
 	. "github.com/onsi/ginkgo"
@@ -22,8 +21,6 @@ import (
 
 var _ = Describe("ConvertMasterHub", func() {
 	var (
-		testStdout    *gbytes.Buffer
-		testStdErr    *gbytes.Buffer
 		dir           string
 		commandExecer *testutils.FakeCommandExecer
 		hub           *services.HubClient

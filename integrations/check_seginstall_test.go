@@ -105,7 +105,7 @@ var _ = Describe("check", func() {
   			  "dbid": 7,
   			  "hostname": "localhost"
   			}]`
-			testutils.WriteProvidedConfig(dir, config)
+			testutils.WriteOldConfig(dir, config)
 
 			f, err := os.Create(filepath.Join(dir, "new_cluster_config.json"))
 			Expect(err).ToNot(HaveOccurred())

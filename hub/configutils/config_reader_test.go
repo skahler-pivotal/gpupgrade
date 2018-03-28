@@ -65,7 +65,7 @@ var _ = Describe("configutils reader", func() {
 		It("returns list of hostnames without duplicates", func() {
 			re := regexp.MustCompile("aspen.pivotal")
 			configWithDupe := re.ReplaceAllLiteralString(testutils.SAMPLE_JSON, "briarwood")
-			testutils.WriteProvidedConfig(dir, configWithDupe)
+			testutils.WriteOldConfig(dir, configWithDupe)
 			err := configReader.Read()
 			Expect(err).NotTo(HaveOccurred())
 			hostnames, err := configReader.GetHostnames()

@@ -2,12 +2,12 @@ package testutils
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
 	pb "gp_upgrade/idl"
-
-	"io/ioutil"
-	"os"
 )
 
 const (
@@ -46,21 +46,21 @@ func Check(msg string, e error) {
 }
 
 func WriteSampleConfig(base string) {
-	WriteProvidedConfig(base, SAMPLE_JSON)
+	WriteOldConfig(base, SAMPLE_JSON)
 }
 
-func WriteProvidedConfig(base, jsonConfig string) {
+func WriteOldConfig(base, jsonConfig string) {
 	err := os.MkdirAll(base, 0700)
-	Check("cannot create sample dir", err)
+	Check("cannot create old sample dir", err)
 	err = ioutil.WriteFile(configutils.GetConfigFilePath(base), []byte(jsonConfig), 0600)
-	Check("cannot write sample configutils", err)
+	Check("cannot write old sample configutils", err)
 }
 
-func WriteNewProvidedConfig(base, jsonConfig string) {
+func WriteNewConfig(base, jsonConfig string) {
 	err := os.MkdirAll(base, 0700)
-	Check("cannot create sample dir", err)
+	Check("cannot create new sample dir", err)
 	err = ioutil.WriteFile(configutils.GetNewClusterConfigFilePath(base), []byte(jsonConfig), 0600)
-	Check("cannot write sample configutils", err)
+	Check("cannot write new sample configutils", err)
 }
 
 func GetUpgradeStatus(hub *services.HubClient, step pb.UpgradeSteps) (pb.StepStatus, error) {

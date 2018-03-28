@@ -55,11 +55,12 @@ var _ = BeforeSuite(func() {
 	// it on the path: integration tests should use RunCommand() below
 	userPreviousPathVariable = os.Getenv("PATH")
 	os.Setenv("PATH", cliBinaryPath+":"+userPreviousPathVariable)
+
+	testhelper.SetupTestLogger()
 })
 
 var _ = BeforeEach(func() {
 	killAll()
-	testhelper.SetupTestLogger()
 })
 
 var _ = AfterSuite(func() {

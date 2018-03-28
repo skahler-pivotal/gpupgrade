@@ -1,11 +1,11 @@
 package integrations_test
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"gp_upgrade/hub/cluster"
 	"gp_upgrade/hub/configutils"
@@ -48,26 +48,16 @@ var _ = Describe("upgrade convert master", func() {
 		newBinDir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
-		port := os.Getenv("PGPORT")
-		Expect(port).ToNot(Equal(""), "PGPORT needs to be set!")
+		config := `[{
+			  "datadir": "/some/data/dir",
+			  "content": -1,
+			  "dbid": 1,
+			  "hostname": "localhost",
+			  "port": 5432
+			}]`
 
-		dataDir := os.Getenv("MASTER_DATA_DIRECTORY")
-		Expect(port).ToNot(Equal(""), "MASTER_DATA_DIRECTORY needs to be set!")
-
-		config := fmt.Sprintf(`[{
-  			  "content": -1,
-  			  "dbid": 1,
-  			  "hostname": "localhost",
-              "datadir": "%s",
-              "mode": "s",
-              "preferred_role": "m",
-              "role": "m",
-              "status": "u",
-			  "port": %s
-  			}]`, dataDir, port)
-
-		testutils.WriteProvidedConfig(dir, config)
-		testutils.WriteNewProvidedConfig(dir, config)
+		testutils.WriteOldConfig(dir, config)
+		testutils.WriteNewConfig(dir, config)
 
 		conf := &services.HubConfig{
 			CliToHubPort:   7527,
@@ -80,7 +70,10 @@ var _ = Describe("upgrade convert master", func() {
 		errChan = make(chan error, 2)
 
 		commandExecer = &testutils.FakeCommandExecer{}
-		commandExecer.SetOutput(&testutils.FakeCommand{})
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Out: outChan,
+			Err: errChan,
+		})
 
 		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
 
@@ -97,7 +90,30 @@ var _ = Describe("upgrade convert master", func() {
 	It("updates status PENDING to RUNNING then to COMPLETE if successful", func() {
 		Expect(runStatusUpgrade()).To(ContainSubstring("PENDING - Run pg_upgrade on master"))
 
+		trigger := make(chan struct{}, 1)
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Out:     outChan,
+			Err:     errChan,
+			Trigger: trigger,
+		})
+
 		outChan <- []byte("pid1")
+
+		wg := &sync.WaitGroup{}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			defer GinkgoRecover()
+
+			Expect(runStatusUpgrade()).To(ContainSubstring("RUNNING - Run pg_upgrade on master"))
+
+			f, err := os.Create(filepath.Join(dir, "pg_upgrade", "fakeUpgradeFile.done"))
+			Expect(err).ToNot(HaveOccurred())
+			f.Write([]byte("Upgrade complete\n")) //need for status upgrade validation
+			f.Close()
+
+			trigger <- struct{}{}
+		}()
 
 		upgradeConvertMasterSession := runCommand(
 			"upgrade",
@@ -107,14 +123,7 @@ var _ = Describe("upgrade convert master", func() {
 			"--new-datadir", newDataDir,
 			"--new-bindir", newBinDir,
 		)
-		Expect(upgradeConvertMasterSession).Should(Exit(0))
-		Eventually(runStatusUpgrade).Should(ContainSubstring("RUNNING - Run pg_upgrade on master"))
-		// Allow new stop to complete
-
-		f, err := os.Create(filepath.Join(dir, "pg_upgrade", "fakeUpgradeFile.done"))
-		Expect(err).ToNot(HaveOccurred())
-		f.Write([]byte("Upgrade complete\n")) //need for status upgrade validation
-		f.Close()
+		Eventually(upgradeConvertMasterSession).Should(Exit(0))
 
 		commandExecer.SetOutput(&testutils.FakeCommand{})
 

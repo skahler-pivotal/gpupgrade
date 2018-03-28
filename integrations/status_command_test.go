@@ -66,7 +66,7 @@ var _ = Describe("status", func() {
   			  "hostname": "localhost"
   			}]`
 
-			testutils.WriteProvidedConfig(dir, config)
+			testutils.WriteOldConfig(dir, config)
 
 			statusSession := runCommand("status", "conversion")
 			Eventually(statusSession).Should(Exit(0))

@@ -61,7 +61,7 @@ var _ = Describe("prepare", func() {
               "port": %s
         }]`, dir, port)
 
-		testutils.WriteProvidedConfig(dir, clusterConfig)
+		testutils.WriteOldConfig(dir, clusterConfig)
 
 		Expect(checkPortIsAvailable(conf.CliToHubPort)).To(BeTrue())
 		go hub.Start()

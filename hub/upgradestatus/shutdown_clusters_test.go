@@ -87,7 +87,7 @@ var _ = Describe("hub", func() {
 			errChan <- errors.New("exit status 1")
 
 			utils.System.FilePathGlob = func(glob string) ([]string, error) {
-				if strings.Contains(glob, "inprogress") {
+				if strings.Contains(glob, "in.progress") {
 					return nil, errors.New("fake error")
 				} else if strings.Contains(glob, "complete") {
 					return []string{"old stop complete", "new stop complete"}, nil
