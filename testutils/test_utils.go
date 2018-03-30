@@ -8,11 +8,10 @@ import (
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
 	pb "gp_upgrade/idl"
+	"net"
 )
 
 const (
-	TempHomeDir = "/tmp/gp_upgrade_test_temp_home_dir"
-
 	SAMPLE_JSON = `[{
     "address": "briarwood",
     "content": 2,
@@ -73,4 +72,19 @@ func GetUpgradeStatus(hub *services.HubClient, step pb.UpgradeSteps) (pb.StepSta
 		}
 	}
 	return stepStatusSaved.GetStatus(), err
+}
+
+func GetOpenPort() (int, error) {
+	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	if err != nil {
+		return 0, err
+	}
+
+	l, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		return 0, err
+	}
+	defer l.Close()
+	port := l.Addr().(*net.TCPAddr).Port
+	return port, nil
 }

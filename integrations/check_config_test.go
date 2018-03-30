@@ -22,20 +22,21 @@ var _ = Describe("check config", func() {
 		dir            string
 		hub            *services.HubClient
 		commandExecer  *testutils.FakeCommandExecer
-		cliToHubPort   int
 		hubToAgentPort int
 	)
 
 	BeforeEach(func() {
-		cliToHubPort = 7527
 		hubToAgentPort = 6416
 
 		var err error
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
+		port, err = testutils.GetOpenPort()
+		Expect(err).ToNot(HaveOccurred())
+
 		conf := &services.HubConfig{
-			CliToHubPort:   cliToHubPort,
+			CliToHubPort:   port,
 			HubToAgentPort: hubToAgentPort,
 			StateDir:       dir,
 		}
@@ -45,14 +46,11 @@ var _ = Describe("check config", func() {
 		commandExecer.SetOutput(&testutils.FakeCommand{})
 
 		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
-
-		Expect(checkPortIsAvailable(cliToHubPort)).To(BeTrue())
 		go hub.Start()
 	})
 
 	AfterEach(func() {
 		hub.Stop()
-		Expect(checkPortIsAvailable(cliToHubPort)).To(BeTrue())
 		os.RemoveAll(dir)
 	})
 

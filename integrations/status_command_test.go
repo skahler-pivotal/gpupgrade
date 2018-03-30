@@ -29,8 +29,11 @@ var _ = Describe("status", func() {
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
+		port, err = testutils.GetOpenPort()
+		Expect(err).ToNot(HaveOccurred())
+
 		conf := &services.HubConfig{
-			CliToHubPort:   7527,
+			CliToHubPort:   port,
 			HubToAgentPort: 6416,
 			StateDir:       dir,
 		}
@@ -40,15 +43,13 @@ var _ = Describe("status", func() {
 		commandExecer.SetOutput(&testutils.FakeCommand{})
 
 		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
-
-		Expect(checkPortIsAvailable(7527)).To(BeTrue())
 		go hub.Start()
 	})
 
 	AfterEach(func() {
 		hub.Stop()
-		Expect(checkPortIsAvailable(7527)).To(BeTrue())
 		os.RemoveAll(dir)
+		Expect(checkPortIsAvailable(port)).To(BeTrue())
 	})
 
 	Describe("conversion", func() {

@@ -10,11 +10,16 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
+var (
 	hubPort = "7527"
 )
 
 func main() {
+	upgradePort := os.Getenv("GP_UPGRADE_HUB_PORT")
+	if upgradePort != "" {
+		hubPort = upgradePort
+	}
+
 	setUpLogging()
 
 	addFlagOptions()

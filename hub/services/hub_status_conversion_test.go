@@ -27,7 +27,8 @@ var _ = Describe("hub", func() {
 	BeforeEach(func() {
 		testhelper.SetupTestLogger()
 
-		agentA = testutils.NewMockAgentServer()
+		var port int
+		agentA, port = testutils.NewMockAgentServer()
 
 		reader := &spyReader{
 			hostnames: []string{"localhost", "localhost"},
@@ -45,7 +46,7 @@ var _ = Describe("hub", func() {
 		}
 
 		conf := &services.HubConfig{
-			HubToAgentPort: 6416,
+			HubToAgentPort: port,
 		}
 
 		hubClient = services.NewHub(nil, reader, grpc.DialContext, nil, conf)

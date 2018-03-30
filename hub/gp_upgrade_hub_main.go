@@ -42,7 +42,8 @@ func main() {
 			}
 			hub := services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer, conf)
 			hub.Start()
-			defer hub.Stop()
+
+			hub.Stop()
 
 			return nil
 		},

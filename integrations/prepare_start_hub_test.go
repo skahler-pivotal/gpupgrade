@@ -20,25 +20,25 @@ var _ = Describe("Start Hub", func() {
 		killCommand := exec.Command("pkill", "-9", "gp_upgrade_hub")
 		Start(killCommand, GinkgoWriter, GinkgoWriter)
 
-		Expect(checkPortIsAvailable(7527)).To(BeTrue())
-
 		var err error
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
+
+		Expect(checkPortIsAvailable(port)).To(BeTrue())
 	})
 
 	AfterEach(func() {
 		killCommand := exec.Command("pkill", "-9", "gp_upgrade_hub")
 		Start(killCommand, GinkgoWriter, GinkgoWriter)
 
-		Expect(checkPortIsAvailable(7527)).To(BeTrue())
+		Expect(checkPortIsAvailable(port)).To(BeTrue())
 	})
 
 	It("finds the right hub binary and starts a daemonized process", func() {
 		gpUpgradeSession := runCommand("prepare", "start-hub")
 		Eventually(gpUpgradeSession).Should(Exit(0))
 
-		verificationCmd := exec.Command("bash", "-c", `ps -ef | grep -q "[g]p_upgrade_hub"`)
+		verificationCmd := exec.Command("bash", "-c", `ps -ef | grep -Gq "[g]p_upgrade_hub$"`)
 		verificationSession, err := Start(verificationCmd, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(verificationSession).Should(Exit(0))
@@ -53,11 +53,11 @@ var _ = Describe("Start Hub", func() {
 		tailCmd := exec.Command("tail", "-f", path)
 		tailSession, err := Start(tailCmd, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
+		defer tailSession.Terminate()
 
 		firstSession := runCommand("prepare", "start-hub")
+		Expect(string(firstSession.Err.Contents())).Should(Equal(""))
 		Eventually(firstSession).Should(Exit(0))
-
-		tailSession.Kill()
 	})
 
 	It("returns an error if gp_upgrade_hub is already running", func() {

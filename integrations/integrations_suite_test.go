@@ -26,12 +26,14 @@ var (
 	hubBinaryPath            string
 	agentBinaryPath          string
 	userPreviousPathVariable string
+	port                     int
 )
 
 var _ = BeforeSuite(func() {
 	var err error
 	cliBinaryPath, err = Build("gp_upgrade/cli") // if you want build flags, do a separate Build() in a specific integration test
 	Expect(err).NotTo(HaveOccurred())
+	cliDirectoryPath := path.Dir(cliBinaryPath)
 
 	hubBinaryPath, err = Build("gp_upgrade/hub")
 	Expect(err).NotTo(HaveOccurred())
@@ -54,12 +56,13 @@ var _ = BeforeSuite(func() {
 	// put the gp_upgrade_hub on the path don't need to rename the cli nor put
 	// it on the path: integration tests should use RunCommand() below
 	userPreviousPathVariable = os.Getenv("PATH")
-	os.Setenv("PATH", cliBinaryPath+":"+userPreviousPathVariable)
+	os.Setenv("PATH", cliDirectoryPath+":"+hubDirectoryPath+":"+userPreviousPathVariable)
 
 	testhelper.SetupTestLogger()
 })
 
 var _ = BeforeEach(func() {
+	port = 7527
 	killAll()
 })
 
@@ -76,6 +79,7 @@ func runCommand(args ...string) *Session {
 	// which has its own Golang context; any mocks/fakes you set up in
 	// the test context will NOT be meaningful in the new exec.Command context.
 	cmd := exec.Command(cliBinaryPath, args...)
+	cmd.Env = append(os.Environ(), fmt.Sprintf("GP_UPGRADE_HUB_PORT=%d", port))
 	session, err := Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
 	<-session.Exited

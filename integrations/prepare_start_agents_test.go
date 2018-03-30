@@ -23,7 +23,6 @@ var _ = Describe("prepare", func() {
 		dir            string
 		hub            *services.HubClient
 		commandExecer  *testutils.FakeCommandExecer
-		cliToHubPort   int
 		hubToAgentPort int
 	)
 
@@ -32,11 +31,13 @@ var _ = Describe("prepare", func() {
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
-		cliToHubPort = 7527
 		hubToAgentPort = 6416
 
+		port, err = testutils.GetOpenPort()
+		Expect(err).ToNot(HaveOccurred())
+
 		conf := &services.HubConfig{
-			CliToHubPort:   cliToHubPort,
+			CliToHubPort:   port,
 			HubToAgentPort: hubToAgentPort,
 			StateDir:       dir,
 		}
@@ -47,7 +48,7 @@ var _ = Describe("prepare", func() {
 
 		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
 
-		port := os.Getenv("PGPORT")
+		pgPort := os.Getenv("PGPORT")
 
 		clusterConfig := fmt.Sprintf(`[{
               "content": -1,
@@ -59,18 +60,16 @@ var _ = Describe("prepare", func() {
               "role": "m",
               "status": "u",
               "port": %s
-        }]`, dir, port)
+        }]`, dir, pgPort)
 
 		testutils.WriteOldConfig(dir, clusterConfig)
-
-		Expect(checkPortIsAvailable(conf.CliToHubPort)).To(BeTrue())
 		go hub.Start()
 	})
 
 	AfterEach(func() {
 		hub.Stop()
-		Expect(checkPortIsAvailable(cliToHubPort)).To(BeTrue())
 		os.RemoveAll(dir)
+		Expect(checkPortIsAvailable(port)).To(BeTrue())
 	})
 
 	Describe("start-agents", func() {

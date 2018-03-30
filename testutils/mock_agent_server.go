@@ -18,9 +18,8 @@ type MockAgentServer struct {
 	StatusConversionErr      error
 }
 
-func NewMockAgentServer() *MockAgentServer {
-	// TODO refactor to return the port that we're listening on
-	lis, err := net.Listen("tcp", "localhost:6416")
+func NewMockAgentServer() (*MockAgentServer, int) {
+	lis, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
 		panic(err)
 	}
@@ -36,7 +35,7 @@ func NewMockAgentServer() *MockAgentServer {
 		mockServer.grpcServer.Serve(lis)
 	}()
 
-	return mockServer
+	return mockServer, lis.Addr().(*net.TCPAddr).Port
 }
 
 func (m *MockAgentServer) CheckUpgradeStatus(context.Context, *pb.CheckUpgradeStatusRequest) (*pb.CheckUpgradeStatusReply, error) {
