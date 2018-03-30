@@ -97,15 +97,16 @@ var _ = Describe("upgrade convert master", func() {
 			Trigger: trigger,
 		})
 
-		outChan <- []byte("pid1")
-
 		wg := &sync.WaitGroup{}
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			defer GinkgoRecover()
 
-			Expect(runStatusUpgrade()).To(ContainSubstring("RUNNING - Run pg_upgrade on master"))
+			Eventually(func() string {
+				outChan <- []byte("pid1")
+				return runStatusUpgrade()
+			}).Should(ContainSubstring("RUNNING - Run pg_upgrade on master"))
 
 			f, err := os.Create(filepath.Join(dir, "pg_upgrade", "fakeUpgradeFile.done"))
 			Expect(err).ToNot(HaveOccurred())
