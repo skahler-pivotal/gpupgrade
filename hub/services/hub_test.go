@@ -138,6 +138,7 @@ var _ = Describe("HubClient", func() {
 type spyReader struct {
 	hostnames            []string
 	hostnamesErr         error
+	port                 chan int
 	segmentConfiguration configutils.SegmentConfiguration
 }
 
@@ -145,12 +146,21 @@ func newSpyReader() *spyReader {
 	return &spyReader{}
 }
 
-func (m *spyReader) GetHostnames() ([]string, error) {
-	return m.hostnames, m.hostnamesErr
+func (r *spyReader) GetHostnames() ([]string, error) {
+	return r.hostnames, r.hostnamesErr
 }
 
-func (m *spyReader) GetSegmentConfiguration() configutils.SegmentConfiguration {
-	return m.segmentConfiguration
+func (r *spyReader) GetSegmentConfiguration() configutils.SegmentConfiguration {
+	return r.segmentConfiguration
 }
 
-func (m *spyReader) OfOldClusterConfig(string) {}
+func (r *spyReader) OfOldClusterConfig(string) {}
+
+func (r *spyReader) OfNewClusterConfig(string) {}
+
+func (r *spyReader) GetPortForSegment(segmentDbid int) int {
+	if len(r.port) == 0 {
+		return -1
+	}
+	return <-r.port
+}

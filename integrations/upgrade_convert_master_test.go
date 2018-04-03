@@ -48,16 +48,19 @@ var _ = Describe("upgrade convert master", func() {
 		newBinDir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
-		config := `[{
-			  "datadir": "/some/data/dir",
-			  "content": -1,
-			  "dbid": 1,
-			  "hostname": "localhost",
-			  "port": 5432
-			}]`
+		oldConfig := `[{
+			"dbid": 1,
+			"port": 5432
+		}]`
 
-		testutils.WriteOldConfig(dir, config)
-		testutils.WriteNewConfig(dir, config)
+		testutils.WriteOldConfig(dir, oldConfig)
+
+		newConfig := `[{
+			"dbid": 1,
+			"port": 6432
+		}]`
+
+		testutils.WriteNewConfig(dir, newConfig)
 
 		port, err = testutils.GetOpenPort()
 		Expect(err).ToNot(HaveOccurred())
@@ -67,6 +70,7 @@ var _ = Describe("upgrade convert master", func() {
 			HubToAgentPort: 6416,
 			StateDir:       dir,
 		}
+
 		reader := configutils.NewReader()
 
 		outChan = make(chan []byte, 2)

@@ -28,6 +28,8 @@ type reader interface {
 	GetHostnames() ([]string, error)
 	GetSegmentConfiguration() configutils.SegmentConfiguration
 	OfOldClusterConfig(baseDir string)
+	OfNewClusterConfig(baseDir string)
+	GetPortForSegment(segmentDbid int) int
 }
 
 type pairOperator interface {

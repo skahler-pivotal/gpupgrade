@@ -2,14 +2,18 @@ package configutils
 
 import (
 	"encoding/json"
+	"sync"
+
 	"gp_upgrade/utils"
 
+	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"github.com/pkg/errors"
 )
 
 type Reader struct {
 	config       SegmentConfiguration
 	fileLocation string
+	mu           sync.RWMutex
 }
 
 func NewReader() Reader {
@@ -18,13 +22,18 @@ func NewReader() Reader {
 
 func (reader *Reader) OfOldClusterConfig(base string) {
 	reader.fileLocation = GetConfigFilePath(base)
+	reader.config = nil
 }
 
 func (reader *Reader) OfNewClusterConfig(base string) {
 	reader.fileLocation = GetNewClusterConfigFilePath(base)
+	reader.config = nil
 }
 
 func (reader *Reader) Read() error {
+	reader.mu.RLock()
+	defer reader.mu.RUnlock()
+
 	if reader.fileLocation == "" {
 		return errors.New("Reader file location unknown")
 	}
@@ -42,8 +51,19 @@ func (reader *Reader) Read() error {
 }
 
 // returns -1 for not found
-func (reader Reader) GetPortForSegment(segmentDbid int) int {
+func (reader *Reader) GetPortForSegment(segmentDbid int) int {
+	reader.mu.RLock()
+	defer reader.mu.RUnlock()
+
 	result := -1
+	if len(reader.config) == 0 {
+		err := reader.Read()
+		if err != nil {
+			return result
+		}
+	}
+
+	gplog.Error("length", len(reader.config))
 	for i := 0; i < len(reader.config); i++ {
 		segment := reader.config[i]
 		if segment.DBID == segmentDbid {
@@ -55,13 +75,17 @@ func (reader Reader) GetPortForSegment(segmentDbid int) int {
 	return result
 }
 
-func (reader Reader) GetHostnames() ([]string, error) {
+func (reader *Reader) GetHostnames() ([]string, error) {
+	reader.mu.RLock()
+	defer reader.mu.RUnlock()
+
 	if len(reader.config) == 0 {
 		err := reader.Read()
 		if err != nil {
 			return nil, err
 		}
 	}
+
 	hostnamesSeen := make(map[string]bool)
 	for i := 0; i < len(reader.config); i++ {
 		_, contained := hostnamesSeen[reader.config[i].Hostname]
@@ -76,7 +100,10 @@ func (reader Reader) GetHostnames() ([]string, error) {
 	return hostnames, nil
 }
 
-func (reader Reader) GetSegmentConfiguration() SegmentConfiguration {
+func (reader *Reader) GetSegmentConfiguration() SegmentConfiguration {
+	reader.mu.RLock()
+	defer reader.mu.RUnlock()
+
 	if len(reader.config) == 0 {
 		err := reader.Read()
 		if err != nil {
@@ -87,7 +114,7 @@ func (reader Reader) GetSegmentConfiguration() SegmentConfiguration {
 	return reader.config
 }
 
-func (reader Reader) GetMasterDataDir() string {
+func (reader *Reader) GetMasterDataDir() string {
 	config := reader.GetSegmentConfiguration()
 	for i := 0; i < len(config); i++ {
 		segment := config[i]
@@ -98,7 +125,7 @@ func (reader Reader) GetMasterDataDir() string {
 	return ""
 }
 
-func (reader Reader) GetMaster() *Segment {
+func (reader *Reader) GetMaster() *Segment {
 	var nilSegment *Segment
 	config := reader.GetSegmentConfiguration()
 	for i := 0; i < len(config); i++ {

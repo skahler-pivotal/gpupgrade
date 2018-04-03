@@ -3,6 +3,8 @@ package configutils_test
 import (
 	"io/ioutil"
 	"os"
+	"regexp"
+	"strings"
 
 	"gp_upgrade/utils"
 
@@ -10,8 +12,6 @@ import (
 	. "github.com/onsi/gomega"
 
 	"gp_upgrade/hub/configutils"
-	"regexp"
-	"strings"
 )
 
 const (
@@ -82,7 +82,7 @@ var _ = Describe("ConfigutilsReader", func() {
 				Expect(newPort).To(Equal(35437))
 			})
 
-			It("gets the datadirs propelry", func() {
+			It("gets the datadirs properly", func() {
 				oldDataDir, newDataDir, err := upgradeConfig.GetMasterDataDirs()
 				Expect(err).To(BeNil())
 				Expect(oldDataDir).To(Equal("/old/datadir"))
@@ -114,7 +114,7 @@ var _ = Describe("ConfigutilsReader", func() {
 				Expect(oldPort).To(Equal(-1))
 				Expect(newPort).To(Equal(-1))
 			})
-			It("gets the datadirs propelry", func() {
+			It("gets the datadirs properly", func() {
 				oldDataDir, newDataDir, err := upgradeConfig.GetMasterDataDirs()
 				Expect(err).ToNot(BeNil())
 				Expect(oldDataDir).To(Equal(""))
