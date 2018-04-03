@@ -287,16 +287,17 @@ jobs:
 
           gpinitsystem_for_upgrade() {
               # Stop the old cluster and init a new one.
-              ssh -ttn mdw '
+              ssh -ttn mdw "
                   source /usr/local/greenplum-db-devel/greenplum_path.sh
                   gpstop -a -d /data/gpdata/master/gpseg-1
 
                   source /usr/local/gpdb_master/greenplum_path.sh
-                  sed -e '\''s|\(/data/gpdata/\w\+\)|\1-new|g'\'' gpinitsystem_config > gpinitsystem_config_new
-                  echo "HEAP_CHECKSUM=off" >> gpinitsystem_config_new
+                  sed -e 's|\(/data/gpdata/\w\+\)|\1-new|g' gpinitsystem_config > gpinitsystem_config_new
+                  sed -ie 's|MASTER_PORT=5432|MASTER_PORT=6432|g' gpinitsystem_config_new
+                  sed -ie 's|PORT_BASE=2|PORT_BASE=3|g' gpinitsystem_config_new
                   gpinitsystem -a -c ~gpadmin/gpinitsystem_config_new -h ~gpadmin/segment_host_list
                   gpstop -a -d /data/gpdata/master-new/gpseg-1
-              '
+              "
           }
 
           dump_old_master_query() {
@@ -322,6 +323,23 @@ jobs:
               fi
           }
 
+          gen_environment_scripts() {
+              ssh -ttn mdw "
+                  cat > ~/src_5x.sh <<HERE
+              export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/gpadmin/bin
+              export MASTER_DATA_DIRECTORY=/data/gpdata/master/gpseg-1
+              export PGPORT=5432
+              source /usr/local/greenplum-db-devel/greenplum_path.sh
+              HERE
+                  cat > ~/src_6x.sh <<HERE
+              export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/gpadmin/bin
+              export MASTER_DATA_DIRECTORY=/data/gpdata/master-new/gpseg-1
+              export PGPORT=6432
+              source /usr/local/gpdb_master/greenplum_path.sh
+              HERE
+              "
+          }
+
           CLUSTER_NAME=$(cat ./terraform*/name)
 
           NUMBER_OF_NODES=2
@@ -337,6 +355,8 @@ jobs:
 
           get_segment_datadirs > /tmp/segment_datadirs.txt
           gpinitsystem_for_upgrade
+
+          gen_environment_scripts
 
           echo "Finished with setup"
     ensure:
