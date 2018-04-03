@@ -11,26 +11,13 @@ import (
 	pb "gp_upgrade/idl"
 	"gp_upgrade/utils"
 
-	"github.com/greenplum-db/gp-common-go-libs/testhelper"
+	"google.golang.org/grpc"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
-	"google.golang.org/grpc"
 )
 
 var _ = Describe("PrepareShutdownClusters", func() {
-	var (
-		stdout *gbytes.Buffer
-	)
-
-	BeforeEach(func() {
-		stdout, _, _ = testhelper.SetupTestLogger()
-	})
-
-	AfterEach(func() {
-		utils.System = utils.InitializeSystemFunctions()
-	})
-
 	// ignoring the go routine
 	It("returns successfully", func() {
 		utils.System.RemoveAll = func(s string) error { return nil }
@@ -46,8 +33,6 @@ var _ = Describe("PrepareShutdownClusters", func() {
 
 		_, err = hub.PrepareShutdownClusters(nil, &pb.PrepareShutdownClustersRequest{})
 		Expect(err).To(BeNil())
-
-		Eventually(stdout.Contents()).Should(ContainSubstring("starting PrepareShutdownClusters()"))
 	})
 
 	It("fails if the cluster configuration setup can't be loaded", func() {
@@ -67,8 +52,6 @@ var _ = Describe("PrepareShutdownClusters", func() {
 
 		_, err = hub.PrepareShutdownClusters(nil, &pb.PrepareShutdownClustersRequest{})
 		Expect(err).To(MatchError("boom"))
-
-		Eventually(stdout.Contents()).Should(ContainSubstring("starting PrepareShutdownClusters()"))
 	})
 })
 

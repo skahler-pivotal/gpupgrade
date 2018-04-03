@@ -17,84 +17,82 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("hub", func() {
-	Describe("UpgradeShareOids", func() {
-		var (
-			reader        *spyReader
-			hub           *services.HubClient
-			dir           string
-			commandExecer *testutils.FakeCommandExecer
-			errChan       chan error
-			outChan       chan []byte
-		)
+var _ = Describe("UpgradeShareOids", func() {
+	var (
+		reader        *spyReader
+		hub           *services.HubClient
+		dir           string
+		commandExecer *testutils.FakeCommandExecer
+		errChan       chan error
+		outChan       chan []byte
+	)
 
-		BeforeEach(func() {
-			reader = &spyReader{
-				hostnames: []string{"hostone", "hosttwo"},
-				segmentConfiguration: configutils.SegmentConfiguration{
-					{
-						Content:  0,
-						DBID:     2,
-						Hostname: "hostone",
-					}, {
-						Content:  1,
-						DBID:     3,
-						Hostname: "hosttwo",
-					},
+	BeforeEach(func() {
+		reader = &spyReader{
+			hostnames: []string{"hostone", "hosttwo"},
+			segmentConfiguration: configutils.SegmentConfiguration{
+				{
+					Content:  0,
+					DBID:     2,
+					Hostname: "hostone",
+				}, {
+					Content:  1,
+					DBID:     3,
+					Hostname: "hosttwo",
 				},
-			}
-			var err error
-			dir, err = ioutil.TempDir("", "")
-			Expect(err).ToNot(HaveOccurred())
+			},
+		}
+		var err error
+		dir, err = ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
 
-			errChan = make(chan error, 2)
-			outChan = make(chan []byte, 2)
-			commandExecer = &testutils.FakeCommandExecer{}
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Err: errChan,
-				Out: outChan,
-			})
-
-			hub = services.NewHub(nil, reader, grpc.DialContext, commandExecer.Exec, &services.HubConfig{
-				StateDir: dir,
-			})
-			testhelper.SetupTestLogger()
+		errChan = make(chan error, 2)
+		outChan = make(chan []byte, 2)
+		commandExecer = &testutils.FakeCommandExecer{}
+		commandExecer.SetOutput(&testutils.FakeCommand{
+			Err: errChan,
+			Out: outChan,
 		})
 
-		AfterEach(func() {
-			os.RemoveAll(dir)
+		hub = services.NewHub(nil, reader, grpc.DialContext, commandExecer.Exec, &services.HubConfig{
+			StateDir: dir,
 		})
+		testhelper.SetupTestLogger()
+	})
 
-		It("Reports status PENDING when no share-oids request has been made", func() {
-			stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
-			Expect(err).To(BeNil())
-			Eventually(stepStatus).Should(Equal(pb.StepStatus_PENDING))
-		})
+	AfterEach(func() {
+		os.RemoveAll(dir)
+	})
 
-		It("marks step as COMPLETE if rsync succeeds for all hosts", func() {
-			outChan <- []byte("success")
-			outChan <- []byte("success")
+	It("Reports status PENDING when no share-oids request has been made", func() {
+		stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
+		Expect(err).To(BeNil())
+		Eventually(stepStatus).Should(Equal(pb.StepStatus_PENDING))
+	})
 
-			hub.ShareOidFilesStub()
+	It("marks step as COMPLETE if rsync succeeds for all hosts", func() {
+		outChan <- []byte("success")
+		outChan <- []byte("success")
 
-			Eventually(commandExecer.GetNumInvocations).Should(Equal(len(reader.hostnames)))
+		hub.ShareOidFilesStub()
 
-			stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
-			Expect(err).To(BeNil())
-			Eventually(stepStatus).Should(Equal(pb.StepStatus_COMPLETE))
-		})
+		Eventually(commandExecer.GetNumInvocations).Should(Equal(len(reader.hostnames)))
 
-		It("marks step as FAILED if rsync fails for any host", func() {
-			errChan <- errors.New("failure")
-			outChan <- []byte("success")
+		stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
+		Expect(err).To(BeNil())
+		Eventually(stepStatus).Should(Equal(pb.StepStatus_COMPLETE))
+	})
 
-			hub.ShareOidFilesStub()
+	It("marks step as FAILED if rsync fails for any host", func() {
+		errChan <- errors.New("failure")
+		outChan <- []byte("success")
 
-			Eventually(commandExecer.GetNumInvocations).Should(Equal(len(reader.hostnames)))
+		hub.ShareOidFilesStub()
 
-			stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
-			Expect(err).ToNot(HaveOccurred())
-			Eventually(stepStatus).Should(Equal(pb.StepStatus_FAILED))
-		})
+		Eventually(commandExecer.GetNumInvocations).Should(Equal(len(reader.hostnames)))
+
+		stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
+		Expect(err).ToNot(HaveOccurred())
+		Eventually(stepStatus).Should(Equal(pb.StepStatus_FAILED))
 	})
 })

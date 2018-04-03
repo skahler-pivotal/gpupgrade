@@ -103,7 +103,7 @@ var _ = Describe("prepare validate-start-cluster", func() {
 		errChan <- errors.New("start failed")
 
 		prepareStartAgentsSession := runCommand("upgrade", "validate-start-cluster", "--new-bindir", newBinDir, "--new-datadir", newDataDir)
-		Eventually(prepareStartAgentsSession).Should(Exit(1))
+		Eventually(prepareStartAgentsSession).Should(Exit(0))
 
 		Expect(commandExecer.Command()).To(Equal("bash"))
 		Expect(strings.Join(commandExecer.Args(), "")).To(ContainSubstring("gpstart"))

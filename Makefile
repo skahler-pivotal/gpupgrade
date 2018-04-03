@@ -44,13 +44,13 @@ lint :
 		gometalinter --config=gometalinter.config -s vendor ./...
 
 unit :
-		ginkgo -r -randomizeSuites -randomizeAllSpecs -race --skipPackage=integrations
+		ginkgo -r -randomizeSuites -randomizeAllSpecs --skipPackage=integrations #-race
 
 sshd_build :
 		make -C integrations/sshd
 
 integration:
-		ginkgo -r -randomizeAllSpecs -race integrations
+		ginkgo -r -randomizeAllSpecs integrations #-race 
 
 test : format lint unit integration
 

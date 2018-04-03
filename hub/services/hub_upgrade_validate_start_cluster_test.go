@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
@@ -12,12 +14,7 @@ import (
 	pb "gp_upgrade/idl"
 	"gp_upgrade/testutils"
 
-	"github.com/greenplum-db/gp-common-go-libs/testhelper"
-	"github.com/onsi/gomega/gbytes"
 	"google.golang.org/grpc"
-
-	"strings"
-	"sync"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -26,7 +23,6 @@ import (
 var _ = Describe("upgrade validate start cluster", func() {
 	var (
 		hub           *services.HubClient
-		testStdout    *gbytes.Buffer
 		reader        configutils.Reader
 		dir           string
 		commandExecer *testutils.FakeCommandExecer
@@ -52,8 +48,6 @@ var _ = Describe("upgrade validate start cluster", func() {
 		hub = services.NewHub(nil, &reader, grpc.DialContext, commandExecer.Exec, &services.HubConfig{
 			StateDir: dir,
 		})
-
-		testStdout, _, _ = testhelper.SetupTestLogger()
 	})
 
 	AfterEach(func() {
@@ -106,7 +100,7 @@ var _ = Describe("upgrade validate start cluster", func() {
 			NewBinDir:  "bin",
 			NewDataDir: "data",
 		})
-		Expect(err).To(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		stateChecker := upgradestatus.NewStateCheck(
 			filepath.Join(dir, "validate-start-cluster"),

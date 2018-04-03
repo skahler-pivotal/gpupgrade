@@ -12,7 +12,6 @@ import (
 	"gp_upgrade/testutils"
 	"gp_upgrade/utils"
 
-	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	"google.golang.org/grpc"
 
 	. "github.com/onsi/ginkgo"
@@ -29,8 +28,6 @@ var _ = Describe("ConvertMasterHub", func() {
 	)
 
 	BeforeEach(func() {
-		testhelper.SetupTestLogger()
-
 		reader := configutils.NewReader()
 
 		var err error
@@ -49,10 +46,6 @@ var _ = Describe("ConvertMasterHub", func() {
 		})
 
 		hub = services.NewHub(nil, &reader, grpc.DialContext, commandExecer.Exec, conf)
-	})
-
-	AfterEach(func() {
-		utils.System = utils.InitializeSystemFunctions()
 	})
 
 	It("returns with no error when convert master runs successfully", func() {

@@ -2,9 +2,8 @@ package services_test
 
 import (
 	"errors"
-	"gp_upgrade/testutils"
 
-	"github.com/greenplum-db/gp-common-go-libs/testhelper"
+	"gp_upgrade/testutils"
 
 	"google.golang.org/grpc"
 
@@ -25,8 +24,6 @@ var _ = Describe("hub", func() {
 	)
 
 	BeforeEach(func() {
-		testhelper.SetupTestLogger()
-
 		var port int
 		agentA, port = testutils.NewMockAgentServer()
 

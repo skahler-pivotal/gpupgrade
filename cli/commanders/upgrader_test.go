@@ -24,6 +24,8 @@ var _ = Describe("reporter", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		client = mockpb.NewMockCliToHubClient(ctrl)
+
+		testhelper.SetupTestLogger()
 	})
 
 	AfterEach(func() {

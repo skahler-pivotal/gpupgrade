@@ -18,7 +18,7 @@ var _ = Describe("HubClient", func() {
 	var (
 		reader *spyReader
 		agentA *testutils.MockAgentServer
-		port int
+		port   int
 	)
 
 	BeforeEach(func() {

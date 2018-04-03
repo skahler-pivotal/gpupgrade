@@ -6,12 +6,10 @@ import (
 
 	"gp_upgrade/testutils"
 
-	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	"gp_upgrade/hub/services"
-	"gp_upgrade/utils"
 
 	"github.com/pkg/errors"
 )
@@ -23,8 +21,6 @@ var _ = Describe("ClusterSsher", func() {
 		commandExecer *testutils.FakeCommandExecer
 	)
 	BeforeEach(func() {
-		testhelper.SetupTestLogger()
-
 		errChan = make(chan error, 2)
 		outChan = make(chan []byte, 2)
 		commandExecer = &testutils.FakeCommandExecer{}
@@ -32,10 +28,6 @@ var _ = Describe("ClusterSsher", func() {
 			Err: errChan,
 			Out: outChan,
 		})
-	})
-
-	AfterEach(func() {
-		utils.System = utils.InitializeSystemFunctions()
 	})
 
 	Describe("VerifySoftware", func() {
@@ -52,6 +44,7 @@ var _ = Describe("ClusterSsher", func() {
 			Expect(cw.stepsMarkedFailed).To(ContainElement("seginstall"))
 			Expect(cw.stepsMarkedCompleted).ToNot(ContainElement("seginstall"))
 		})
+
 		It("indicates that it is in progress, completed on the hub filesystem", func() {
 			outChan <- []byte("completed")
 

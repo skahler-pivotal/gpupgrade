@@ -13,7 +13,6 @@ import (
 	"gp_upgrade/testutils"
 	"gp_upgrade/utils"
 
-	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	"google.golang.org/grpc"
 
 	. "github.com/onsi/ginkgo"
@@ -31,7 +30,6 @@ var _ = Describe("status upgrade", func() {
 	)
 
 	BeforeEach(func() {
-		testhelper.SetupTestLogger()
 		reader := configutils.NewReader()
 
 		var err error
@@ -54,7 +52,6 @@ var _ = Describe("status upgrade", func() {
 
 	AfterEach(func() {
 		os.RemoveAll(dir)
-		utils.System = utils.InitializeSystemFunctions()
 	})
 
 	It("responds with the statuses of the steps based on files on disk", func() {

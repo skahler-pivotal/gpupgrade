@@ -109,7 +109,7 @@ var _ = Describe("upgrade convert master", func() {
 				return runStatusUpgrade()
 			}).Should(ContainSubstring("RUNNING - Run pg_upgrade on master"))
 
-			f, err := os.Create(filepath.Join(dir, "pg_upgrade", "fakeUpgradeFile.done"))
+			f, err := os.Create(filepath.Join(dir, "pg_upgrade", "1.done"))
 			Expect(err).ToNot(HaveOccurred())
 			f.Write([]byte("Upgrade complete\n")) //need for status upgrade validation
 			f.Close()
@@ -126,6 +126,7 @@ var _ = Describe("upgrade convert master", func() {
 			"--new-bindir", newBinDir,
 		)
 		Eventually(upgradeConvertMasterSession).Should(Exit(0))
+		wg.Wait()
 
 		commandExecer.SetOutput(&testutils.FakeCommand{})
 

@@ -2,6 +2,8 @@ package services_test
 
 import (
 	"errors"
+	"time"
+
 	pb "gp_upgrade/idl"
 	mockpb "gp_upgrade/mock_idl"
 
@@ -10,26 +12,20 @@ import (
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
 
-	"time"
-
-	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
 )
 
 var _ = Describe("hub pings agents test", func() {
 	var (
 		client        *mockpb.MockAgentClient
 		ctrl          *gomock.Controller
-		testLogFile   *gbytes.Buffer
 		pingerManager *services.PingerManager
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		client = mockpb.NewMockAgentClient(ctrl)
-		_, _, testLogFile = testhelper.SetupTestLogger()
 		pingerManager = &services.PingerManager{
 			[]configutils.ClientAndHostname{{Client: client, Hostname: "doesnotexist"}},
 			10,
@@ -38,7 +34,7 @@ var _ = Describe("hub pings agents test", func() {
 	})
 
 	AfterEach(func() {
-		defer ctrl.Finish()
+		ctrl.Finish()
 	})
 
 	Describe("PingAllAgents", func() {
@@ -59,8 +55,7 @@ var _ = Describe("hub pings agents test", func() {
 			).Return(&pb.PingAgentsReply{}, errors.New("call to agent fail"))
 
 			err := pingerManager.PingAllAgents()
-			Expect(err.Error()).To(ContainSubstring("call to agent fail"))
-			Expect(string(testLogFile.Contents())).To(ContainSubstring("Not all agents on the segment hosts are running"))
+			Expect(err).To(MatchError("call to agent fail"))
 		})
 	})
 	Describe("PingAllAgents", func() {
@@ -71,12 +66,9 @@ var _ = Describe("hub pings agents test", func() {
 			).Return(&pb.PingAgentsReply{}, nil)
 
 			err := pingerManager.PingPollAgents()
-			Expect(err).To(BeNil())
-			logContents := string(testLogFile.Contents())
-			Expect(logContents).To(ContainSubstring("Pinging agents..."))
-			Expect(logContents).To(Not(ContainSubstring("Not all agents on the segment hosts are running.")))
-			Expect(logContents).To(Not(ContainSubstring("Reached ping timeout")))
+			Expect(err).ToNot(HaveOccurred())
 		})
+
 		It("grpc calls fail, ping timeout exceeded", func() {
 			for i := 0; i < pingerManager.NumRetries; i++ {
 				client.EXPECT().PingAgents(
@@ -86,10 +78,7 @@ var _ = Describe("hub pings agents test", func() {
 			}
 
 			err := pingerManager.PingPollAgents()
-			Expect(err.Error()).To(ContainSubstring("call to agent fail"))
-			logContents := string(testLogFile.Contents())
-			Expect(logContents).To(ContainSubstring("Reached ping timeout"))
-			Expect(logContents).To(MatchRegexp(`Pinging agents\.\.\.\n.*Not all agents on the segment hosts are running\.\n.*Pinging agents\.\.\.\n`))
+			Expect(err).To(MatchError("call to agent fail"))
 		})
 	})
 })
