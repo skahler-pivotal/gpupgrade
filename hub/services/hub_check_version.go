@@ -22,13 +22,13 @@ func (h *HubClient) CheckVersion(ctx context.Context,
 	err := dbConnector.Connect()
 	if err != nil {
 		gplog.Error(err.Error())
-		return nil, utils.DatabaseConnectionError{Parent: err}
+		return &pb.CheckVersionReply{}, utils.DatabaseConnectionError{Parent: err}
 	}
 	databaseHandler := dbConnector.GetConn()
 	isVersionCompatible, err := VerifyVersion(databaseHandler)
 	if err != nil {
 		gplog.Error(err.Error())
-		return nil, errors.New(err.Error())
+		return &pb.CheckVersionReply{}, errors.New(err.Error())
 	}
 	return &pb.CheckVersionReply{IsVersionCompatible: isVersionCompatible}, nil
 }

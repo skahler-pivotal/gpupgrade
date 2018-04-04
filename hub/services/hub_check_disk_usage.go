@@ -29,7 +29,7 @@ func (h *HubClient) CheckDiskUsage(ctx context.Context,
 	reader.OfOldClusterConfig(h.conf.StateDir)
 	hostnames, err := reader.GetHostnames()
 	if err != nil {
-		return nil, err
+		return &pb.CheckDiskUsageReply{}, err
 	}
 	var clients []configutils.ClientAndHostname
 	for i := 0; i < len(hostnames); i++ {

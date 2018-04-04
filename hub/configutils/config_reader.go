@@ -6,7 +6,6 @@ import (
 
 	"gp_upgrade/utils"
 
-	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"github.com/pkg/errors"
 )
 
@@ -63,7 +62,6 @@ func (reader *Reader) GetPortForSegment(segmentDbid int) int {
 		}
 	}
 
-	gplog.Error("length", len(reader.config))
 	for i := 0; i < len(reader.config); i++ {
 		segment := reader.config[i]
 		if segment.DBID == segmentDbid {

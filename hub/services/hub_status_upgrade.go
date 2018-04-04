@@ -1,11 +1,13 @@
 package services
 
 import (
+	"path/filepath"
+	"strings"
+
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/upgradestatus"
 	pb "gp_upgrade/idl"
 	"gp_upgrade/utils"
-	"path/filepath"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"golang.org/x/net/context"
@@ -38,7 +40,7 @@ func (h *HubClient) StatusUpgrade(ctx context.Context, in *pb.StatusUpgradeReque
 	shutdownClustersStatus, _ := clusterPair.GetStatus()
 
 	pgUpgradePath := filepath.Join(h.conf.StateDir, "pg_upgrade")
-	convertMaster := upgradestatus.NewConvertMaster(pgUpgradePath, h.commandExecer)
+	convertMaster := upgradestatus.NewPGUpgradeStatusChecker(pgUpgradePath, h.configreader.GetMasterDataDir(), h.commandExecer)
 	masterUpgradeStatus, _ := convertMaster.GetStatus()
 
 	startAgentsStatePath := filepath.Join(h.conf.StateDir, "start-agents")
@@ -53,6 +55,22 @@ func (h *HubClient) StatusUpgrade(ctx context.Context, in *pb.StatusUpgradeReque
 	validateStartClusterState := upgradestatus.NewStateCheck(validateStartClusterPath, pb.UpgradeSteps_VALIDATE_START_CLUSTER)
 	validateStartClusterStatus, _ := validateStartClusterState.GetStatus()
 
+	conversionStatus, _ := h.StatusConversion(nil, &pb.StatusConversionRequest{})
+	upgradeConvertPrimariesStatus := &pb.UpgradeStepStatus{
+		Step: pb.UpgradeSteps_CONVERT_PRIMARIES,
+	}
+
+	statuses := strings.Join(conversionStatus.GetConversionStatuses(), " ")
+	if strings.Contains(statuses, "FAILED") {
+		upgradeConvertPrimariesStatus.Status = pb.StepStatus_FAILED
+	} else if strings.Contains(statuses, "RUNNING") {
+		upgradeConvertPrimariesStatus.Status = pb.StepStatus_RUNNING
+	} else if strings.Contains(statuses, "COMPLETE") {
+		upgradeConvertPrimariesStatus.Status = pb.StepStatus_COMPLETE
+	} else {
+		upgradeConvertPrimariesStatus.Status = pb.StepStatus_PENDING
+	}
+
 	return &pb.StatusUpgradeReply{
 		ListOfUpgradeStepStatuses: []*pb.UpgradeStepStatus{
 			checkconfigStatus,
@@ -63,6 +81,7 @@ func (h *HubClient) StatusUpgrade(ctx context.Context, in *pb.StatusUpgradeReque
 			startAgentsStatus,
 			shareOidsStatus,
 			validateStartClusterStatus,
+			upgradeConvertPrimariesStatus,
 		},
 	}, nil
 }
@@ -73,10 +92,14 @@ func GetPrepareNewClusterConfigStatus(base string) (*pb.UpgradeStepStatus, error
 
 	if err != nil {
 		gplog.Debug("%v", err)
-		return &pb.UpgradeStepStatus{Step: pb.UpgradeSteps_PREPARE_INIT_CLUSTER,
-			Status: pb.StepStatus_PENDING}, nil
+		return &pb.UpgradeStepStatus{
+			Step:   pb.UpgradeSteps_PREPARE_INIT_CLUSTER,
+			Status: pb.StepStatus_PENDING,
+		}, nil
 	}
 
-	return &pb.UpgradeStepStatus{Step: pb.UpgradeSteps_PREPARE_INIT_CLUSTER,
-		Status: pb.StepStatus_COMPLETE}, nil
+	return &pb.UpgradeStepStatus{
+		Step:   pb.UpgradeSteps_PREPARE_INIT_CLUSTER,
+		Status: pb.StepStatus_COMPLETE,
+	}, nil
 }

@@ -29,8 +29,8 @@ var _ = Describe("ConvertMasterHub", func() {
 
 	BeforeEach(func() {
 		portChan = make(chan int, 2)
-		reader := &spyReader{
-			port: portChan,
+		reader := &testutils.SpyReader{
+			Port: portChan,
 		}
 
 		var err error
@@ -49,6 +49,11 @@ var _ = Describe("ConvertMasterHub", func() {
 		})
 
 		hub = services.NewHub(nil, reader, grpc.DialContext, commandExecer.Exec, conf)
+	})
+
+	AfterEach(func() {
+		utils.System = utils.InitializeSystemFunctions()
+		os.RemoveAll(dir)
 	})
 
 	It("returns with no error when convert master runs successfully", func() {

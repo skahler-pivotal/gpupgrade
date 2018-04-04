@@ -107,6 +107,24 @@ func (mr *MockAgentClientMockRecorder) PingAgents(ctx, in interface{}, opts ...i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingAgents", reflect.TypeOf((*MockAgentClient)(nil).PingAgents), varargs...)
 }
 
+// UpgradeConvertPrimarySegments mocks base method
+func (m *MockAgentClient) UpgradeConvertPrimarySegments(ctx context.Context, in *UpgradeConvertPrimarySegmentsRequest, opts ...grpc.CallOption) (*UpgradeConvertPrimarySegmentsReply, error) {
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpgradeConvertPrimarySegments", varargs...)
+	ret0, _ := ret[0].(*UpgradeConvertPrimarySegmentsReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpgradeConvertPrimarySegments indicates an expected call of UpgradeConvertPrimarySegments
+func (mr *MockAgentClientMockRecorder) UpgradeConvertPrimarySegments(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeConvertPrimarySegments", reflect.TypeOf((*MockAgentClient)(nil).UpgradeConvertPrimarySegments), varargs...)
+}
+
 // MockAgentServer is a mock of AgentServer interface
 type MockAgentServer struct {
 	ctrl     *gomock.Controller
@@ -180,4 +198,17 @@ func (m *MockAgentServer) PingAgents(arg0 context.Context, arg1 *PingAgentsReque
 // PingAgents indicates an expected call of PingAgents
 func (mr *MockAgentServerMockRecorder) PingAgents(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingAgents", reflect.TypeOf((*MockAgentServer)(nil).PingAgents), arg0, arg1)
+}
+
+// UpgradeConvertPrimarySegments mocks base method
+func (m *MockAgentServer) UpgradeConvertPrimarySegments(arg0 context.Context, arg1 *UpgradeConvertPrimarySegmentsRequest) (*UpgradeConvertPrimarySegmentsReply, error) {
+	ret := m.ctrl.Call(m, "UpgradeConvertPrimarySegments", arg0, arg1)
+	ret0, _ := ret[0].(*UpgradeConvertPrimarySegmentsReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpgradeConvertPrimarySegments indicates an expected call of UpgradeConvertPrimarySegments
+func (mr *MockAgentServerMockRecorder) UpgradeConvertPrimarySegments(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeConvertPrimarySegments", reflect.TypeOf((*MockAgentServer)(nil).UpgradeConvertPrimarySegments), arg0, arg1)
 }

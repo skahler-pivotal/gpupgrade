@@ -10,6 +10,7 @@ import (
 	"gp_upgrade/hub/cluster"
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
+	pb "gp_upgrade/idl"
 	"gp_upgrade/testutils"
 
 	. "github.com/onsi/ginkgo"
@@ -20,10 +21,10 @@ import (
 
 var _ = Describe("prepare", func() {
 	var (
-		dir            string
-		hub            *services.HubClient
-		commandExecer  *testutils.FakeCommandExecer
-		hubToAgentPort int
+		dir           string
+		hub           *services.HubClient
+		mockAgent     *testutils.MockAgentServer
+		commandExecer *testutils.FakeCommandExecer
 	)
 
 	BeforeEach(func() {
@@ -31,14 +32,15 @@ var _ = Describe("prepare", func() {
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
-		hubToAgentPort = 6416
+		var agentPort int
+		mockAgent, agentPort = testutils.NewMockAgentServer()
 
 		port, err = testutils.GetOpenPort()
 		Expect(err).ToNot(HaveOccurred())
 
 		conf := &services.HubConfig{
 			CliToHubPort:   port,
-			HubToAgentPort: hubToAgentPort,
+			HubToAgentPort: agentPort,
 			StateDir:       dir,
 		}
 		reader := configutils.NewReader()
@@ -68,6 +70,7 @@ var _ = Describe("prepare", func() {
 
 	AfterEach(func() {
 		hub.Stop()
+		mockAgent.Stop()
 		os.RemoveAll(dir)
 		Expect(checkPortIsAvailable(port)).To(BeTrue())
 	})
@@ -75,6 +78,11 @@ var _ = Describe("prepare", func() {
 	Describe("start-agents", func() {
 		It("updates status PENDING to RUNNING then to COMPLETE if successful", func(done Done) {
 			defer close(done)
+
+			mockAgent.StatusConversionResponse = &pb.CheckConversionStatusReply{
+				Statuses: []string{},
+			}
+
 			Expect(runStatusUpgrade()).To(ContainSubstring("PENDING - Agents Started on Cluster"))
 
 			trigger := make(chan struct{}, 1)

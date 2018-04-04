@@ -17,7 +17,14 @@ service CliToHub {
     rpc PrepareStartAgents(PrepareStartAgentsRequest) returns (PrepareStartAgentsReply) {}
     rpc UpgradeShareOids(UpgradeShareOidsRequest) returns (UpgradeShareOidsReply) {}
     rpc UpgradeValidateStartCluster(UpgradeValidateStartClusterRequest) returns (UpgradeValidateStartClusterReply) {}
+    rpc UpgradeConvertPrimaries(UpgradeConvertPrimariesRequest) returns (UpgradeConvertPrimariesReply) {}
 }
+
+message UpgradeConvertPrimariesRequest {
+    string OldBinDir = 1;
+    string NewBinDir = 2;
+}
+message UpgradeConvertPrimariesReply {}
 
 message UpgradeShareOidsRequest {}
 message UpgradeShareOidsReply {}
@@ -59,6 +66,7 @@ enum UpgradeSteps {
     CONVERSION = 7;
     SHARE_OIDS = 8;
     VALIDATE_START_CLUSTER = 9;
+    CONVERT_PRIMARIES = 10;
 }
 
 enum StepStatus {

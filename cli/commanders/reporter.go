@@ -18,7 +18,6 @@ type Reporter struct {
 // Future steps include:
 //logger.Info("PENDING - Validate compatible versions for upgrade")
 //logger.Info("PENDING - Master server upgrade")
-//logger.Info("PENDING - Master OID file shared with segments")
 //logger.Info("PENDING - Primary segment upgrade")
 //logger.Info("PENDING - Validate cluster start")
 //logger.Info("PENDING - Adjust upgrade cluster ports")
@@ -33,6 +32,7 @@ var UpgradeStepsMessage = map[pb.UpgradeSteps]string{
 	pb.UpgradeSteps_CONVERSION:             "- Run pg_upgrade on segments",
 	pb.UpgradeSteps_SHARE_OIDS:             "- Copy OID files from master to segments",
 	pb.UpgradeSteps_VALIDATE_START_CLUSTER: "- Validate the upgraded cluster can start up",
+	pb.UpgradeSteps_CONVERT_PRIMARIES:      "- Primary segment upgrade",
 }
 
 func NewReporter(client pb.CliToHubClient) *Reporter {

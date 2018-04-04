@@ -11,7 +11,7 @@ import (
 func (h *HubClient) StatusConversion(ctx context.Context, in *pb.StatusConversionRequest) (*pb.StatusConversionReply, error) {
 	conns, err := h.AgentConns()
 	if err != nil {
-		return nil, err
+		return &pb.StatusConversionReply{}, err
 	}
 
 	segments := h.segmentsByHost()
@@ -23,6 +23,7 @@ func (h *HubClient) StatusConversion(ctx context.Context, in *pb.StatusConversio
 			agentSegments = append(agentSegments, &pb.SegmentInfo{
 				Content: int32(segment.Content),
 				Dbid:    int32(segment.DBID),
+				DataDir: segment.Datadir,
 			})
 		}
 
@@ -31,7 +32,7 @@ func (h *HubClient) StatusConversion(ctx context.Context, in *pb.StatusConversio
 			Hostname: conn.Hostname,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("agent on host %s returned an error when checking conversion status: %s", conn.Hostname, err)
+			return &pb.StatusConversionReply{}, fmt.Errorf("agent on host %s returned an error when checking conversion status: %s", conn.Hostname, err)
 		}
 
 		statuses = append(statuses, status.GetStatuses()...)

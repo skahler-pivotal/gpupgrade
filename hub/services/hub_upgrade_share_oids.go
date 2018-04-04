@@ -13,11 +13,13 @@ import (
 
 func (h *HubClient) UpgradeShareOids(ctx context.Context, in *pb.UpgradeShareOidsRequest) (*pb.UpgradeShareOidsReply, error) {
 	gplog.Info("Started processing share-oids request")
-	go h.ShareOidFilesStub()
+
+	go h.shareOidFilesStub()
+
 	return &pb.UpgradeShareOidsReply{}, nil
 }
 
-func (h *HubClient) ShareOidFilesStub() {
+func (h *HubClient) shareOidFilesStub() {
 	c := upgradestatus.NewChecklistManager(h.conf.StateDir)
 	shareOidsStep := "share-oids"
 

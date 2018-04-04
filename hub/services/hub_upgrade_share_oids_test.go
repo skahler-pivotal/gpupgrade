@@ -4,13 +4,14 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
+	"gp_upgrade/hub/upgradestatus"
 	pb "gp_upgrade/idl"
 	"gp_upgrade/testutils"
 
-	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	"google.golang.org/grpc"
 
 	. "github.com/onsi/ginkgo"
@@ -19,7 +20,7 @@ import (
 
 var _ = Describe("UpgradeShareOids", func() {
 	var (
-		reader        *spyReader
+		reader        *testutils.SpyReader
 		hub           *services.HubClient
 		dir           string
 		commandExecer *testutils.FakeCommandExecer
@@ -28,20 +29,24 @@ var _ = Describe("UpgradeShareOids", func() {
 	)
 
 	BeforeEach(func() {
-		reader = &spyReader{
-			hostnames: []string{"hostone", "hosttwo"},
-			segmentConfiguration: configutils.SegmentConfiguration{
-				{
-					Content:  0,
-					DBID:     2,
-					Hostname: "hostone",
-				}, {
-					Content:  1,
-					DBID:     3,
-					Hostname: "hosttwo",
-				},
+		segConfs := make(chan configutils.SegmentConfiguration, 2)
+		reader = &testutils.SpyReader{
+			Hostnames:             []string{"hostone", "hosttwo"},
+			SegmentConfigurations: segConfs,
+		}
+
+		segConfs <- configutils.SegmentConfiguration{
+			{
+				Content:  0,
+				DBID:     2,
+				Hostname: "hostone",
+			}, {
+				Content:  1,
+				DBID:     3,
+				Hostname: "hosttwo",
 			},
 		}
+
 		var err error
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
@@ -57,7 +62,6 @@ var _ = Describe("UpgradeShareOids", func() {
 		hub = services.NewHub(nil, reader, grpc.DialContext, commandExecer.Exec, &services.HubConfig{
 			StateDir: dir,
 		})
-		testhelper.SetupTestLogger()
 	})
 
 	AfterEach(func() {
@@ -65,34 +69,55 @@ var _ = Describe("UpgradeShareOids", func() {
 	})
 
 	It("Reports status PENDING when no share-oids request has been made", func() {
-		stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
-		Expect(err).To(BeNil())
-		Eventually(stepStatus).Should(Equal(pb.StepStatus_PENDING))
+		stateChecker := upgradestatus.NewStateCheck(filepath.Join(dir, "share-oids"), pb.UpgradeSteps_SHARE_OIDS)
+		Eventually(func() *pb.UpgradeStepStatus {
+			status, _ := stateChecker.GetStatus()
+			return status
+		}).Should(Equal(&pb.UpgradeStepStatus{
+			Step:   pb.UpgradeSteps_SHARE_OIDS,
+			Status: pb.StepStatus_PENDING,
+		}))
 	})
 
 	It("marks step as COMPLETE if rsync succeeds for all hosts", func() {
 		outChan <- []byte("success")
 		outChan <- []byte("success")
 
-		hub.ShareOidFilesStub()
+		_, err := hub.UpgradeShareOids(nil, &pb.UpgradeShareOidsRequest{})
+		Expect(err).ToNot(HaveOccurred())
 
-		Eventually(commandExecer.GetNumInvocations).Should(Equal(len(reader.hostnames)))
+		hostnames, err := reader.GetHostnames()
+		Expect(err).ToNot(HaveOccurred())
+		Eventually(commandExecer.GetNumInvocations).Should(Equal(len(hostnames)))
 
-		stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
-		Expect(err).To(BeNil())
-		Eventually(stepStatus).Should(Equal(pb.StepStatus_COMPLETE))
+		stateChecker := upgradestatus.NewStateCheck(filepath.Join(dir, "share-oids"), pb.UpgradeSteps_SHARE_OIDS)
+		Eventually(func() *pb.UpgradeStepStatus {
+			status, _ := stateChecker.GetStatus()
+			return status
+		}).Should(Equal(&pb.UpgradeStepStatus{
+			Step:   pb.UpgradeSteps_SHARE_OIDS,
+			Status: pb.StepStatus_COMPLETE,
+		}))
 	})
 
 	It("marks step as FAILED if rsync fails for any host", func() {
 		errChan <- errors.New("failure")
 		outChan <- []byte("success")
 
-		hub.ShareOidFilesStub()
-
-		Eventually(commandExecer.GetNumInvocations).Should(Equal(len(reader.hostnames)))
-
-		stepStatus, err := testutils.GetUpgradeStatus(hub, pb.UpgradeSteps_SHARE_OIDS)
+		_, err := hub.UpgradeShareOids(nil, &pb.UpgradeShareOidsRequest{})
 		Expect(err).ToNot(HaveOccurred())
-		Eventually(stepStatus).Should(Equal(pb.StepStatus_FAILED))
+
+		hostnames, err := reader.GetHostnames()
+		Expect(err).ToNot(HaveOccurred())
+		Eventually(commandExecer.GetNumInvocations).Should(Equal(len(hostnames)))
+
+		stateChecker := upgradestatus.NewStateCheck(filepath.Join(dir, "share-oids"), pb.UpgradeSteps_SHARE_OIDS)
+		Eventually(func() *pb.UpgradeStepStatus {
+			status, _ := stateChecker.GetStatus()
+			return status
+		}).Should(Equal(&pb.UpgradeStepStatus{
+			Step:   pb.UpgradeSteps_SHARE_OIDS,
+			Status: pb.StepStatus_FAILED,
+		}))
 	})
 })

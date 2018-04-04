@@ -4,9 +4,10 @@ import (
 	"io/ioutil"
 	"os"
 
+	agentServices "gp_upgrade/agent/services"
 	"gp_upgrade/hub/cluster"
 	"gp_upgrade/hub/configutils"
-	"gp_upgrade/hub/services"
+	hubServices "gp_upgrade/hub/services"
 	"gp_upgrade/testutils"
 
 	"github.com/onsi/gomega/gbytes"
@@ -15,12 +16,14 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"path/filepath"
 )
 
 var _ = Describe("status", func() {
 	var (
 		dir           string
-		hub           *services.HubClient
+		hub           *hubServices.HubClient
+		agent         *agentServices.AgentServer
 		commandExecer *testutils.FakeCommandExecer
 	)
 
@@ -29,12 +32,26 @@ var _ = Describe("status", func() {
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
+		agentPort, err := testutils.GetOpenPort()
+		Expect(err).ToNot(HaveOccurred())
+
+		agentConf := agentServices.AgentConfig{
+			Port:     agentPort,
+			StateDir: dir,
+		}
+
+		agentExecer := &testutils.FakeCommandExecer{}
+		agentExecer.SetOutput(&testutils.FakeCommand{})
+
+		agent = agentServices.NewAgentServer(agentExecer.Exec, agentConf)
+		go agent.Start()
+
 		port, err = testutils.GetOpenPort()
 		Expect(err).ToNot(HaveOccurred())
 
-		conf := &services.HubConfig{
+		conf := &hubServices.HubConfig{
 			CliToHubPort:   port,
-			HubToAgentPort: 6416,
+			HubToAgentPort: agentPort,
 			StateDir:       dir,
 		}
 		reader := configutils.NewReader()
@@ -42,20 +59,19 @@ var _ = Describe("status", func() {
 		commandExecer = &testutils.FakeCommandExecer{}
 		commandExecer.SetOutput(&testutils.FakeCommand{})
 
-		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
+		hub = hubServices.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
 		go hub.Start()
 	})
 
 	AfterEach(func() {
 		hub.Stop()
+		agent.Stop()
 		os.RemoveAll(dir)
 		Expect(checkPortIsAvailable(port)).To(BeTrue())
 	})
 
 	Describe("conversion", func() {
 		It("Displays status information for all segments", func() {
-			ensureAgentIsUp()
-
 			config := `[{
   			  "content": 2,
   			  "dbid": 7,
@@ -69,11 +85,20 @@ var _ = Describe("status", func() {
 
 			testutils.WriteOldConfig(dir, config)
 
+			pathToSegUpgrade := filepath.Join(dir, "pg_upgrade", "seg-2")
+			err := os.MkdirAll(pathToSegUpgrade, 0700)
+			Expect(err).ToNot(HaveOccurred())
+
+			f, err := os.Create(filepath.Join(pathToSegUpgrade, "1.done"))
+			Expect(err).ToNot(HaveOccurred())
+			f.WriteString("Upgrade complete\n")
+			f.Close()
+
 			statusSession := runCommand("status", "conversion")
 			Eventually(statusSession).Should(Exit(0))
 
 			Eventually(statusSession).Should(gbytes.Say("PENDING - DBID 1 - CONTENT ID -1 - MASTER - .+"))
-			Eventually(statusSession).Should(gbytes.Say("PENDING - DBID [0-9] - CONTENT ID [0-9] - PRIMARY - .+"))
+			Eventually(statusSession).Should(gbytes.Say("COMPLETE - DBID 7 - CONTENT ID 2 - PRIMARY - .+"))
 		})
 	})
 

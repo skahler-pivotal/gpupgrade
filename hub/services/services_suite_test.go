@@ -6,6 +6,7 @@ import (
 	"gp_upgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

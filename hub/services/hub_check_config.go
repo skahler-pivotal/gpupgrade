@@ -21,7 +21,7 @@ func (h *HubClient) CheckConfig(ctx context.Context,
 	err := dbConnector.Connect()
 	if err != nil {
 		gplog.Error(err.Error())
-		return nil, utils.DatabaseConnectionError{Parent: err}
+		return &pb.CheckConfigReply{}, utils.DatabaseConnectionError{Parent: err}
 	}
 	databaseHandler := dbConnector.GetConn()
 
@@ -32,7 +32,7 @@ func (h *HubClient) CheckConfig(ctx context.Context,
 		configutils.NewWriter(h.conf.StateDir, configutils.GetConfigFilePath(h.conf.StateDir)))
 	if err != nil {
 		gplog.Error(err.Error())
-		return nil, err
+		return &pb.CheckConfigReply{}, err
 	}
 
 	versionQuery := `show gp_server_version_num`
@@ -40,7 +40,7 @@ func (h *HubClient) CheckConfig(ctx context.Context,
 		configutils.NewWriter(h.conf.StateDir, configutils.GetVersionFilePath(h.conf.StateDir)))
 	if err != nil {
 		gplog.Error(err.Error())
-		return nil, err
+		return &pb.CheckConfigReply{}, err
 	}
 
 	successReply := &pb.CheckConfigReply{ConfigStatus: "All good"}

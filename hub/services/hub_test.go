@@ -8,21 +8,19 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 
-	"gp_upgrade/hub/configutils"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("HubClient", func() {
 	var (
-		reader *spyReader
+		reader *testutils.SpyReader
 		agentA *testutils.MockAgentServer
 		port   int
 	)
 
 	BeforeEach(func() {
-		reader = newSpyReader()
+		reader = &testutils.SpyReader{}
 		agentA, port = testutils.NewMockAgentServer()
 	})
 
@@ -32,7 +30,7 @@ var _ = Describe("HubClient", func() {
 
 	It("closes open connections when shutting down", func(done Done) {
 		defer close(done)
-		reader.hostnames = []string{"localhost"}
+		reader.Hostnames = []string{"localhost"}
 		hub := services.NewHub(nil, reader, grpc.DialContext, nil, &services.HubConfig{
 			HubToAgentPort: port,
 		})
@@ -52,7 +50,7 @@ var _ = Describe("HubClient", func() {
 	})
 
 	It("retrieves the agent connections from the config file reader", func() {
-		reader.hostnames = []string{"localhost", "localhost"}
+		reader.Hostnames = []string{"localhost", "localhost"}
 		hub := services.NewHub(nil, reader, grpc.DialContext, nil, &services.HubConfig{
 			HubToAgentPort: port,
 		})
@@ -67,7 +65,7 @@ var _ = Describe("HubClient", func() {
 	})
 
 	It("saves grpc connections for future calls", func() {
-		reader.hostnames = []string{"localhost"}
+		reader.Hostnames = []string{"localhost"}
 
 		hub := services.NewHub(nil, reader, grpc.DialContext, nil, &services.HubConfig{
 			HubToAgentPort: port,
@@ -85,7 +83,7 @@ var _ = Describe("HubClient", func() {
 	})
 
 	It("returns an error if any connections have non-ready states", func() {
-		reader.hostnames = []string{"localhost"}
+		reader.Hostnames = []string{"localhost"}
 		hub := services.NewHub(nil, reader, grpc.DialContext, nil, &services.HubConfig{
 			HubToAgentPort: port,
 		})
@@ -103,7 +101,7 @@ var _ = Describe("HubClient", func() {
 	})
 
 	It("returns an error if any connections have non-ready states when first dialing", func() {
-		reader.hostnames = []string{"localhost"}
+		reader.Hostnames = []string{"localhost"}
 		hub := services.NewHub(nil, reader, grpc.DialContext, nil, &services.HubConfig{
 			HubToAgentPort: port,
 		})
@@ -117,7 +115,7 @@ var _ = Describe("HubClient", func() {
 	It("returns an error if the grpc dialer to the agent throws an error", func() {
 		agentA.Stop()
 
-		reader.hostnames = []string{"example"}
+		reader.Hostnames = []string{"example"}
 		hub := services.NewHub(nil, reader, grpc.DialContext, nil, &services.HubConfig{
 			HubToAgentPort: port,
 		})
@@ -127,40 +125,10 @@ var _ = Describe("HubClient", func() {
 	})
 
 	It("returns an error if the config reader fails", func() {
-		reader.hostnamesErr = errors.New("error occurred while getting hostnames")
+		reader.Err = errors.New("error occurred while getting hostnames")
 		hub := services.NewHub(nil, reader, nil, nil, &services.HubConfig{})
 
 		_, err := hub.AgentConns()
 		Expect(err).To(HaveOccurred())
 	})
 })
-
-type spyReader struct {
-	hostnames            []string
-	hostnamesErr         error
-	port                 chan int
-	segmentConfiguration configutils.SegmentConfiguration
-}
-
-func newSpyReader() *spyReader {
-	return &spyReader{}
-}
-
-func (r *spyReader) GetHostnames() ([]string, error) {
-	return r.hostnames, r.hostnamesErr
-}
-
-func (r *spyReader) GetSegmentConfiguration() configutils.SegmentConfiguration {
-	return r.segmentConfiguration
-}
-
-func (r *spyReader) OfOldClusterConfig(string) {}
-
-func (r *spyReader) OfNewClusterConfig(string) {}
-
-func (r *spyReader) GetPortForSegment(segmentDbid int) int {
-	if len(r.port) == 0 {
-		return -1
-	}
-	return <-r.port
-}

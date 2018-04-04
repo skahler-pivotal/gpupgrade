@@ -21,13 +21,13 @@ func (h *HubClient) CheckObjectCount(ctx context.Context,
 	err := dbConnector.Connect()
 	if err != nil {
 		gplog.Error(err.Error())
-		return nil, utils.DatabaseConnectionError{Parent: err}
+		return &pb.CheckObjectCountReply{}, utils.DatabaseConnectionError{Parent: err}
 	}
 	databaseHandler := dbConnector.GetConn()
 	names, err := GetDbList(databaseHandler)
 	if err != nil {
 		gplog.Error(err.Error())
-		return nil, errors.New(err.Error())
+		return &pb.CheckObjectCountReply{}, errors.New(err.Error())
 	}
 
 	var results []*pb.CountPerDb
@@ -38,13 +38,13 @@ func (h *HubClient) CheckObjectCount(ctx context.Context,
 		err = dbConnector.Connect()
 		if err != nil {
 			gplog.Error(err.Error())
-			return nil, errors.New(err.Error())
+			return &pb.CheckObjectCountReply{}, errors.New(err.Error())
 		}
 		databaseHandler = dbConnector.GetConn()
 		aocount, heapcount, errFromCounts := GetCountsForDb(databaseHandler)
 		if errFromCounts != nil {
 			gplog.Error(err.Error())
-			return nil, errors.New(errFromCounts.Error())
+			return &pb.CheckObjectCountReply{}, errors.New(errFromCounts.Error())
 		}
 		results = append(results, &pb.CountPerDb{DbName: names[i], AoCount: aocount, HeapCount: heapcount})
 	}

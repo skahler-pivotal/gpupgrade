@@ -3,6 +3,7 @@ package testutils
 import (
 	"context"
 	"net"
+	"sync"
 
 	pb "gp_upgrade/idl"
 
@@ -12,10 +13,14 @@ import (
 type MockAgentServer struct {
 	addr       net.Addr
 	grpcServer *grpc.Server
+	numCalls   int
+	mu         sync.Mutex
 
-	StatusConversionRequest  *pb.CheckConversionStatusRequest
-	StatusConversionResponse *pb.CheckConversionStatusReply
-	StatusConversionErr      error
+	StatusConversionRequest              *pb.CheckConversionStatusRequest
+	StatusConversionResponse             *pb.CheckConversionStatusReply
+	UpgradeConvertPrimarySegmentsRequest *pb.UpgradeConvertPrimarySegmentsRequest
+
+	Err chan error
 }
 
 func NewMockAgentServer() (*MockAgentServer, int) {
@@ -27,6 +32,7 @@ func NewMockAgentServer() (*MockAgentServer, int) {
 	mockServer := &MockAgentServer{
 		addr:       lis.Addr(),
 		grpcServer: grpc.NewServer(),
+		Err:        make(chan error, 10000),
 	}
 
 	pb.RegisterAgentServer(mockServer.grpcServer, mockServer)
@@ -39,22 +45,65 @@ func NewMockAgentServer() (*MockAgentServer, int) {
 }
 
 func (m *MockAgentServer) CheckUpgradeStatus(context.Context, *pb.CheckUpgradeStatusRequest) (*pb.CheckUpgradeStatusReply, error) {
-	return nil, nil
+	m.increaseCalls()
+
+	return &pb.CheckUpgradeStatusReply{}, nil
 }
 
 func (m *MockAgentServer) CheckConversionStatus(ctx context.Context, in *pb.CheckConversionStatusRequest) (*pb.CheckConversionStatusReply, error) {
+	m.increaseCalls()
+
 	m.StatusConversionRequest = in
-	return m.StatusConversionResponse, m.StatusConversionErr
+
+	var err error
+	if len(m.Err) != 0 {
+		err = <-m.Err
+	}
+
+	return m.StatusConversionResponse, err
 }
 
 func (m *MockAgentServer) CheckDiskUsageOnAgents(context.Context, *pb.CheckDiskUsageRequestToAgent) (*pb.CheckDiskUsageReplyFromAgent, error) {
-	return nil, nil
+	m.increaseCalls()
+
+	return &pb.CheckDiskUsageReplyFromAgent{}, nil
 }
 
 func (m *MockAgentServer) PingAgents(context.Context, *pb.PingAgentsRequest) (*pb.PingAgentsReply, error) {
-	return nil, nil
+	m.increaseCalls()
+
+	return &pb.PingAgentsReply{}, nil
+}
+
+func (m *MockAgentServer) UpgradeConvertPrimarySegments(ctx context.Context, in *pb.UpgradeConvertPrimarySegmentsRequest) (*pb.UpgradeConvertPrimarySegmentsReply, error) {
+	m.increaseCalls()
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.UpgradeConvertPrimarySegmentsRequest = in
+
+	var err error
+	if len(m.Err) != 0 {
+		err = <-m.Err
+	}
+
+	return &pb.UpgradeConvertPrimarySegmentsReply{}, err
 }
 
 func (m *MockAgentServer) Stop() {
 	m.grpcServer.Stop()
+}
+
+func (m *MockAgentServer) increaseCalls() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.numCalls++
+}
+
+func (m *MockAgentServer) NumberOfCalls() int {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	return m.numCalls
 }

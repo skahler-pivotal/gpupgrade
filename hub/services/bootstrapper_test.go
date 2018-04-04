@@ -79,16 +79,11 @@ var _ = Describe("Bootstrapper", func() {
 type spyConfigReader struct {
 	failToGetHostnames bool
 	hostnamesListEmpty bool
-	//
-	//hostnames []string
-	//err error
 }
 
 func newSpyConfigReader() *spyConfigReader { return &spyConfigReader{} }
 
 func (scr *spyConfigReader) GetHostnames() ([]string, error) {
-	//return scr.hostnames, scr.err
-
 	if scr.failToGetHostnames {
 		return nil, errors.New("force failure - no config")
 	}

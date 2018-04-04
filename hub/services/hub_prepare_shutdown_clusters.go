@@ -17,7 +17,7 @@ func (h *HubClient) PrepareShutdownClusters(ctx context.Context, in *pb.PrepareS
 	err := h.clusterPair.Init(h.conf.StateDir, in.OldBinDir, in.NewBinDir, h.commandExecer)
 	if err != nil {
 		gplog.Error("An occurred during cluster pair init: %v", err)
-		return nil, err
+		return &pb.PrepareShutdownClustersReply{}, err
 	}
 
 	pathToGpstopStateDir := path.Join(h.conf.StateDir, "gpstop")

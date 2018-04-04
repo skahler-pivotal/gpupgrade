@@ -27,18 +27,23 @@ var _ = Describe("hub", func() {
 		var port int
 		agentA, port = testutils.NewMockAgentServer()
 
-		reader := &spyReader{
-			hostnames: []string{"localhost", "localhost"},
-			segmentConfiguration: configutils.SegmentConfiguration{
-				{
-					Content:  0,
-					DBID:     2,
-					Hostname: "localhost",
-				}, {
-					Content:  1,
-					DBID:     3,
-					Hostname: "localhost",
-				},
+		segmentConfs := make(chan configutils.SegmentConfiguration, 1)
+		reader := &testutils.SpyReader{
+			Hostnames:             []string{"localhost", "localhost"},
+			SegmentConfigurations: segmentConfs,
+		}
+
+		segmentConfs <- configutils.SegmentConfiguration{
+			{
+				Content:  0,
+				DBID:     2,
+				Hostname: "localhost",
+				Datadir:  "/first/data/dir",
+			}, {
+				Content:  1,
+				DBID:     3,
+				Hostname: "localhost",
+				Datadir:  "/second/data/dir",
 			},
 		}
 
@@ -68,10 +73,12 @@ var _ = Describe("hub", func() {
 			{
 				Content: 0,
 				Dbid:    2,
+				DataDir: "/first/data/dir",
 			},
 			{
 				Content: 1,
 				Dbid:    3,
+				DataDir: "/second/data/dir",
 			},
 		}))
 	})
@@ -84,7 +91,7 @@ var _ = Describe("hub", func() {
 	})
 
 	It("returns an error when Agent server returns an error", func() {
-		agentA.StatusConversionErr = errors.New("any error")
+		agentA.Err <- errors.New("any error")
 
 		_, err := hubClient.StatusConversion(nil, &pb.StatusConversionRequest{})
 		Expect(err).To(HaveOccurred())

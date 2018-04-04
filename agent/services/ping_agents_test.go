@@ -30,7 +30,7 @@ var _ = Describe("CommandListener", func() {
 		commandExecer := &testutils.FakeCommandExecer{}
 		commandExecer.SetOutput(&testutils.FakeCommand{})
 
-		agent := services.NewAgentServer(commandExecer.Exec)
+		agent := services.NewAgentServer(commandExecer.Exec, services.AgentConfig{})
 
 		_, err := agent.PingAgents(nil, &pb.PingAgentsRequest{})
 		Expect(err).To(BeNil())

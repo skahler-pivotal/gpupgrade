@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
 	pb "gp_upgrade/idl"
 	"gp_upgrade/testutils"
@@ -27,16 +26,23 @@ var _ = Describe("status upgrade", func() {
 		commandExecer            *testutils.FakeCommandExecer
 		errChan                  chan error
 		outChan                  chan []byte
+		mockAgent                *testutils.MockAgentServer
 	)
 
 	BeforeEach(func() {
-		reader := configutils.NewReader()
+		reader := testutils.SpyReader{}
+		reader.Hostnames = []string{"localhost"}
+
+		var port int
+		mockAgent, port = testutils.NewMockAgentServer()
+		mockAgent.StatusConversionResponse = &pb.CheckConversionStatusReply{}
 
 		var err error
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 		conf := &services.HubConfig{
-			StateDir: dir,
+			HubToAgentPort: port,
+			StateDir:       dir,
 		}
 
 		errChan = make(chan error, 2)
@@ -61,6 +67,10 @@ var _ = Describe("status upgrade", func() {
 		f, err := os.Create(filepath.Join(dir, "cluster_config.json"))
 		Expect(err).ToNot(HaveOccurred())
 		f.Close()
+
+		mockAgent.StatusConversionResponse = &pb.CheckConversionStatusReply{
+			Statuses: []string{"RUNNING", "PENDING"},
+		}
 
 		resp, err := hub.StatusUpgrade(nil, &pb.StatusUpgradeRequest{})
 		Expect(err).To(BeNil())
@@ -91,6 +101,9 @@ var _ = Describe("status upgrade", func() {
 				}, {
 					Step:   pb.UpgradeSteps_VALIDATE_START_CLUSTER,
 					Status: pb.StepStatus_PENDING,
+				}, {
+					Step:   pb.UpgradeSteps_CONVERT_PRIMARIES,
+					Status: pb.StepStatus_RUNNING,
 				},
 			},
 		))

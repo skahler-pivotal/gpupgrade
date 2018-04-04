@@ -10,6 +10,7 @@ import (
 	"gp_upgrade/hub/cluster"
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
+	pb "gp_upgrade/idl"
 	"gp_upgrade/testutils"
 
 	. "github.com/onsi/ginkgo"
@@ -23,6 +24,7 @@ var _ = Describe("upgrade convert master", func() {
 	var (
 		dir           string
 		hub           *services.HubClient
+		mockAgent     *testutils.MockAgentServer
 		commandExecer *testutils.FakeCommandExecer
 		oldDataDir    string
 		oldBinDir     string
@@ -50,14 +52,16 @@ var _ = Describe("upgrade convert master", func() {
 
 		oldConfig := `[{
 			"dbid": 1,
-			"port": 5432
+			"port": 5432,
+			"host": "localhost"
 		}]`
 
 		testutils.WriteOldConfig(dir, oldConfig)
 
 		newConfig := `[{
 			"dbid": 1,
-			"port": 6432
+			"port": 6432,
+			"host": "localhost"
 		}]`
 
 		testutils.WriteNewConfig(dir, newConfig)
@@ -65,16 +69,19 @@ var _ = Describe("upgrade convert master", func() {
 		port, err = testutils.GetOpenPort()
 		Expect(err).ToNot(HaveOccurred())
 
+		var agentPort int
+		mockAgent, agentPort = testutils.NewMockAgentServer()
+
 		conf := &services.HubConfig{
 			CliToHubPort:   port,
-			HubToAgentPort: 6416,
+			HubToAgentPort: agentPort,
 			StateDir:       dir,
 		}
 
 		reader := configutils.NewReader()
 
-		outChan = make(chan []byte, 2)
-		errChan = make(chan error, 2)
+		outChan = make(chan []byte, 10)
+		errChan = make(chan error, 10)
 
 		commandExecer = &testutils.FakeCommandExecer{}
 		commandExecer.SetOutput(&testutils.FakeCommand{
@@ -88,11 +95,16 @@ var _ = Describe("upgrade convert master", func() {
 
 	AfterEach(func() {
 		hub.Stop()
+		mockAgent.Stop()
 		os.RemoveAll(dir)
 		Expect(checkPortIsAvailable(port)).To(BeTrue())
 	})
 
 	It("updates status PENDING to RUNNING then to COMPLETE if successful", func() {
+		mockAgent.StatusConversionResponse = &pb.CheckConversionStatusReply{
+			Statuses: []string{},
+		}
+
 		Expect(runStatusUpgrade()).To(ContainSubstring("PENDING - Run pg_upgrade on master"))
 
 		trigger := make(chan struct{}, 1)
@@ -101,6 +113,7 @@ var _ = Describe("upgrade convert master", func() {
 			Err:     errChan,
 			Trigger: trigger,
 		})
+		outChan <- []byte("pid1")
 
 		wg := &sync.WaitGroup{}
 		wg.Add(1)
@@ -141,6 +154,10 @@ var _ = Describe("upgrade convert master", func() {
 	})
 
 	It("updates status to FAILED if it fails to run", func() {
+		mockAgent.StatusConversionResponse = &pb.CheckConversionStatusReply{
+			Statuses: []string{},
+		}
+
 		Expect(runStatusUpgrade()).To(ContainSubstring("PENDING - Run pg_upgrade on master"))
 
 		errChan <- errors.New("start failed")

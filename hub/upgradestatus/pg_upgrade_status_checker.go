@@ -10,17 +10,20 @@ import (
 	"os"
 	"regexp"
 
+	"fmt"
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
 
 type ConvertMaster struct {
 	pgUpgradePath string
+	oldDataDir    string
 	commandExecer helpers.CommandExecer
 }
 
-func NewConvertMaster(pgUpgradePath string, execer helpers.CommandExecer) ConvertMaster {
+func NewPGUpgradeStatusChecker(pgUpgradePath, oldDataDir string, execer helpers.CommandExecer) ConvertMaster {
 	return ConvertMaster{
 		pgUpgradePath: pgUpgradePath,
+		oldDataDir:    oldDataDir,
 		commandExecer: execer,
 	}
 }
@@ -68,7 +71,8 @@ func (c *ConvertMaster) GetStatus() (*pb.UpgradeStepStatus, error) {
 
 func (c *ConvertMaster) pgUpgradeRunning() bool {
 	//if pgrep doesnt find target, ExecCmdOutput will return empty byte array and err.Error()="exit status 1"
-	pgUpgradePids, err := c.commandExecer("pgrep", "pg_upgrade").Output()
+	command := fmt.Sprintf("pg_upgrade | grep --old-datadir=%s", c.oldDataDir)
+	pgUpgradePids, err := c.commandExecer("pgrep", command).Output()
 	if err == nil && len(pgUpgradePids) != 0 {
 		return true
 	}
@@ -151,5 +155,6 @@ func (c ConvertMaster) IsUpgradeComplete(pgUpgradePath string) bool {
 
 		line, err = r.ReadString('\n')
 	}
+
 	return false
 }

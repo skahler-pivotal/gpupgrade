@@ -257,8 +257,7 @@ var subSeginstall = &cobra.Command{
 	Long: "Running this command will validate that the new software is installed on all segments, " +
 		"and register successful or failed validation (available in `gp_upgrade status upgrade`)",
 	Run: func(cmd *cobra.Command, args []string) {
-		conn, connConfigErr := grpc.Dial("localhost:"+hubPort,
-			grpc.WithInsecure())
+		conn, connConfigErr := grpc.Dial("localhost:"+hubPort, grpc.WithInsecure())
 		if connConfigErr != nil {
 			gplog.Error(connConfigErr.Error())
 			os.Exit(1)
@@ -290,6 +289,27 @@ var subConvertMaster = &cobra.Command{
 
 		client := pb.NewCliToHubClient(conn)
 		err := commanders.NewUpgrader(client).ConvertMaster(oldDataDir, oldBinDir, newDataDir, newBinDir)
+		if err != nil {
+			gplog.Error(err.Error())
+			os.Exit(1)
+		}
+	},
+}
+
+var subConvertPrimaries = &cobra.Command{
+	Use:   "convert-primaries",
+	Short: "start upgrade process on primary segments",
+	Long:  `start upgrade process on primary segments`,
+	Run: func(cmd *cobra.Command, args []string) {
+		conn, connConfigErr := grpc.Dial("localhost:"+hubPort,
+			grpc.WithInsecure())
+		if connConfigErr != nil {
+			gplog.Error(connConfigErr.Error())
+			os.Exit(1)
+		}
+
+		client := pb.NewCliToHubClient(conn)
+		err := commanders.NewUpgrader(client).ConvertPrimaries(oldBinDir, newBinDir)
 		if err != nil {
 			gplog.Error(err.Error())
 			os.Exit(1)

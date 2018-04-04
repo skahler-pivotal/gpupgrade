@@ -36,7 +36,7 @@ var _ = Describe("CommandListener", func() {
 			Out: outChan,
 		})
 
-		agent = services.NewAgentServer(commandExecer.Exec)
+		agent = services.NewAgentServer(commandExecer.Exec, services.AgentConfig{})
 	})
 
 	AfterEach(func() {
@@ -46,10 +46,6 @@ var _ = Describe("CommandListener", func() {
 
 	It("returns the shell command output", func() {
 		outChan <- []byte("shell command output")
-		errChan <- nil
-
-		outChan <- nil
-		errChan <- nil
 
 		resp, err := agent.CheckUpgradeStatus(context.TODO(), nil)
 		Expect(err).ToNot(HaveOccurred())
@@ -59,10 +55,6 @@ var _ = Describe("CommandListener", func() {
 
 	It("returns only err if anything is reported as an error", func() {
 		errChan <- errors.New("couldn't find bash")
-		outChan <- nil
-
-		errChan <- nil
-		outChan <- nil
 
 		resp, err := agent.CheckUpgradeStatus(context.TODO(), nil)
 		Expect(err).To(HaveOccurred())

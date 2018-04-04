@@ -18,12 +18,14 @@ import (
 type SegmentConfiguration []Segment
 
 type Segment struct {
-	Address  string `json:"address"`
-	Content  int    `json:"content"`
-	Datadir  string `json:datadir`
-	DBID     int    `json:"dbid"`
-	Hostname string `json:"hostname"`
-	Port     int    `json:"port"`
+	Address       string `json:"address"`
+	Content       int    `json:"content"`
+	Datadir       string `json:datadir`
+	DBID          int    `json:"dbid"`
+	Hostname      string `json:"hostname"`
+	Port          int    `json:"port"`
+	PreferredRole string `json:"preferred_role"`
+	Role          string `json:"role"`
 }
 
 func GetConfigFilePath(base string) string {

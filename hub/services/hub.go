@@ -29,9 +29,9 @@ type reader interface {
 	GetSegmentConfiguration() configutils.SegmentConfiguration
 	OfOldClusterConfig(baseDir string)
 	OfNewClusterConfig(baseDir string)
+	GetMasterDataDir() string
 	GetPortForSegment(segmentDbid int) int
 }
-
 type pairOperator interface {
 	Init(string, string, string, helpers.CommandExecer) error
 	StopEverything(string)

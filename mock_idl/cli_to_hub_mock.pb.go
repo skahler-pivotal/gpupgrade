@@ -287,6 +287,24 @@ func (mr *MockCliToHubClientMockRecorder) UpgradeValidateStartCluster(ctx, in in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeValidateStartCluster", reflect.TypeOf((*MockCliToHubClient)(nil).UpgradeValidateStartCluster), varargs...)
 }
 
+// UpgradeConvertPrimaries mocks base method
+func (m *MockCliToHubClient) UpgradeConvertPrimaries(ctx context.Context, in *UpgradeConvertPrimariesRequest, opts ...grpc.CallOption) (*UpgradeConvertPrimariesReply, error) {
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpgradeConvertPrimaries", varargs...)
+	ret0, _ := ret[0].(*UpgradeConvertPrimariesReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpgradeConvertPrimaries indicates an expected call of UpgradeConvertPrimaries
+func (mr *MockCliToHubClientMockRecorder) UpgradeConvertPrimaries(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeConvertPrimaries", reflect.TypeOf((*MockCliToHubClient)(nil).UpgradeConvertPrimaries), varargs...)
+}
+
 // MockCliToHubServer is a mock of CliToHubServer interface
 type MockCliToHubServer struct {
 	ctrl     *gomock.Controller
@@ -490,4 +508,17 @@ func (m *MockCliToHubServer) UpgradeValidateStartCluster(arg0 context.Context, a
 // UpgradeValidateStartCluster indicates an expected call of UpgradeValidateStartCluster
 func (mr *MockCliToHubServerMockRecorder) UpgradeValidateStartCluster(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeValidateStartCluster", reflect.TypeOf((*MockCliToHubServer)(nil).UpgradeValidateStartCluster), arg0, arg1)
+}
+
+// UpgradeConvertPrimaries mocks base method
+func (m *MockCliToHubServer) UpgradeConvertPrimaries(arg0 context.Context, arg1 *UpgradeConvertPrimariesRequest) (*UpgradeConvertPrimariesReply, error) {
+	ret := m.ctrl.Call(m, "UpgradeConvertPrimaries", arg0, arg1)
+	ret0, _ := ret[0].(*UpgradeConvertPrimariesReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpgradeConvertPrimaries indicates an expected call of UpgradeConvertPrimaries
+func (mr *MockCliToHubServerMockRecorder) UpgradeConvertPrimaries(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeConvertPrimaries", reflect.TypeOf((*MockCliToHubServer)(nil).UpgradeConvertPrimaries), arg0, arg1)
 }

@@ -2,10 +2,11 @@ package commanders_test
 
 import (
 	"errors"
-	"gp_upgrade/cli/commanders"
-	mockpb "gp_upgrade/mock_idl"
 
+	"gp_upgrade/cli/commanders"
 	pb "gp_upgrade/idl"
+	mockpb "gp_upgrade/mock_idl"
+	"gp_upgrade/testutils"
 
 	"github.com/golang/mock/gomock"
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
@@ -15,17 +16,20 @@ import (
 )
 
 var _ = Describe("reporter", func() {
-
 	var (
 		client *mockpb.MockCliToHubClient
 		ctrl   *gomock.Controller
+
+		hubClient *testutils.MockHubClient
+		upgrader  *commanders.Upgrader
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		client = mockpb.NewMockCliToHubClient(ctrl)
 
-		testhelper.SetupTestLogger()
+		hubClient = testutils.NewMockHubClient()
+		upgrader = commanders.NewUpgrader(hubClient)
 	})
 
 	AfterEach(func() {
@@ -57,4 +61,26 @@ var _ = Describe("reporter", func() {
 		})
 	})
 
+	Describe("ConvertPrimaries", func() {
+		It("returns no error when the hub returns no error", func() {
+			testhelper.SetupTestLogger()
+
+			err := commanders.NewUpgrader(hubClient).ConvertPrimaries("/old/bin", "/new/bin")
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(hubClient.UpgradeConvertPrimariesRequest).To(Equal(&pb.UpgradeConvertPrimariesRequest{
+				OldBinDir: "/old/bin",
+				NewBinDir: "/new/bin",
+			}))
+		})
+
+		It("returns an error when the hub returns an error", func() {
+			testhelper.SetupTestLogger()
+
+			hubClient.Err = errors.New("hub error")
+
+			err := commanders.NewUpgrader(hubClient).ConvertPrimaries("", "")
+			Expect(err).To(HaveOccurred())
+		})
+	})
 })

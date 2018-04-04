@@ -3,12 +3,10 @@ package testutils
 import (
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 
 	"gp_upgrade/hub/configutils"
-	"gp_upgrade/hub/services"
-	pb "gp_upgrade/idl"
-	"net"
 )
 
 const (
@@ -60,18 +58,6 @@ func WriteNewConfig(base, jsonConfig string) {
 	Check("cannot create new sample dir", err)
 	err = ioutil.WriteFile(configutils.GetNewClusterConfigFilePath(base), []byte(jsonConfig), 0600)
 	Check("cannot write new sample configutils", err)
-}
-
-func GetUpgradeStatus(hub *services.HubClient, step pb.UpgradeSteps) (pb.StepStatus, error) {
-	reply, err := hub.StatusUpgrade(nil, &pb.StatusUpgradeRequest{})
-	stepStatuses := reply.GetListOfUpgradeStepStatuses()
-	var stepStatusSaved *pb.UpgradeStepStatus
-	for _, stepStatus := range stepStatuses {
-		if stepStatus.GetStep() == step {
-			stepStatusSaved = stepStatus
-		}
-	}
-	return stepStatusSaved.GetStatus(), err
 }
 
 func GetOpenPort() (int, error) {

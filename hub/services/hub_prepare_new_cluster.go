@@ -19,7 +19,7 @@ func (h *HubClient) PrepareInitCluster(ctx context.Context,
 	err := dbConnector.Connect()
 	if err != nil {
 		gplog.Error(err.Error())
-		return nil, utils.DatabaseConnectionError{Parent: err}
+		return &pb.PrepareInitClusterReply{}, utils.DatabaseConnectionError{Parent: err}
 	}
 	databaseHandler := dbConnector.GetConn()
 
@@ -30,7 +30,7 @@ func (h *HubClient) PrepareInitCluster(ctx context.Context,
 		configutils.NewWriter(h.conf.StateDir, configutils.GetNewClusterConfigFilePath(h.conf.StateDir)))
 	if err != nil {
 		gplog.Error(err.Error())
-		return nil, err
+		return &pb.PrepareInitClusterReply{}, err
 	}
 	return &pb.PrepareInitClusterReply{}, nil
 }

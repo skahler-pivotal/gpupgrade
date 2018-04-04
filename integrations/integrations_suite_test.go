@@ -13,6 +13,7 @@ import (
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 )
 
@@ -27,6 +28,9 @@ var (
 	agentBinaryPath          string
 	userPreviousPathVariable string
 	port                     int
+	testout                  *gbytes.Buffer
+	testerr                  *gbytes.Buffer
+	testlog                  *gbytes.Buffer
 )
 
 var _ = BeforeSuite(func() {
@@ -58,7 +62,7 @@ var _ = BeforeSuite(func() {
 	userPreviousPathVariable = os.Getenv("PATH")
 	os.Setenv("PATH", cliDirectoryPath+":"+hubDirectoryPath+":"+userPreviousPathVariable)
 
-	testhelper.SetupTestLogger()
+	testout, testerr, testlog = testhelper.SetupTestLogger()
 })
 
 var _ = BeforeEach(func() {
@@ -85,13 +89,6 @@ func runCommand(args ...string) *Session {
 	<-session.Exited
 
 	return session
-}
-
-func ensureAgentIsUp() {
-	killAll()
-
-	cmd := exec.Command("gp_upgrade_agent", "&")
-	Start(cmd, GinkgoWriter, GinkgoWriter)
 }
 
 func killAll() {

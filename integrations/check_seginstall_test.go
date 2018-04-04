@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 
 	"gp_upgrade/hub/cluster"
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
+	pb "gp_upgrade/idl"
 	"gp_upgrade/testutils"
 
 	. "github.com/onsi/ginkgo"
@@ -19,11 +19,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-// needs the cli and the hub
 var _ = Describe("check", func() {
 	var (
 		dir           string
 		hub           *services.HubClient
+		mockAgent     *testutils.MockAgentServer
 		commandExecer *testutils.FakeCommandExecer
 		outChan       chan []byte
 		errChan       chan error
@@ -34,15 +34,28 @@ var _ = Describe("check", func() {
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
+		config := `[{
+			"content": 2,
+			"dbid": 7,
+			"hostname": "localhost"
+		}]`
+		testutils.WriteOldConfig(dir, config)
+		testutils.WriteNewConfig(dir, config)
+
 		port, err = testutils.GetOpenPort()
 		Expect(err).ToNot(HaveOccurred())
 
+		var agentPort int
+		mockAgent, agentPort = testutils.NewMockAgentServer()
+
 		conf := &services.HubConfig{
 			CliToHubPort:   port,
-			HubToAgentPort: 6416,
+			HubToAgentPort: agentPort,
 			StateDir:       dir,
 		}
-		reader := configutils.NewReader()
+		reader := &testutils.SpyReader{
+			Hostnames: []string{"localhost"},
+		}
 
 		outChan = make(chan []byte, 2)
 		errChan = make(chan error, 2)
@@ -53,12 +66,13 @@ var _ = Describe("check", func() {
 			Err: errChan,
 		})
 
-		hub = services.NewHub(&cluster.Pair{}, &reader, grpc.DialContext, commandExecer.Exec, conf)
+		hub = services.NewHub(&cluster.Pair{}, reader, grpc.DialContext, commandExecer.Exec, conf)
 		go hub.Start()
 	})
 
 	AfterEach(func() {
 		hub.Stop()
+		mockAgent.Stop()
 		os.RemoveAll(dir)
 	})
 
@@ -97,25 +111,15 @@ var _ = Describe("check", func() {
 	//
 	// TODO: This test might be interesting to run multi-node; for that, figure out how "installation" should be done
 	Describe("seginstall", func() {
-		It("updates status PENDING to RUNNING then to COMPLETE if successful", func(done Done) {
-			defer close(done)
-
-			config := `[{
-  			  "content": 2,
-  			  "dbid": 7,
-  			  "hostname": "localhost"
-  			}]`
-			testutils.WriteOldConfig(dir, config)
-
-			f, err := os.Create(filepath.Join(dir, "new_cluster_config.json"))
-			Expect(err).ToNot(HaveOccurred())
-			f.Close()
+		It("updates status PENDING to RUNNING then to COMPLETE if successful", func() {
+			mockAgent.StatusConversionResponse = &pb.CheckConversionStatusReply{
+				Statuses: []string{},
+			}
 
 			Expect(runStatusUpgrade()).To(ContainSubstring("PENDING - Install binaries on segments"))
 
-			trigger := make(chan struct{}, 1)
+			trigger := make(chan struct{}, 2)
 			commandExecer.SetTrigger(trigger)
-			outChan <- []byte("some output")
 
 			wg := &sync.WaitGroup{}
 			wg.Add(1)
@@ -128,7 +132,6 @@ var _ = Describe("check", func() {
 			}()
 
 			checkSeginstallSession := runCommand("check", "seginstall", "--master-host", "localhost")
-
 			Eventually(checkSeginstallSession).Should(Exit(0))
 			wg.Wait()
 

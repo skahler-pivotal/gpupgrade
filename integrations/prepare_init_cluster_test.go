@@ -1,7 +1,6 @@
 package integrations_test
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -67,28 +66,18 @@ var _ = Describe("prepare", func() {
 			Eventually(statusSessionPending).Should(gbytes.Say("PENDING - Initialize upgrade target cluster"))
 
 			port := os.Getenv("PGPORT")
-			Expect(port).ToNot(Equal(""), "PGPORT needs to be set!")
+			Expect(port).ToNot(BeEmpty())
 
 			session := runCommand("prepare", "init-cluster", "--port", port)
-
-			if session.ExitCode() != 0 {
-				fmt.Println("make sure greenplum is running")
-			}
 			Eventually(session).Should(Exit(0))
 
-			statusSession := runCommand("status", "upgrade")
-			Eventually(statusSession).Should(gbytes.Say("COMPLETE - Initialize upgrade target cluster"))
-
-			// check file
-			_, err := ioutil.ReadFile(configutils.GetNewClusterConfigFilePath(dir))
-			testutils.Check("cannot read file", err)
+			Expect(runStatusUpgrade()).To(ContainSubstring("COMPLETE - Initialize upgrade target cluster"))
 
 			reader := configutils.NewReader()
 			reader.OfNewClusterConfig(dir)
-			err = reader.Read()
-			testutils.Check("cannot read config", err)
+			err := reader.Read()
+			Expect(err).ToNot(HaveOccurred())
 
-			// for extra credit, read db and compare info
 			Expect(len(reader.GetSegmentConfiguration())).To(BeNumerically(">", 1))
 		})
 	})

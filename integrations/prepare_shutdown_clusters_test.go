@@ -8,6 +8,7 @@ import (
 	"gp_upgrade/hub/cluster"
 	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
+	pb "gp_upgrade/idl"
 	"gp_upgrade/testutils"
 
 	. "github.com/onsi/ginkgo"
@@ -21,6 +22,7 @@ var _ = Describe("prepare shutdown-clusters", func() {
 	var (
 		dir           string
 		hub           *services.HubClient
+		mockAgent     *testutils.MockAgentServer
 		commandExecer *testutils.FakeCommandExecer
 		outChan       chan []byte
 		errChan       chan error
@@ -45,9 +47,12 @@ var _ = Describe("prepare shutdown-clusters", func() {
 		port, err = testutils.GetOpenPort()
 		Expect(err).ToNot(HaveOccurred())
 
+		var agentPort int
+		mockAgent, agentPort = testutils.NewMockAgentServer()
+
 		conf := &services.HubConfig{
 			CliToHubPort:   port,
-			HubToAgentPort: 6416,
+			HubToAgentPort: agentPort,
 			StateDir:       dir,
 		}
 		reader := configutils.NewReader()
@@ -67,13 +72,16 @@ var _ = Describe("prepare shutdown-clusters", func() {
 
 	AfterEach(func() {
 		hub.Stop()
+		mockAgent.Stop()
 		os.RemoveAll(dir)
-		commandExecer = nil
-		hub = nil
 	})
 
 	It("updates status PENDING to RUNNING then to COMPLETE if successful", func(done Done) {
 		defer close(done)
+		mockAgent.StatusConversionResponse = &pb.CheckConversionStatusReply{
+			Statuses: []string{},
+		}
+
 		oldBinDir := "/tmpOld"
 		newBinDir := "/tmpNew"
 
@@ -101,6 +109,10 @@ var _ = Describe("prepare shutdown-clusters", func() {
 	})
 
 	It("updates status to FAILED if it fails to run", func() {
+		mockAgent.StatusConversionResponse = &pb.CheckConversionStatusReply{
+			Statuses: []string{},
+		}
+
 		oldBinDir := "/tmpOld"
 		newBinDir := "/tmpNew"
 
