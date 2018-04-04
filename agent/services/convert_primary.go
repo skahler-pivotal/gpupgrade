@@ -16,7 +16,7 @@ func (s *AgentServer) UpgradeConvertPrimarySegments(ctx context.Context, in *pb.
 	gplog.Info("got a request to convert primary from the hub")
 
 	filename := "pg_upgrade_dump_*_oids.sql"
-	oidFiles, err := utils.System.FilePathGlob(filepath.Join(s.conf.StateDir, filename))
+	oidFiles, err := utils.System.FilePathGlob(filepath.Join(s.conf.StateDir, "pg_upgrade", filename))
 	if err != nil {
 		gplog.Error("ls OID files failed. Err: %v", err)
 		return &pb.UpgradeConvertPrimarySegmentsReply{}, err
