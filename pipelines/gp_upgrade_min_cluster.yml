@@ -324,22 +324,20 @@ jobs:
           }
 
           gen_environment_scripts() {
-              ssh -ttn mdw "
-                  cat > ~/src_5x.sh <<HERE
-              export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/gpadmin/bin
-              export MASTER_DATA_DIRECTORY=/data/gpdata/master/gpseg-1
-              export PGPORT=5432
-              source /usr/local/greenplum-db-devel/greenplum_path.sh
-              alias "6x"="source ~gpadmin/src_6x.sh"
+              ssh -ttn mdw "cat > ~gpadmin/src_5x.sh <<HERE
+          export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/gpadmin/bin
+          export MASTER_DATA_DIRECTORY=/data/gpdata/master/gpseg-1
+          export PGPORT=5432
+          source /usr/local/greenplum-db-devel/greenplum_path.sh
+          alias \"6x\"=\"source ~gpadmin/src_6x.sh\"
           HERE
-                  cat > ~/src_6x.sh <<HERE
-              export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/gpadmin/bin
-              export MASTER_DATA_DIRECTORY=/data/gpdata/master-new/gpseg-1
-              export PGPORT=6432
-              source /usr/local/gpdb_master/greenplum_path.sh
-              alias "5x"="source ~gpadmin/src_5x.sh"
-          HERE
-              "
+                  cat > ~gpadmin/src_6x.sh <<HERE
+          export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/gpadmin/bin
+          export MASTER_DATA_DIRECTORY=/data/gpdata/master-new/gpseg-1
+          export PGPORT=6432
+          source /usr/local/gpdb_master/greenplum_path.sh
+          alias \"5x\"=\"source ~gpadmin/src_5x.sh\"
+          HERE"
           }
 
           CLUSTER_NAME=$(cat ./terraform*/name)
