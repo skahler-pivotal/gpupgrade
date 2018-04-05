@@ -9,6 +9,8 @@ import (
 )
 
 type MockHubClient struct {
+	UpgradeShareOidsRequest *pb.UpgradeShareOidsRequest
+
 	UpgradeConvertPrimariesRequest  *pb.UpgradeConvertPrimariesRequest
 	UpgradeConvertPrimariesResponse *pb.UpgradeConvertPrimariesReply
 	Err                             error
@@ -67,7 +69,9 @@ func (m *MockHubClient) PrepareStartAgents(ctx context.Context, in *pb.PrepareSt
 }
 
 func (m *MockHubClient) UpgradeShareOids(ctx context.Context, in *pb.UpgradeShareOidsRequest, opts ...grpc.CallOption) (*pb.UpgradeShareOidsReply, error) {
-	return nil, nil
+	m.UpgradeShareOidsRequest = in
+
+	return &pb.UpgradeShareOidsReply{}, m.Err
 }
 
 func (m *MockHubClient) UpgradeValidateStartCluster(ctx context.Context, in *pb.UpgradeValidateStartClusterRequest, opts ...grpc.CallOption) (*pb.UpgradeValidateStartClusterReply, error) {

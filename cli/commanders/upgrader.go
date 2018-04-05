@@ -56,6 +56,7 @@ func (u *Upgrader) ShareOids() error {
 		return err
 	}
 
+	gplog.Info("Kicked off request to share oids")
 	return nil
 }
 
@@ -69,6 +70,6 @@ func (u *Upgrader) ValidateStartCluster(newDataDir string, newBinDir string) err
 		return err
 	}
 
-	gplog.Info("Kicked off request for validation of cluster startup.")
+	gplog.Info("Kicked off request for validation of cluster startup")
 	return nil
 }

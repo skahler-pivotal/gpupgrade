@@ -71,6 +71,6 @@ func GetOpenPort() (int, error) {
 		return 0, err
 	}
 	defer l.Close()
-	port := l.Addr().(*net.TCPAddr).Port
-	return port, nil
+
+	return l.Addr().(*net.TCPAddr).Port, nil
 }

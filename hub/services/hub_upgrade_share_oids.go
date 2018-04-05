@@ -2,6 +2,7 @@ package services
 
 import (
 	"path/filepath"
+	"strings"
 
 	pb "gp_upgrade/idl"
 
@@ -14,12 +15,12 @@ import (
 func (h *HubClient) UpgradeShareOids(ctx context.Context, in *pb.UpgradeShareOidsRequest) (*pb.UpgradeShareOidsReply, error) {
 	gplog.Info("Started processing share-oids request")
 
-	go h.shareOidFilesStub()
+	go h.shareOidFiles()
 
 	return &pb.UpgradeShareOidsReply{}, nil
 }
 
-func (h *HubClient) shareOidFilesStub() {
+func (h *HubClient) shareOidFiles() {
 	c := upgradestatus.NewChecklistManager(h.conf.StateDir)
 	shareOidsStep := "share-oids"
 
@@ -33,31 +34,35 @@ func (h *HubClient) shareOidFilesStub() {
 	}
 
 	hostnames, err := h.configreader.GetHostnames()
+	if err != nil {
+		gplog.Error("error from reading config" + err.Error())
+	}
 
 	user := "gpadmin"
 	rsyncFlags := "-rzpogt"
 	sourceDir := filepath.Join(h.conf.StateDir, "pg_upgrade")
-	gplog.Info("sourceDir" + sourceDir)
 
-	if err == nil {
-		anyFailed := false
-		for _, host := range hostnames {
-			destinationDirectory := user + "@" + host + ":" + h.conf.StateDir
-			gplog.Info("destinationDirectory" + destinationDirectory)
+	anyFailed := false
+	for _, host := range hostnames {
+		destinationDirectory := user + "@" + host + ":" + h.conf.StateDir
 
-			output, err := h.commandExecer("bash", "-c", "rsync", rsyncFlags, sourceDir, destinationDirectory).Output()
+		rsyncArgs := strings.Join([]string{"rsync", rsyncFlags, sourceDir, destinationDirectory}, " ")
+		rsyncCommand := h.commandExecer("bash", "-c", rsyncArgs)
+		gplog.Info("share oids command: %v", rsyncCommand)
 
-			if err != nil {
-				gplog.Error(string(output))
-				gplog.Error(err.Error())
-				c.MarkFailed(shareOidsStep)
-				anyFailed = true
+		output, err := rsyncCommand.CombinedOutput()
+		if err != nil {
+			var out string
+			if len(output) != 0 {
+				out = string(output)
 			}
+			gplog.Error("share oids failed %s: %s", out, err)
+
+			c.MarkFailed(shareOidsStep)
+			anyFailed = true
 		}
-		if !anyFailed {
-			c.MarkComplete(shareOidsStep)
-		}
-	} else {
-		gplog.Error("error from reading config" + err.Error())
+	}
+	if !anyFailed {
+		c.MarkComplete(shareOidsStep)
 	}
 }

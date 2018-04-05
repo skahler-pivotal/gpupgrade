@@ -2,13 +2,11 @@ package services_test
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
-	"gp_upgrade/hub/configutils"
 	"gp_upgrade/hub/services"
-	"gp_upgrade/hub/upgradestatus"
 	pb "gp_upgrade/idl"
 	"gp_upgrade/testutils"
 
@@ -29,22 +27,8 @@ var _ = Describe("UpgradeShareOids", func() {
 	)
 
 	BeforeEach(func() {
-		segConfs := make(chan configutils.SegmentConfiguration, 2)
 		reader = &testutils.SpyReader{
-			Hostnames:             []string{"hostone", "hosttwo"},
-			SegmentConfigurations: segConfs,
-		}
-
-		segConfs <- configutils.SegmentConfiguration{
-			{
-				Content:  0,
-				DBID:     2,
-				Hostname: "hostone",
-			}, {
-				Content:  1,
-				DBID:     3,
-				Hostname: "hosttwo",
-			},
+			Hostnames: []string{"hostone", "hosttwo"},
 		}
 
 		var err error
@@ -68,56 +52,30 @@ var _ = Describe("UpgradeShareOids", func() {
 		os.RemoveAll(dir)
 	})
 
-	It("Reports status PENDING when no share-oids request has been made", func() {
-		stateChecker := upgradestatus.NewStateCheck(filepath.Join(dir, "share-oids"), pb.UpgradeSteps_SHARE_OIDS)
-		Eventually(func() *pb.UpgradeStepStatus {
-			status, _ := stateChecker.GetStatus()
-			return status
-		}).Should(Equal(&pb.UpgradeStepStatus{
-			Step:   pb.UpgradeSteps_SHARE_OIDS,
-			Status: pb.StepStatus_PENDING,
-		}))
-	})
-
-	It("marks step as COMPLETE if rsync succeeds for all hosts", func() {
-		outChan <- []byte("success")
-		outChan <- []byte("success")
-
+	It("copies files to each host", func() {
 		_, err := hub.UpgradeShareOids(nil, &pb.UpgradeShareOidsRequest{})
 		Expect(err).ToNot(HaveOccurred())
 
 		hostnames, err := reader.GetHostnames()
 		Expect(err).ToNot(HaveOccurred())
+
 		Eventually(commandExecer.GetNumInvocations).Should(Equal(len(hostnames)))
 
-		stateChecker := upgradestatus.NewStateCheck(filepath.Join(dir, "share-oids"), pb.UpgradeSteps_SHARE_OIDS)
-		Eventually(func() *pb.UpgradeStepStatus {
-			status, _ := stateChecker.GetStatus()
-			return status
-		}).Should(Equal(&pb.UpgradeStepStatus{
-			Step:   pb.UpgradeSteps_SHARE_OIDS,
-			Status: pb.StepStatus_COMPLETE,
+		Expect(commandExecer.Calls()).To(Equal([]string{
+			fmt.Sprintf("bash -c rsync -rzpogt %s/pg_upgrade gpadmin@hostone:%s", dir, dir),
+			fmt.Sprintf("bash -c rsync -rzpogt %s/pg_upgrade gpadmin@hosttwo:%s", dir, dir),
 		}))
 	})
 
-	It("marks step as FAILED if rsync fails for any host", func() {
+	It("copies all files even if rsync fails for a host", func() {
 		errChan <- errors.New("failure")
-		outChan <- []byte("success")
 
 		_, err := hub.UpgradeShareOids(nil, &pb.UpgradeShareOidsRequest{})
 		Expect(err).ToNot(HaveOccurred())
 
 		hostnames, err := reader.GetHostnames()
 		Expect(err).ToNot(HaveOccurred())
-		Eventually(commandExecer.GetNumInvocations).Should(Equal(len(hostnames)))
 
-		stateChecker := upgradestatus.NewStateCheck(filepath.Join(dir, "share-oids"), pb.UpgradeSteps_SHARE_OIDS)
-		Eventually(func() *pb.UpgradeStepStatus {
-			status, _ := stateChecker.GetStatus()
-			return status
-		}).Should(Equal(&pb.UpgradeStepStatus{
-			Step:   pb.UpgradeSteps_SHARE_OIDS,
-			Status: pb.StepStatus_FAILED,
-		}))
+		Eventually(commandExecer.GetNumInvocations).Should(Equal(len(hostnames)))
 	})
 })
