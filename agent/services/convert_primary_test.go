@@ -47,7 +47,10 @@ var _ = Describe("CommandListener", func() {
 		agentConfig := services.AgentConfig{StateDir: dir}
 		agent = services.NewAgentServer(commandExecer.Exec, agentConfig)
 
-		oidFile = filepath.Join(dir, "pg_upgrade_dump_seg1_oids.sql")
+		err = os.MkdirAll(filepath.Join(dir, "pg_upgrade"), 0700)
+		Expect(err).ToNot(HaveOccurred())
+
+		oidFile = filepath.Join(dir, "pg_upgrade", "pg_upgrade_dump_seg1_oids.sql")
 		f, err := os.Create(oidFile)
 		Expect(err).ToNot(HaveOccurred())
 		f.Close()
