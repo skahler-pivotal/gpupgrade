@@ -18,7 +18,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-var _ = Describe("prepare validate-start-cluster", func() {
+var _ = Describe("upgrade validate-start-cluster", func() {
 	var (
 		dir           string
 		hub           *services.HubClient
@@ -83,8 +83,8 @@ var _ = Describe("prepare validate-start-cluster", func() {
 			trigger <- struct{}{}
 		}()
 
-		prepareStartAgentsSession := runCommand("upgrade", "validate-start-cluster", "--new-bindir", newBinDir, "--new-datadir", newDataDir)
-		Eventually(prepareStartAgentsSession).Should(Exit(0))
+		session := runCommand("upgrade", "validate-start-cluster", "--new-bindir", newBinDir, "--new-datadir", newDataDir)
+		Eventually(session).Should(Exit(0))
 		wg.Wait()
 
 		Expect(commandExecer.Command()).To(Equal("bash"))
@@ -102,8 +102,8 @@ var _ = Describe("prepare validate-start-cluster", func() {
 
 		errChan <- errors.New("start failed")
 
-		prepareStartAgentsSession := runCommand("upgrade", "validate-start-cluster", "--new-bindir", newBinDir, "--new-datadir", newDataDir)
-		Eventually(prepareStartAgentsSession).Should(Exit(0))
+		session := runCommand("upgrade", "validate-start-cluster", "--new-bindir", newBinDir, "--new-datadir", newDataDir)
+		Eventually(session).Should(Exit(0))
 
 		Expect(commandExecer.Command()).To(Equal("bash"))
 		Expect(strings.Join(commandExecer.Args(), "")).To(ContainSubstring("gpstart"))
@@ -111,8 +111,8 @@ var _ = Describe("prepare validate-start-cluster", func() {
 	})
 
 	It("fails if the --new-bindir or --new-datadir flags are missing", func() {
-		prepareStartAgentsSession := runCommand("upgrade", "validate-start-cluster")
-		Expect(prepareStartAgentsSession).Should(Exit(1))
-		Expect(string(prepareStartAgentsSession.Out.Contents())).To(Equal("Required flag(s) \"new-bindir\", \"new-datadir\" have/has not been set\n"))
+		session := runCommand("upgrade", "validate-start-cluster")
+		Expect(session).Should(Exit(1))
+		Expect(string(session.Out.Contents())).To(Equal("Required flag(s) \"new-bindir\", \"new-datadir\" have/has not been set\n"))
 	})
 })
