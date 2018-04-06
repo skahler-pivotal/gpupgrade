@@ -99,8 +99,8 @@ var _ = Describe("ClusterPair", func() {
 			Expect(filesLaidDown).ToNot(ContainElement("path/to/gpstop/gpstop.old/running"))
 			Expect(filesLaidDown).ToNot(ContainElement("path/to/gpstop/gpstop.new/running"))
 
-			Expect(commandExecer.Calls()).To(ContainElement(fmt.Sprintf("bash -c source %s/../greenplum-path.sh; %s/gpstop -a -d %s", "old/path", "old/path", "/datadir")))
-			Expect(commandExecer.Calls()).To(ContainElement(fmt.Sprintf("bash -c source %s/../greenplum-path.sh; %s/gpstop -a -d %s", "new/path", "new/path", "/datadir")))
+			Expect(commandExecer.Calls()).To(ContainElement(fmt.Sprintf("bash -c source %s/../greenplum_path.sh; %s/gpstop -a -d %s", "old/path", "old/path", "/datadir")))
+			Expect(commandExecer.Calls()).To(ContainElement(fmt.Sprintf("bash -c source %s/../greenplum_path.sh; %s/gpstop -a -d %s", "new/path", "new/path", "/datadir")))
 		})
 
 		It("puts failures in the log if there are filesystem errors", func() {
