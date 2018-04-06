@@ -50,15 +50,18 @@ func (cp *Pair) StopEverything(pathToGpstopStateDir string) {
 	checklistManager.ResetStateDir("gpstop.old")
 	checklistManager.ResetStateDir("gpstop.new")
 
-	oldGpstopShellArgs := fmt.Sprintf("PGPORT=%d && MASTER_DATA_DIRECTORY=%s && %s/gpstop -a",
-		cp.oldMasterPort, cp.oldMasterDataDirectory, cp.oldBinDir)
+	oldGpstopShellArgs := fmt.Sprintf("%s/gpstop -a -d %s",
+		cp.oldBinDir, cp.oldMasterDataDirectory)
 	runOldStopCmd := cp.commandExecer("bash", "-c", oldGpstopShellArgs)
-
-	newGpstopShellArgs := fmt.Sprintf("PGPORT=%d && MASTER_DATA_DIRECTORY=%s && %s/gpstop -a", cp.newMasterPort,
-		cp.newMasterDataDirectory, cp.newBinDir)
-	runNewStopCmd := cp.commandExecer("bash", "-c", newGpstopShellArgs)
+	gplog.Info("old gpstop command: %v", runOldStopCmd)
 
 	stopCluster(runOldStopCmd, "gpstop.old", checklistManager)
+
+	newGpstopShellArgs := fmt.Sprintf("%s/gpstop -a -d %s",
+		cp.newBinDir, cp.newMasterDataDirectory)
+	runNewStopCmd := cp.commandExecer("bash", "-c", newGpstopShellArgs)
+	gplog.Info("new gpstop command: %v", runNewStopCmd)
+
 	stopCluster(runNewStopCmd, "gpstop.new", checklistManager)
 }
 

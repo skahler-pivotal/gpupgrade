@@ -2,6 +2,7 @@ package cluster_test
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"gp_upgrade/hub/cluster"
@@ -81,7 +82,7 @@ var _ = Describe("ClusterPair", func() {
 			}
 		})
 
-		It("Logs successful when things work", func() {
+		It("Logs successfully when things work", func() {
 			mockedExitStatus = 0
 			mockedOutput = "Something that's not bad"
 
@@ -97,6 +98,9 @@ var _ = Describe("ClusterPair", func() {
 			Expect(filesLaidDown).To(ContainElement("path/to/gpstop/gpstop.new/completed"))
 			Expect(filesLaidDown).ToNot(ContainElement("path/to/gpstop/gpstop.old/running"))
 			Expect(filesLaidDown).ToNot(ContainElement("path/to/gpstop/gpstop.new/running"))
+
+			Expect(commandExecer.Calls()).To(ContainElement(fmt.Sprintf("bash -c %s/gpstop -a -d %s", "old/path", "/datadir")))
+			Expect(commandExecer.Calls()).To(ContainElement(fmt.Sprintf("bash -c %s/gpstop -a -d %s", "new/path", "/datadir")))
 		})
 
 		It("puts failures in the log if there are filesystem errors", func() {
