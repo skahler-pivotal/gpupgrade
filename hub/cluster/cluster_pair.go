@@ -50,15 +50,15 @@ func (cp *Pair) StopEverything(pathToGpstopStateDir string) {
 	checklistManager.ResetStateDir("gpstop.old")
 	checklistManager.ResetStateDir("gpstop.new")
 
-	oldGpstopShellArgs := fmt.Sprintf("%s/gpstop -a -d %s",
-		cp.oldBinDir, cp.oldMasterDataDirectory)
+	oldGpstopShellArgs := fmt.Sprintf("source %s/../greenplum-path.sh; %s/gpstop -a -d %s",
+		cp.oldBinDir, cp.oldBinDir, cp.oldMasterDataDirectory)
 	runOldStopCmd := cp.commandExecer("bash", "-c", oldGpstopShellArgs)
 	gplog.Info("old gpstop command: %v", runOldStopCmd)
 
 	stopCluster(runOldStopCmd, "gpstop.old", checklistManager)
 
-	newGpstopShellArgs := fmt.Sprintf("%s/gpstop -a -d %s",
-		cp.newBinDir, cp.newMasterDataDirectory)
+	newGpstopShellArgs := fmt.Sprintf("source %s/../greenplum-path.sh; %s/gpstop -a -d %s",
+		cp.newBinDir, cp.newBinDir, cp.newMasterDataDirectory)
 	runNewStopCmd := cp.commandExecer("bash", "-c", newGpstopShellArgs)
 	gplog.Info("new gpstop command: %v", runNewStopCmd)
 
