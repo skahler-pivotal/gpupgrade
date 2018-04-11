@@ -56,6 +56,7 @@ var _ = Describe("check config", func() {
 
 	Describe("when a greenplum master db on localhost is up and running", func() {
 		It("happy: the database configuration is saved to a specified location", func() {
+			//testutils.WriteSampleConfigVersion(dir)
 			session := runCommand("check", "config", "--master-host", "localhost")
 			if session.ExitCode() != 0 {
 				fmt.Println("make sure greenplum is running")

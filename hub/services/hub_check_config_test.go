@@ -1,113 +1,180 @@
 package services_test
 
 import (
-	"gp_upgrade/db"
-	"gp_upgrade/hub/services"
-	"gp_upgrade/utils"
-
 	"database/sql/driver"
+	"errors"
+	"io"
+	"io/ioutil"
+	"os"
 
+	"gp_upgrade/hub/services"
+
+	"github.com/greenplum-db/gp-common-go-libs/dbconn"
+	"github.com/greenplum-db/gp-common-go-libs/operating"
+	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 
-	"github.com/pkg/errors"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
+	"path/filepath"
 )
 
-var _ = Describe("hub", func() {
-	Describe("check configutils internals", func() {
-		var (
-			dbConnector db.Connector
-			mock        sqlmock.Sqlmock
-		)
+var _ = Describe("Hub check config", func() {
+	var (
+		dbConnector *dbconn.DBConn
+		mock        sqlmock.Sqlmock
+		dir         string
+		err         error
+		queryResult = `[{"address":"mdw","content":-1,"datadir":"/data/master/gpseg-1","dbid":1,"hostname":"mdw","mode":"s","status":"u","port":15432,"preferred_role":"p","role":"p"},` +
+			`{"address":"sdw1","content":0,"datadir":"/data/primary/gpseg-0","dbid":2,"hostname":"sdw1","mode":"s","status":"u","port":25432,"preferred_role":"p","role":"p"}]`
+	)
 
-		BeforeEach(func() {
-			dbConnector, mock = db.CreateMockDBConn()
-			dbConnector.Connect()
-		})
+	BeforeEach(func() {
+		dbConnector, mock = testhelper.CreateAndConnectMockDB(1)
+		dir, err = ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
 
-		AfterEach(func() {
-			dbConnector.Close()
-			// No controller test up into which to pull this assertion
-			// So maybe look into putting assertions like this into the integration tests, so protect against leaks?
-			Expect(dbConnector.GetConn().Stats().OpenConnections).To(Equal(0))
-		})
+	})
 
-		Describe("happy: the database is running, master-host is provided, and connection is successful", func() {
-			It("writes the resulting rows according to however the provided writer does it", func() {
-				fakeQuery := "SELECT barCol FROM foo"
-				mock.ExpectQuery(fakeQuery).WillReturnRows(getHappyFakeRows())
-				successfulWriter := SuccessfulWriter{}
-				err := services.SaveQueryResultToJSON(dbConnector.GetConn(), fakeQuery, &successfulWriter)
+	AfterEach(func() {
+		operating.System = operating.InitializeSystemFunctions()
+	})
 
-				Expect(err).ToNot(HaveOccurred())
-				Expect(successfulWriter.CallsToLoad).To(Equal(1))
-				Expect(successfulWriter.CallsToWrite).To(Equal(1))
-			})
-		})
+	It("successfully writes config and version for GPDB 6", func() {
+		testhelper.SetDBVersion(dbConnector, "6.0.0")
 
-		Describe("errors", func() {
-			Describe("when the query fails", func() {
-				It("returns an error", func() {
-					fakeFailingQuery := `SEJECT % ofrm tabel1`
-					mock.ExpectQuery(fakeFailingQuery).WillReturnError(errors.New("the query has failed"))
+		configQuery := services.CONFIGQUERY6
+		versionQuery := `show gp_server_version_num`
 
-					err := services.SaveQueryResultToJSON(dbConnector.GetConn(), fakeFailingQuery, &SuccessfulWriter{})
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError("the query has failed"))
-				})
-			})
+		mock.ExpectQuery(configQuery).WillReturnRows(getFakeConfigRows())
+		mock.ExpectQuery(versionQuery).WillReturnRows(getFakeVersionRow())
 
-			Describe("when the writer fails for any reason", func() {
-				It("returns an error", func() {
-					// focus on the writer failing rather than querying
-					fineFakeQuery := "SELECT fooCol FROM bar"
-					mock.ExpectQuery(fineFakeQuery).WillReturnRows(getHappyFakeRows())
+		fakeConfigAndVersionFile := gbytes.NewBuffer()
 
-					err := services.SaveQueryResultToJSON(dbConnector.GetConn(), fineFakeQuery, FailingWriter{})
+		operating.System.OpenFileWrite = func(name string, flag int, perm os.FileMode) (io.WriteCloser, error) {
+			return fakeConfigAndVersionFile, nil
+		}
 
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError("i always fail"))
-				})
-			})
-		})
+		err := services.SaveOldClusterConfigAndVersion(dbConnector, dir)
+		Expect(err).ToNot(HaveOccurred())
+
+		Expect(string(fakeConfigAndVersionFile.Contents())).To(ContainSubstring(queryResult))
+
+		Expect(string(fakeConfigAndVersionFile.Contents())).To(ContainSubstring(`[{"GpServerVersionNum":60000}]`))
+	})
+
+	// The database is running, master-host is provided, and connection is successful
+	// writes the resulting rows according to however the provided writer does it
+	It("successfully writes config and version for GPDB 4 and 5", func() {
+		configQuery := services.CONFIGQUERY5
+		versionQuery := `show gp_server_version_num`
+
+		mock.ExpectQuery(configQuery).WillReturnRows(getFakeConfigRows())
+		mock.ExpectQuery(versionQuery).WillReturnRows(getFakeVersionRow())
+
+		fakeConfigAndVersionFile := gbytes.NewBuffer()
+
+		operating.System.OpenFileWrite = func(name string, flag int, perm os.FileMode) (io.WriteCloser, error) {
+			return fakeConfigAndVersionFile, nil
+		}
+
+		err := services.SaveOldClusterConfigAndVersion(dbConnector, dir)
+		Expect(err).ToNot(HaveOccurred())
+
+		Expect(string(fakeConfigAndVersionFile.Contents())).To(ContainSubstring(queryResult))
+
+		Expect(string(fakeConfigAndVersionFile.Contents())).To(ContainSubstring(`[{"GpServerVersionNum":60000}]`))
+	})
+
+	It("fails to get config file handle", func() {
+		operating.System.OpenFileWrite = func(name string, flag int, perm os.FileMode) (io.WriteCloser, error) {
+			return nil, errors.New("failed to write config file")
+		}
+
+		err := services.SaveOldClusterConfigAndVersion(dbConnector, dir)
+		Expect(err).To(HaveOccurred())
+	})
+
+	It("db.Select query for cluster config fails", func() {
+		configQuery := services.CONFIGQUERY5
+		mock.ExpectQuery(configQuery).WillReturnError(errors.New("fail config query"))
+
+		operating.System.OpenFileWrite = func(name string, flag int, perm os.FileMode) (io.WriteCloser, error) {
+			return gbytes.NewBuffer(), nil
+		}
+
+		err := services.SaveOldClusterConfigAndVersion(dbConnector, dir)
+		Expect(err).To(HaveOccurred())
+		Expect(err).To(MatchError("Unable to execute query " + configQuery + ". Err: fail config query"))
+	})
+
+	It("query for db version fails", func() {
+		configQuery := services.CONFIGQUERY5
+		versionQuery := `show gp_server_version_num`
+
+		mock.ExpectQuery(configQuery).WillReturnRows(getFakeConfigRows())
+		mock.ExpectQuery(versionQuery).WillReturnError(errors.New("fail version query"))
+
+		fakeConfigAndVersionFile := gbytes.NewBuffer()
+
+		operating.System.OpenFileWrite = func(name string, flag int, perm os.FileMode) (io.WriteCloser, error) {
+			return fakeConfigAndVersionFile, nil
+		}
+
+		err := services.SaveOldClusterConfigAndVersion(dbConnector, dir)
+		Expect(err).To(HaveOccurred())
+		Expect(err).To(MatchError("Unable to execute query " + versionQuery + ". Err: fail version query"))
+		Expect(string(fakeConfigAndVersionFile.Contents())).To(ContainSubstring(queryResult))
+	})
+
+	It("fails to get version file handle", func() {
+		configQuery := services.CONFIGQUERY5
+		mock.ExpectQuery(configQuery).WillReturnRows(getFakeConfigRows())
+
+		fileChan := make(chan io.WriteCloser, 2)
+		errChan := make(chan error, 2)
+
+		//set to pass the first time
+		fileChan <- gbytes.NewBuffer()
+		errChan <- nil
+
+		//fail the second time it is called.
+		fileChan <- nil
+		errChan <- errors.New("failed to write version file")
+
+		operating.System.OpenFileWrite = func(name string, flag int, perm os.FileMode) (io.WriteCloser, error) {
+			return <-fileChan, <-errChan
+		}
+
+		err := services.SaveOldClusterConfigAndVersion(dbConnector, dir)
+		Expect(err).To(HaveOccurred())
+	})
+
+	It("fails to save query result to file", func() {
+		//set to non existent file and do not set os.O_CREATE to force an error
+		nilFile, err := operating.System.OpenFileWrite(filepath.Join(dir, "nonexistentFile"), os.O_WRONLY, 0700)
+		Expect(err).To(HaveOccurred())
+
+		err = services.SaveQueryResultToJSON(nil, nilFile)
+		Expect(err).To(HaveOccurred())
 	})
 })
 
-type SuccessfulWriter struct {
-	CallsToLoad  int
-	CallsToWrite int
-}
-
-func (w *SuccessfulWriter) Load(rows utils.RowsWrapper) error {
-	w.CallsToLoad++
-	return nil
-}
-
-func (w *SuccessfulWriter) Write() error {
-	w.CallsToWrite++
-	return nil
-}
-
-type FailingWriter struct{}
-
-func (FailingWriter) Load(rows utils.RowsWrapper) error {
-	return errors.New("i always fail")
-}
-
-func (FailingWriter) Write() error {
-	return errors.New("i always fail")
-}
-
 // Construct sqlmock in-memory rows that are structured properly
-func getHappyFakeRows() *sqlmock.Rows {
-	header := []string{"dbid", "content", "role", "preferred_role", "mode", "status", "port",
-		"hostname", "address", "datadir"}
-	fakeConfigRow := []driver.Value{1, -1, 'p', 'p', 's', 'u', 15432, "mdw.local",
-		"mdw.local", nil}
-	fakeConfigRow2 := []driver.Value{2, 0, 'p', 'p', 's', 'u', 25432, "sdw1.local",
-		"sdw1.local", nil}
+func getFakeConfigRows() *sqlmock.Rows {
+	header := []string{"address", "content", "datadir", "dbid", "hostname", "mode", "status", "port", "preferred_role", "role"}
+	fakeConfigRow := []driver.Value{"mdw", -1, "/data/master/gpseg-1", 1, "mdw", "s", "u", 15432, "p", "p"}
+	fakeConfigRow2 := []driver.Value{"sdw1", 0, "/data/primary/gpseg-0", 2, "sdw1", "s", "u", 25432, "p", "p"}
 	rows := sqlmock.NewRows(header)
 	heapfakeResult := rows.AddRow(fakeConfigRow...).AddRow(fakeConfigRow2...)
+	return heapfakeResult
+}
+
+func getFakeVersionRow() *sqlmock.Rows {
+	header := []string{"gp_server_version_num"}
+	fakeVersionRow := []driver.Value{60000}
+	rows := sqlmock.NewRows(header)
+	heapfakeResult := rows.AddRow(fakeVersionRow...)
 	return heapfakeResult
 }

@@ -1,48 +1,15 @@
 package db
 
-/*
- * This file contains structs and functions related to connecting to a database
- * and executing queries.
- */
-
 import (
-	"fmt"
 	"strconv"
-	"strings"
 
 	"gp_upgrade/utils"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/greenplum-db/gp-common-go-libs/dbconn"
 	_ "github.com/lib/pq" //_ import for the side effect of having postgres driver available
 )
 
-type Driver interface {
-	Connect(driverName string, dataSourceName string) (*sqlx.DB, error)
-}
-
-type RealGPDBDriver struct {
-}
-
-func (driver RealGPDBDriver) Connect(driverName string, dataSourceName string) (*sqlx.DB, error) {
-	return sqlx.Connect(driverName, dataSourceName)
-}
-
-type Connector interface {
-	Connect() error
-	Close()
-	GetConn() *sqlx.DB
-}
-
-type GPDBConnector struct {
-	conn   *sqlx.DB
-	user   string
-	dbName string
-	host   string
-	port   int
-	driver Driver // used for testing
-}
-
-func NewDBConn(masterHost string, masterPort int, dbname string) Connector {
+func NewDBConn(masterHost string, masterPort int, dbname string) *dbconn.DBConn {
 	currentUser, _, _ := utils.GetUser()
 	username := utils.TryEnv("PGUSER", currentUser)
 	if dbname == "" {
@@ -56,49 +23,15 @@ func NewDBConn(masterHost string, masterPort int, dbname string) Connector {
 		masterPort, _ = strconv.Atoi(utils.TryEnv("PGPORT", "15432"))
 	}
 
-	return &GPDBConnector{
-		conn:   nil,
-		driver: RealGPDBDriver{},
-		user:   username,
-		dbName: dbname,
-		host:   masterHost,
-		port:   masterPort,
+	return &dbconn.DBConn{
+		ConnPool: nil,
+		NumConns: 0,
+		Driver:   dbconn.GPDBDriver{},
+		User:     username,
+		DBName:   dbname,
+		Host:     masterHost,
+		Port:     masterPort,
+		Tx:       nil,
+		Version:  dbconn.GPDBVersion{},
 	}
-}
-
-/*
- * Wrapper functions for built-in sqlx and database/sql functionality; they will
- * automatically execute the query as part of an existing transaction if one is
- * in progress, to ensure that the whole backup process occurs in one transaction
- * without requiring that to be ensured at the call site.
- */
-
-func (dbconn *GPDBConnector) Connect() error {
-	dbname := escapeDBName(dbconn.dbName)
-	connStr := fmt.Sprintf(`user=%s dbname='%s' host=%s port=%d sslmode=disable`,
-		dbconn.user, dbname, dbconn.host, dbconn.port)
-
-	var err error
-	dbconn.conn, err = dbconn.driver.Connect("postgres", connStr)
-	return err
-}
-
-func (dbconn *GPDBConnector) Close() {
-	if dbconn.conn != nil {
-		dbconn.conn.Close()
-	}
-}
-
-func (dbconn *GPDBConnector) GetConn() *sqlx.DB {
-	return dbconn.conn
-}
-
-/*
- * Other useful/helper functions involving GPDBConnector
- */
-
-func escapeDBName(dbname string) string {
-	dbname = strings.Replace(dbname, `\`, `\\`, -1)
-	dbname = strings.Replace(dbname, `'`, `\'`, -1)
-	return dbname
 }

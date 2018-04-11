@@ -22,7 +22,7 @@ func (h *HubClient) StatusConversion(ctx context.Context, in *pb.StatusConversio
 		for _, segment := range segments[conn.Hostname] {
 			agentSegments = append(agentSegments, &pb.SegmentInfo{
 				Content: int32(segment.Content),
-				Dbid:    int32(segment.DBID),
+				Dbid:    int32(segment.Dbid),
 				DataDir: segment.Datadir,
 			})
 		}

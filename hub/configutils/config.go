@@ -20,11 +20,13 @@ type SegmentConfiguration []Segment
 type Segment struct {
 	Address       string `json:"address"`
 	Content       int    `json:"content"`
-	Datadir       string `json:datadir`
-	DBID          int    `json:"dbid"`
+	Datadir       string `json:"datadir"`
+	Dbid          int    `json:"dbid"`
 	Hostname      string `json:"hostname"`
+	Mode          string `json:"mode"`
+	Status        string `json:"status""`
 	Port          int    `json:"port"`
-	PreferredRole string `json:"preferred_role"`
+	PreferredRole string `json:"preferred_role" db:"preferred_role"`
 	Role          string `json:"role"`
 }
 

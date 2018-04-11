@@ -36,12 +36,12 @@ var _ = Describe("hub", func() {
 		segmentConfs <- configutils.SegmentConfiguration{
 			{
 				Content:  0,
-				DBID:     2,
+				Dbid:     2,
 				Hostname: "localhost",
 				Datadir:  "/first/data/dir",
 			}, {
 				Content:  1,
-				DBID:     3,
+				Dbid:     3,
 				Hostname: "localhost",
 				Datadir:  "/second/data/dir",
 			},

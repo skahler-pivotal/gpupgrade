@@ -5,8 +5,8 @@ import (
 	pb "gp_upgrade/idl"
 	"gp_upgrade/utils"
 
+	"github.com/greenplum-db/gp-common-go-libs/dbconn"
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 )
@@ -18,13 +18,13 @@ func (h *HubClient) CheckObjectCount(ctx context.Context,
 
 	dbConnector := db.NewDBConn("localhost", int(in.DbPort), "template1")
 	defer dbConnector.Close()
-	err := dbConnector.Connect()
+	err := dbConnector.Connect(1)
 	if err != nil {
 		gplog.Error(err.Error())
 		return &pb.CheckObjectCountReply{}, utils.DatabaseConnectionError{Parent: err}
 	}
-	databaseHandler := dbConnector.GetConn()
-	names, err := GetDbList(databaseHandler)
+	dbConnector.Version.Initialize(dbConnector)
+	names, err := dbconn.SelectStringSlice(dbConnector, GET_DATABASE_NAMES)
 	if err != nil {
 		gplog.Error(err.Error())
 		return &pb.CheckObjectCountReply{}, errors.New(err.Error())
@@ -35,13 +35,14 @@ func (h *HubClient) CheckObjectCount(ctx context.Context,
 
 		dbConnector = db.NewDBConn("localhost", int(in.DbPort), names[i])
 		defer dbConnector.Close()
-		err = dbConnector.Connect()
+		err = dbConnector.Connect(1)
 		if err != nil {
 			gplog.Error(err.Error())
 			return &pb.CheckObjectCountReply{}, errors.New(err.Error())
 		}
-		databaseHandler = dbConnector.GetConn()
-		aocount, heapcount, errFromCounts := GetCountsForDb(databaseHandler)
+		dbConnector.Version.Initialize(dbConnector)
+
+		aocount, heapcount, errFromCounts := GetCountsForDb(dbConnector)
 		if errFromCounts != nil {
 			gplog.Error(err.Error())
 			return &pb.CheckObjectCountReply{}, errors.New(errFromCounts.Error())
@@ -53,29 +54,16 @@ func (h *HubClient) CheckObjectCount(ctx context.Context,
 	return successReply, nil
 }
 
-func GetDbList(dbHandler *sqlx.DB) ([]string, error) {
-
-	dbNames := []string{}
-	err := dbHandler.Select(&dbNames, GET_DATABASE_NAMES)
-	if err != nil {
-		gplog.Error(err.Error())
-		return nil, errors.New(err.Error())
-	}
-
-	return dbNames, nil
-}
-
-func GetCountsForDb(dbHandler *sqlx.DB) (int32, int32, error) {
-
+func GetCountsForDb(dbConnector *dbconn.DBConn) (int32, int32, error) {
 	var aoCount, heapCount int32
 
-	err := dbHandler.Get(&aoCount, AO_CO_TABLE_QUERY_COUNT)
+	err := dbConnector.Get(&aoCount, AO_CO_TABLE_QUERY_COUNT)
 	if err != nil {
 		gplog.Error(err.Error())
 		return aoCount, heapCount, errors.New(err.Error())
 	}
 
-	err = dbHandler.Get(&heapCount, HEAP_TABLE_QUERY_COUNT)
+	err = dbConnector.Get(&heapCount, HEAP_TABLE_QUERY_COUNT)
 	if err != nil {
 		gplog.Error(err.Error())
 		return aoCount, heapCount, errors.New(err.Error())

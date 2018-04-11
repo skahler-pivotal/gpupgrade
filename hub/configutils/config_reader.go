@@ -64,7 +64,7 @@ func (reader *Reader) GetPortForSegment(segmentDbid int) int {
 
 	for i := 0; i < len(reader.config); i++ {
 		segment := reader.config[i]
-		if segment.DBID == segmentDbid {
+		if segment.Dbid == segmentDbid {
 			result = segment.Port
 			break
 		}

@@ -17,12 +17,6 @@
   version = "v1.1.0"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/cppforlife/go-semi-semantic"
-  packages = ["version"]
-  revision = "576b6af77ae4f3ccef356902fb3b9a9ae22e0b11"
-
-[[projects]]
   name = "github.com/golang/mock"
   packages = ["gomock"]
   revision = "13f360950a79f5864a972c786a10a50e44b69541"
@@ -267,6 +261,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "abe94bd3834a3d88dd62172671bdd17811c6a2e40de2706dcdfd3f4a41958342"
+  inputs-digest = "d91b2ab08e04e9ab881dceb9ea8824c06a181210abad74c1f343d891e867ff97"
   solver-name = "gps-cdcl"
   solver-version = 1
