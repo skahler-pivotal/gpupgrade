@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"gp_upgrade/hub/services"
 
@@ -17,7 +18,6 @@ import (
 	"github.com/onsi/gomega/gbytes"
 
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
-	"path/filepath"
 )
 
 var _ = Describe("Hub check config", func() {
@@ -34,7 +34,6 @@ var _ = Describe("Hub check config", func() {
 		dbConnector, mock = testhelper.CreateAndConnectMockDB(1)
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
-
 	})
 
 	AfterEach(func() {
@@ -152,11 +151,11 @@ var _ = Describe("Hub check config", func() {
 	})
 
 	It("fails to save query result to file", func() {
-		//set to non existent file and do not set os.O_CREATE to force an error
-		nilFile, err := operating.System.OpenFileWrite(filepath.Join(dir, "nonexistentFile"), os.O_WRONLY, 0700)
-		Expect(err).To(HaveOccurred())
+		// To force a write error in SaveQueryResultToJSON we create the file with read only mode
+		fileHandle, err := operating.System.OpenFileWrite(filepath.Join(dir, "readOnlyFile"), os.O_RDONLY|os.O_CREATE, 0400)
+		Expect(err).ToNot(HaveOccurred())
 
-		err = services.SaveQueryResultToJSON(nil, nilFile)
+		err = services.SaveQueryResultToJSON(nil, fileHandle)
 		Expect(err).To(HaveOccurred())
 	})
 })

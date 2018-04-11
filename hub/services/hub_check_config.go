@@ -65,10 +65,12 @@ func (h *HubClient) CheckConfig(ctx context.Context,
 }
 
 func SaveOldClusterConfigAndVersion(dbConnector *dbconn.DBConn, stateDir string) error {
-	segConfig := make(configutils.SegmentConfiguration, 0)
-	var configQuery string
+	err := os.MkdirAll(stateDir, 0700)
+	if err != nil {
+		return err
+	}
 
-	configQuery = CONFIGQUERY6
+	configQuery := CONFIGQUERY6
 	if dbConnector.Version.Before("6") {
 		configQuery = CONFIGQUERY5
 	}
@@ -80,6 +82,7 @@ func SaveOldClusterConfigAndVersion(dbConnector *dbconn.DBConn, stateDir string)
 		return errors.New(errMsg)
 	}
 
+	segConfig := make(configutils.SegmentConfiguration, 0)
 	err = dbConnector.Select(&segConfig, configQuery)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to execute query %s. Err: %s", configQuery, err.Error())

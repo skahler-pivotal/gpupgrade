@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	MINIMUM_VERSION = "4.3.9.0"
+	MINIMUM_VERSION = "4.3.9"
 )
 
 func (h *HubClient) CheckVersion(ctx context.Context,
