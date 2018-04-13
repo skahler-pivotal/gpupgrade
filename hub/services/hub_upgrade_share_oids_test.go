@@ -62,8 +62,8 @@ var _ = Describe("UpgradeShareOids", func() {
 		Eventually(commandExecer.GetNumInvocations).Should(Equal(len(hostnames)))
 
 		Expect(commandExecer.Calls()).To(Equal([]string{
-			fmt.Sprintf("bash -c rsync -rzpogt %s/pg_upgrade gpadmin@hostone:%s", dir, dir),
-			fmt.Sprintf("bash -c rsync -rzpogt %s/pg_upgrade gpadmin@hosttwo:%s", dir, dir),
+			fmt.Sprintf("bash -c rsync -rzpogt %s/pg_upgrade/pg_upgrade_dump_*_oids.sql gpadmin@hostone:%s/pg_upgrade", dir, dir),
+			fmt.Sprintf("bash -c rsync -rzpogt %s/pg_upgrade/pg_upgrade_dump_*_oids.sql gpadmin@hosttwo:%s/pg_upgrade", dir, dir),
 		}))
 	})
 

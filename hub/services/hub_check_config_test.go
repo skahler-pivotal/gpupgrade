@@ -34,6 +34,7 @@ var _ = Describe("Hub check config", func() {
 		dbConnector, mock = testhelper.CreateAndConnectMockDB(1)
 		dir, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
+		operating.System = operating.InitializeSystemFunctions()
 	})
 
 	AfterEach(func() {

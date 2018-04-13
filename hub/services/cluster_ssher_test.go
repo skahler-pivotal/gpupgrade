@@ -79,12 +79,13 @@ var _ = Describe("ClusterSsher", func() {
 			clusterSsher.Start([]string{"doesnt matter"})
 
 			Expect(commandExecer.Command()).To(Equal("ssh"))
+			pathToGreenplumPathScript := filepath.Join(os.Getenv("GPHOME"), "greenplum_path.sh")
 			pathToAgent := filepath.Join(os.Getenv("GPHOME"), "bin", "gp_upgrade_agent")
 			Expect(commandExecer.Args()).To(Equal([]string{
 				"-o",
 				"StrictHostKeyChecking=no",
 				"doesnt matter",
-				"sh -c 'nohup " + pathToAgent + " > /dev/null 2>&1 & '",
+				"sh -c '. " + pathToGreenplumPathScript + " ; nohup " + pathToAgent + " > /dev/null 2>&1 & '",
 			}))
 
 			Expect(cw.freshStateDirs).To(ContainElement("start-agents"))

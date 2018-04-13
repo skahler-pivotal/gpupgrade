@@ -147,7 +147,6 @@ func (c ConvertMaster) IsUpgradeComplete(pgUpgradePath string) bool {
 			gplog.Error("IsUpgradeComplete: %v", err)
 			return false
 		}
-		gplog.Debug(line)
 
 		if re.FindString(line) != "" {
 			return true

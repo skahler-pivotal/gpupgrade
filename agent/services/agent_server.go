@@ -11,6 +11,7 @@ import (
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"os"
 )
 
 type AgentServer struct {
@@ -39,6 +40,7 @@ func NewAgentServer(execer helpers.CommandExecer, conf AgentConfig) *AgentServer
 }
 
 func (a *AgentServer) Start() {
+	createIfNotExists(a.conf.StateDir)
 	lis, err := net.Listen("tcp", ":"+strconv.Itoa(a.conf.Port))
 	if err != nil {
 		gplog.Fatal(err, "failed to listen")
@@ -68,5 +70,11 @@ func (a *AgentServer) Stop() {
 	if a.server != nil {
 		a.server.Stop()
 		<-a.stopped
+	}
+}
+
+func createIfNotExists(dir string) {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, 0777)
 	}
 }

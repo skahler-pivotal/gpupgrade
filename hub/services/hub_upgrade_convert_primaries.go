@@ -47,7 +47,7 @@ func (h *HubClient) UpgradeConvertPrimaries(ctx context.Context, in *pb.UpgradeC
 	wg.Wait()
 
 	if len(agentErrs) != 0 {
-		err = fmt.Errorf("%d agents failed to start gp_upgrade on the primaries. See logs for additional details", len(agentErrs))
+		err = fmt.Errorf("%d agents failed to start pg_upgrade on the primaries. See logs for additional details", len(agentErrs))
 	}
 
 	return &pb.UpgradeConvertPrimariesReply{}, err

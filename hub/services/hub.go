@@ -128,6 +128,7 @@ func (h *HubClient) AgentConns() ([]*Connection, error) {
 	if h.agentConns != nil {
 		err := h.ensureConnsAreReady()
 		if err != nil {
+			gplog.Error("ensureConnsAreReady failed: ", err)
 			return nil, err
 		}
 
@@ -136,13 +137,15 @@ func (h *HubClient) AgentConns() ([]*Connection, error) {
 
 	hostnames, err := h.configreader.GetHostnames()
 	if err != nil {
+		gplog.Error("GetHostnames failed: ", err)
 		return nil, err
 	}
 
 	for _, host := range hostnames {
-		ctx, _ := context.WithTimeout(context.TODO(), DialTimeout)
+		ctx, _ := context.WithTimeout(context.Background(), DialTimeout)
 		conn, err := h.grpcDialer(ctx, host+":"+strconv.Itoa(h.conf.HubToAgentPort), grpc.WithInsecure(), grpc.WithBlock())
 		if err != nil {
+			gplog.Error("grpcDialer failed: ", err)
 			return nil, err
 		}
 		h.agentConns = append(h.agentConns, &Connection{
