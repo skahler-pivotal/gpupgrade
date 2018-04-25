@@ -13,6 +13,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
+	"gp_upgrade/utils"
 )
 
 var _ = Describe("reporter", func() {
@@ -37,6 +38,7 @@ var _ = Describe("reporter", func() {
 	})
 
 	AfterEach(func() {
+		utils.System = utils.InitializeSystemFunctions()
 		defer ctrl.Finish()
 	})
 

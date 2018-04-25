@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
+	"gp_upgrade/utils"
 )
 
 var _ = Describe("object count tests", func() {
@@ -25,6 +26,7 @@ var _ = Describe("object count tests", func() {
 	})
 
 	AfterEach(func() {
+		utils.System = utils.InitializeSystemFunctions()
 		defer ctrl.Finish()
 	})
 	Describe("Execute", func() {

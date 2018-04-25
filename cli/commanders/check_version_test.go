@@ -11,6 +11,7 @@ import (
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"gp_upgrade/utils"
 )
 
 var _ bool = Describe("object count tests", func() {
@@ -26,6 +27,7 @@ var _ bool = Describe("object count tests", func() {
 	})
 
 	AfterEach(func() {
+		utils.System = utils.InitializeSystemFunctions()
 		defer ctrl.Finish()
 	})
 	Describe("Execute", func() {

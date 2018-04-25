@@ -18,6 +18,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"gp_upgrade/utils"
 )
 
 var _ = Describe("upgrade validate start cluster", func() {
@@ -51,6 +52,7 @@ var _ = Describe("upgrade validate start cluster", func() {
 	})
 
 	AfterEach(func() {
+		utils.System = utils.InitializeSystemFunctions()
 		os.RemoveAll(dir)
 	})
 

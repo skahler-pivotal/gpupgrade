@@ -40,6 +40,7 @@ func NewAgentServer(execer helpers.CommandExecer, conf AgentConfig) *AgentServer
 }
 
 func (a *AgentServer) Start() {
+	gplog.Error("something")
 	createIfNotExists(a.conf.StateDir)
 	lis, err := net.Listen("tcp", ":"+strconv.Itoa(a.conf.Port))
 	if err != nil {

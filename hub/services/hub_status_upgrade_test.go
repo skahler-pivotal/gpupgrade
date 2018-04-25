@@ -57,6 +57,7 @@ var _ = Describe("status upgrade", func() {
 	})
 
 	AfterEach(func() {
+		utils.System = utils.InitializeSystemFunctions()
 		os.RemoveAll(dir)
 	})
 

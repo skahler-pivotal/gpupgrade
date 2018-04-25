@@ -15,6 +15,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"gp_upgrade/utils"
 )
 
 var _ = Describe("hub", func() {
@@ -55,6 +56,7 @@ var _ = Describe("hub", func() {
 	})
 
 	AfterEach(func() {
+		utils.System = utils.InitializeSystemFunctions()
 		agentA.Stop()
 	})
 

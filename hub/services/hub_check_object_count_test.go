@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
+	"gp_upgrade/utils"
 )
 
 var _ = Describe("hub", func() {
@@ -22,6 +23,7 @@ var _ = Describe("hub", func() {
 	})
 
 	AfterEach(func() {
+		utils.System = utils.InitializeSystemFunctions()
 		dbConnector.Close()
 	})
 
