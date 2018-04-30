@@ -17,18 +17,44 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+
 type UpgradeConvertPrimarySegmentsRequest struct {
-	OldBinDir    string         `protobuf:"bytes,1,opt,name=oldBinDir" json:"oldBinDir,omitempty"`
-	NewBinDir    string         `protobuf:"bytes,2,opt,name=newBinDir" json:"newBinDir,omitempty"`
-	DataDirPairs []*DataDirPair `protobuf:"bytes,3,rep,name=dataDirPairs" json:"dataDirPairs,omitempty"`
+	OldBinDir            string         `protobuf:"bytes,1,opt,name=oldBinDir" json:"oldBinDir,omitempty"`
+	NewBinDir            string         `protobuf:"bytes,2,opt,name=newBinDir" json:"newBinDir,omitempty"`
+	DataDirPairs         []*DataDirPair `protobuf:"bytes,3,rep,name=dataDirPairs" json:"dataDirPairs,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
 }
 
 func (m *UpgradeConvertPrimarySegmentsRequest) Reset()         { *m = UpgradeConvertPrimarySegmentsRequest{} }
 func (m *UpgradeConvertPrimarySegmentsRequest) String() string { return proto.CompactTextString(m) }
 func (*UpgradeConvertPrimarySegmentsRequest) ProtoMessage()    {}
 func (*UpgradeConvertPrimarySegmentsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor1, []int{0}
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{0}
 }
+func (m *UpgradeConvertPrimarySegmentsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpgradeConvertPrimarySegmentsRequest.Unmarshal(m, b)
+}
+func (m *UpgradeConvertPrimarySegmentsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpgradeConvertPrimarySegmentsRequest.Marshal(b, m, deterministic)
+}
+func (dst *UpgradeConvertPrimarySegmentsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpgradeConvertPrimarySegmentsRequest.Merge(dst, src)
+}
+func (m *UpgradeConvertPrimarySegmentsRequest) XXX_Size() int {
+	return xxx_messageInfo_UpgradeConvertPrimarySegmentsRequest.Size(m)
+}
+func (m *UpgradeConvertPrimarySegmentsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpgradeConvertPrimarySegmentsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpgradeConvertPrimarySegmentsRequest proto.InternalMessageInfo
 
 func (m *UpgradeConvertPrimarySegmentsRequest) GetOldBinDir() string {
 	if m != nil {
@@ -52,17 +78,39 @@ func (m *UpgradeConvertPrimarySegmentsRequest) GetDataDirPairs() []*DataDirPair 
 }
 
 type DataDirPair struct {
-	OldDataDir string `protobuf:"bytes,1,opt,name=oldDataDir" json:"oldDataDir,omitempty"`
-	NewDataDir string `protobuf:"bytes,2,opt,name=newDataDir" json:"newDataDir,omitempty"`
-	OldPort    int32  `protobuf:"varint,3,opt,name=oldPort" json:"oldPort,omitempty"`
-	NewPort    int32  `protobuf:"varint,4,opt,name=newPort" json:"newPort,omitempty"`
-	Content    int32  `protobuf:"varint,5,opt,name=content" json:"content,omitempty"`
+	OldDataDir           string   `protobuf:"bytes,1,opt,name=oldDataDir" json:"oldDataDir,omitempty"`
+	NewDataDir           string   `protobuf:"bytes,2,opt,name=newDataDir" json:"newDataDir,omitempty"`
+	OldPort              int32    `protobuf:"varint,3,opt,name=oldPort" json:"oldPort,omitempty"`
+	NewPort              int32    `protobuf:"varint,4,opt,name=newPort" json:"newPort,omitempty"`
+	Content              int32    `protobuf:"varint,5,opt,name=content" json:"content,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *DataDirPair) Reset()                    { *m = DataDirPair{} }
-func (m *DataDirPair) String() string            { return proto.CompactTextString(m) }
-func (*DataDirPair) ProtoMessage()               {}
-func (*DataDirPair) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
+func (m *DataDirPair) Reset()         { *m = DataDirPair{} }
+func (m *DataDirPair) String() string { return proto.CompactTextString(m) }
+func (*DataDirPair) ProtoMessage()    {}
+func (*DataDirPair) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{1}
+}
+func (m *DataDirPair) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DataDirPair.Unmarshal(m, b)
+}
+func (m *DataDirPair) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DataDirPair.Marshal(b, m, deterministic)
+}
+func (dst *DataDirPair) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DataDirPair.Merge(dst, src)
+}
+func (m *DataDirPair) XXX_Size() int {
+	return xxx_messageInfo_DataDirPair.Size(m)
+}
+func (m *DataDirPair) XXX_DiscardUnknown() {
+	xxx_messageInfo_DataDirPair.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DataDirPair proto.InternalMessageInfo
 
 func (m *DataDirPair) GetOldDataDir() string {
 	if m != nil {
@@ -100,47 +148,155 @@ func (m *DataDirPair) GetContent() int32 {
 }
 
 type UpgradeConvertPrimarySegmentsReply struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *UpgradeConvertPrimarySegmentsReply) Reset()         { *m = UpgradeConvertPrimarySegmentsReply{} }
 func (m *UpgradeConvertPrimarySegmentsReply) String() string { return proto.CompactTextString(m) }
 func (*UpgradeConvertPrimarySegmentsReply) ProtoMessage()    {}
 func (*UpgradeConvertPrimarySegmentsReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor1, []int{2}
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{2}
 }
+func (m *UpgradeConvertPrimarySegmentsReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpgradeConvertPrimarySegmentsReply.Unmarshal(m, b)
+}
+func (m *UpgradeConvertPrimarySegmentsReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpgradeConvertPrimarySegmentsReply.Marshal(b, m, deterministic)
+}
+func (dst *UpgradeConvertPrimarySegmentsReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpgradeConvertPrimarySegmentsReply.Merge(dst, src)
+}
+func (m *UpgradeConvertPrimarySegmentsReply) XXX_Size() int {
+	return xxx_messageInfo_UpgradeConvertPrimarySegmentsReply.Size(m)
+}
+func (m *UpgradeConvertPrimarySegmentsReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpgradeConvertPrimarySegmentsReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpgradeConvertPrimarySegmentsReply proto.InternalMessageInfo
 
 type PingAgentsRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *PingAgentsRequest) Reset()                    { *m = PingAgentsRequest{} }
-func (m *PingAgentsRequest) String() string            { return proto.CompactTextString(m) }
-func (*PingAgentsRequest) ProtoMessage()               {}
-func (*PingAgentsRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{3} }
+func (m *PingAgentsRequest) Reset()         { *m = PingAgentsRequest{} }
+func (m *PingAgentsRequest) String() string { return proto.CompactTextString(m) }
+func (*PingAgentsRequest) ProtoMessage()    {}
+func (*PingAgentsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{3}
+}
+func (m *PingAgentsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PingAgentsRequest.Unmarshal(m, b)
+}
+func (m *PingAgentsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PingAgentsRequest.Marshal(b, m, deterministic)
+}
+func (dst *PingAgentsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PingAgentsRequest.Merge(dst, src)
+}
+func (m *PingAgentsRequest) XXX_Size() int {
+	return xxx_messageInfo_PingAgentsRequest.Size(m)
+}
+func (m *PingAgentsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_PingAgentsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PingAgentsRequest proto.InternalMessageInfo
 
 type PingAgentsReply struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *PingAgentsReply) Reset()                    { *m = PingAgentsReply{} }
-func (m *PingAgentsReply) String() string            { return proto.CompactTextString(m) }
-func (*PingAgentsReply) ProtoMessage()               {}
-func (*PingAgentsReply) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{4} }
+func (m *PingAgentsReply) Reset()         { *m = PingAgentsReply{} }
+func (m *PingAgentsReply) String() string { return proto.CompactTextString(m) }
+func (*PingAgentsReply) ProtoMessage()    {}
+func (*PingAgentsReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{4}
+}
+func (m *PingAgentsReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PingAgentsReply.Unmarshal(m, b)
+}
+func (m *PingAgentsReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PingAgentsReply.Marshal(b, m, deterministic)
+}
+func (dst *PingAgentsReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PingAgentsReply.Merge(dst, src)
+}
+func (m *PingAgentsReply) XXX_Size() int {
+	return xxx_messageInfo_PingAgentsReply.Size(m)
+}
+func (m *PingAgentsReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_PingAgentsReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PingAgentsReply proto.InternalMessageInfo
 
 type CheckUpgradeStatusRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CheckUpgradeStatusRequest) Reset()                    { *m = CheckUpgradeStatusRequest{} }
-func (m *CheckUpgradeStatusRequest) String() string            { return proto.CompactTextString(m) }
-func (*CheckUpgradeStatusRequest) ProtoMessage()               {}
-func (*CheckUpgradeStatusRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{5} }
+func (m *CheckUpgradeStatusRequest) Reset()         { *m = CheckUpgradeStatusRequest{} }
+func (m *CheckUpgradeStatusRequest) String() string { return proto.CompactTextString(m) }
+func (*CheckUpgradeStatusRequest) ProtoMessage()    {}
+func (*CheckUpgradeStatusRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{5}
+}
+func (m *CheckUpgradeStatusRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CheckUpgradeStatusRequest.Unmarshal(m, b)
+}
+func (m *CheckUpgradeStatusRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CheckUpgradeStatusRequest.Marshal(b, m, deterministic)
+}
+func (dst *CheckUpgradeStatusRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CheckUpgradeStatusRequest.Merge(dst, src)
+}
+func (m *CheckUpgradeStatusRequest) XXX_Size() int {
+	return xxx_messageInfo_CheckUpgradeStatusRequest.Size(m)
+}
+func (m *CheckUpgradeStatusRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CheckUpgradeStatusRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CheckUpgradeStatusRequest proto.InternalMessageInfo
 
 type CheckUpgradeStatusReply struct {
-	ProcessList string `protobuf:"bytes,1,opt,name=process_list,json=processList" json:"process_list,omitempty"`
+	ProcessList          string   `protobuf:"bytes,1,opt,name=process_list,json=processList" json:"process_list,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CheckUpgradeStatusReply) Reset()                    { *m = CheckUpgradeStatusReply{} }
-func (m *CheckUpgradeStatusReply) String() string            { return proto.CompactTextString(m) }
-func (*CheckUpgradeStatusReply) ProtoMessage()               {}
-func (*CheckUpgradeStatusReply) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{6} }
+func (m *CheckUpgradeStatusReply) Reset()         { *m = CheckUpgradeStatusReply{} }
+func (m *CheckUpgradeStatusReply) String() string { return proto.CompactTextString(m) }
+func (*CheckUpgradeStatusReply) ProtoMessage()    {}
+func (*CheckUpgradeStatusReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{6}
+}
+func (m *CheckUpgradeStatusReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CheckUpgradeStatusReply.Unmarshal(m, b)
+}
+func (m *CheckUpgradeStatusReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CheckUpgradeStatusReply.Marshal(b, m, deterministic)
+}
+func (dst *CheckUpgradeStatusReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CheckUpgradeStatusReply.Merge(dst, src)
+}
+func (m *CheckUpgradeStatusReply) XXX_Size() int {
+	return xxx_messageInfo_CheckUpgradeStatusReply.Size(m)
+}
+func (m *CheckUpgradeStatusReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_CheckUpgradeStatusReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CheckUpgradeStatusReply proto.InternalMessageInfo
 
 func (m *CheckUpgradeStatusReply) GetProcessList() string {
 	if m != nil {
@@ -150,14 +306,36 @@ func (m *CheckUpgradeStatusReply) GetProcessList() string {
 }
 
 type CheckConversionStatusRequest struct {
-	Segments []*SegmentInfo `protobuf:"bytes,1,rep,name=segments" json:"segments,omitempty"`
-	Hostname string         `protobuf:"bytes,2,opt,name=hostname" json:"hostname,omitempty"`
+	Segments             []*SegmentInfo `protobuf:"bytes,1,rep,name=segments" json:"segments,omitempty"`
+	Hostname             string         `protobuf:"bytes,2,opt,name=hostname" json:"hostname,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
 }
 
-func (m *CheckConversionStatusRequest) Reset()                    { *m = CheckConversionStatusRequest{} }
-func (m *CheckConversionStatusRequest) String() string            { return proto.CompactTextString(m) }
-func (*CheckConversionStatusRequest) ProtoMessage()               {}
-func (*CheckConversionStatusRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{7} }
+func (m *CheckConversionStatusRequest) Reset()         { *m = CheckConversionStatusRequest{} }
+func (m *CheckConversionStatusRequest) String() string { return proto.CompactTextString(m) }
+func (*CheckConversionStatusRequest) ProtoMessage()    {}
+func (*CheckConversionStatusRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{7}
+}
+func (m *CheckConversionStatusRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CheckConversionStatusRequest.Unmarshal(m, b)
+}
+func (m *CheckConversionStatusRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CheckConversionStatusRequest.Marshal(b, m, deterministic)
+}
+func (dst *CheckConversionStatusRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CheckConversionStatusRequest.Merge(dst, src)
+}
+func (m *CheckConversionStatusRequest) XXX_Size() int {
+	return xxx_messageInfo_CheckConversionStatusRequest.Size(m)
+}
+func (m *CheckConversionStatusRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CheckConversionStatusRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CheckConversionStatusRequest proto.InternalMessageInfo
 
 func (m *CheckConversionStatusRequest) GetSegments() []*SegmentInfo {
 	if m != nil {
@@ -174,15 +352,37 @@ func (m *CheckConversionStatusRequest) GetHostname() string {
 }
 
 type SegmentInfo struct {
-	Content int32  `protobuf:"varint,1,opt,name=content" json:"content,omitempty"`
-	Dbid    int32  `protobuf:"varint,2,opt,name=dbid" json:"dbid,omitempty"`
-	DataDir string `protobuf:"bytes,3,opt,name=dataDir" json:"dataDir,omitempty"`
+	Content              int32    `protobuf:"varint,1,opt,name=content" json:"content,omitempty"`
+	Dbid                 int32    `protobuf:"varint,2,opt,name=dbid" json:"dbid,omitempty"`
+	DataDir              string   `protobuf:"bytes,3,opt,name=dataDir" json:"dataDir,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *SegmentInfo) Reset()                    { *m = SegmentInfo{} }
-func (m *SegmentInfo) String() string            { return proto.CompactTextString(m) }
-func (*SegmentInfo) ProtoMessage()               {}
-func (*SegmentInfo) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{8} }
+func (m *SegmentInfo) Reset()         { *m = SegmentInfo{} }
+func (m *SegmentInfo) String() string { return proto.CompactTextString(m) }
+func (*SegmentInfo) ProtoMessage()    {}
+func (*SegmentInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{8}
+}
+func (m *SegmentInfo) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SegmentInfo.Unmarshal(m, b)
+}
+func (m *SegmentInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SegmentInfo.Marshal(b, m, deterministic)
+}
+func (dst *SegmentInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SegmentInfo.Merge(dst, src)
+}
+func (m *SegmentInfo) XXX_Size() int {
+	return xxx_messageInfo_SegmentInfo.Size(m)
+}
+func (m *SegmentInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_SegmentInfo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SegmentInfo proto.InternalMessageInfo
 
 func (m *SegmentInfo) GetContent() int32 {
 	if m != nil {
@@ -206,13 +406,35 @@ func (m *SegmentInfo) GetDataDir() string {
 }
 
 type CheckConversionStatusReply struct {
-	Statuses []string `protobuf:"bytes,1,rep,name=statuses" json:"statuses,omitempty"`
+	Statuses             []string `protobuf:"bytes,1,rep,name=statuses" json:"statuses,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CheckConversionStatusReply) Reset()                    { *m = CheckConversionStatusReply{} }
-func (m *CheckConversionStatusReply) String() string            { return proto.CompactTextString(m) }
-func (*CheckConversionStatusReply) ProtoMessage()               {}
-func (*CheckConversionStatusReply) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{9} }
+func (m *CheckConversionStatusReply) Reset()         { *m = CheckConversionStatusReply{} }
+func (m *CheckConversionStatusReply) String() string { return proto.CompactTextString(m) }
+func (*CheckConversionStatusReply) ProtoMessage()    {}
+func (*CheckConversionStatusReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{9}
+}
+func (m *CheckConversionStatusReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CheckConversionStatusReply.Unmarshal(m, b)
+}
+func (m *CheckConversionStatusReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CheckConversionStatusReply.Marshal(b, m, deterministic)
+}
+func (dst *CheckConversionStatusReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CheckConversionStatusReply.Merge(dst, src)
+}
+func (m *CheckConversionStatusReply) XXX_Size() int {
+	return xxx_messageInfo_CheckConversionStatusReply.Size(m)
+}
+func (m *CheckConversionStatusReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_CheckConversionStatusReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CheckConversionStatusReply proto.InternalMessageInfo
 
 func (m *CheckConversionStatusReply) GetStatuses() []string {
 	if m != nil {
@@ -222,14 +444,36 @@ func (m *CheckConversionStatusReply) GetStatuses() []string {
 }
 
 type FileSysUsage struct {
-	Filesystem string  `protobuf:"bytes,1,opt,name=filesystem" json:"filesystem,omitempty"`
-	Usage      float64 `protobuf:"fixed64,2,opt,name=usage" json:"usage,omitempty"`
+	Filesystem           string   `protobuf:"bytes,1,opt,name=filesystem" json:"filesystem,omitempty"`
+	Usage                float64  `protobuf:"fixed64,2,opt,name=usage" json:"usage,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *FileSysUsage) Reset()                    { *m = FileSysUsage{} }
-func (m *FileSysUsage) String() string            { return proto.CompactTextString(m) }
-func (*FileSysUsage) ProtoMessage()               {}
-func (*FileSysUsage) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{10} }
+func (m *FileSysUsage) Reset()         { *m = FileSysUsage{} }
+func (m *FileSysUsage) String() string { return proto.CompactTextString(m) }
+func (*FileSysUsage) ProtoMessage()    {}
+func (*FileSysUsage) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{10}
+}
+func (m *FileSysUsage) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FileSysUsage.Unmarshal(m, b)
+}
+func (m *FileSysUsage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FileSysUsage.Marshal(b, m, deterministic)
+}
+func (dst *FileSysUsage) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FileSysUsage.Merge(dst, src)
+}
+func (m *FileSysUsage) XXX_Size() int {
+	return xxx_messageInfo_FileSysUsage.Size(m)
+}
+func (m *FileSysUsage) XXX_DiscardUnknown() {
+	xxx_messageInfo_FileSysUsage.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FileSysUsage proto.InternalMessageInfo
 
 func (m *FileSysUsage) GetFilesystem() string {
 	if m != nil {
@@ -246,21 +490,65 @@ func (m *FileSysUsage) GetUsage() float64 {
 }
 
 type CheckDiskUsageRequestToAgent struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CheckDiskUsageRequestToAgent) Reset()                    { *m = CheckDiskUsageRequestToAgent{} }
-func (m *CheckDiskUsageRequestToAgent) String() string            { return proto.CompactTextString(m) }
-func (*CheckDiskUsageRequestToAgent) ProtoMessage()               {}
-func (*CheckDiskUsageRequestToAgent) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{11} }
+func (m *CheckDiskUsageRequestToAgent) Reset()         { *m = CheckDiskUsageRequestToAgent{} }
+func (m *CheckDiskUsageRequestToAgent) String() string { return proto.CompactTextString(m) }
+func (*CheckDiskUsageRequestToAgent) ProtoMessage()    {}
+func (*CheckDiskUsageRequestToAgent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{11}
+}
+func (m *CheckDiskUsageRequestToAgent) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CheckDiskUsageRequestToAgent.Unmarshal(m, b)
+}
+func (m *CheckDiskUsageRequestToAgent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CheckDiskUsageRequestToAgent.Marshal(b, m, deterministic)
+}
+func (dst *CheckDiskUsageRequestToAgent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CheckDiskUsageRequestToAgent.Merge(dst, src)
+}
+func (m *CheckDiskUsageRequestToAgent) XXX_Size() int {
+	return xxx_messageInfo_CheckDiskUsageRequestToAgent.Size(m)
+}
+func (m *CheckDiskUsageRequestToAgent) XXX_DiscardUnknown() {
+	xxx_messageInfo_CheckDiskUsageRequestToAgent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CheckDiskUsageRequestToAgent proto.InternalMessageInfo
 
 type CheckDiskUsageReplyFromAgent struct {
-	ListOfFileSysUsage []*FileSysUsage `protobuf:"bytes,1,rep,name=list_of_file_sys_usage,json=listOfFileSysUsage" json:"list_of_file_sys_usage,omitempty"`
+	ListOfFileSysUsage   []*FileSysUsage `protobuf:"bytes,1,rep,name=list_of_file_sys_usage,json=listOfFileSysUsage" json:"list_of_file_sys_usage,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
 }
 
-func (m *CheckDiskUsageReplyFromAgent) Reset()                    { *m = CheckDiskUsageReplyFromAgent{} }
-func (m *CheckDiskUsageReplyFromAgent) String() string            { return proto.CompactTextString(m) }
-func (*CheckDiskUsageReplyFromAgent) ProtoMessage()               {}
-func (*CheckDiskUsageReplyFromAgent) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{12} }
+func (m *CheckDiskUsageReplyFromAgent) Reset()         { *m = CheckDiskUsageReplyFromAgent{} }
+func (m *CheckDiskUsageReplyFromAgent) String() string { return proto.CompactTextString(m) }
+func (*CheckDiskUsageReplyFromAgent) ProtoMessage()    {}
+func (*CheckDiskUsageReplyFromAgent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hub_to_agent_2ba90bfa15900549, []int{12}
+}
+func (m *CheckDiskUsageReplyFromAgent) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CheckDiskUsageReplyFromAgent.Unmarshal(m, b)
+}
+func (m *CheckDiskUsageReplyFromAgent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CheckDiskUsageReplyFromAgent.Marshal(b, m, deterministic)
+}
+func (dst *CheckDiskUsageReplyFromAgent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CheckDiskUsageReplyFromAgent.Merge(dst, src)
+}
+func (m *CheckDiskUsageReplyFromAgent) XXX_Size() int {
+	return xxx_messageInfo_CheckDiskUsageReplyFromAgent.Size(m)
+}
+func (m *CheckDiskUsageReplyFromAgent) XXX_DiscardUnknown() {
+	xxx_messageInfo_CheckDiskUsageReplyFromAgent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CheckDiskUsageReplyFromAgent proto.InternalMessageInfo
 
 func (m *CheckDiskUsageReplyFromAgent) GetListOfFileSysUsage() []*FileSysUsage {
 	if m != nil {
@@ -489,9 +777,9 @@ var _Agent_serviceDesc = grpc.ServiceDesc{
 	Metadata: "hub_to_agent.proto",
 }
 
-func init() { proto.RegisterFile("hub_to_agent.proto", fileDescriptor1) }
+func init() { proto.RegisterFile("hub_to_agent.proto", fileDescriptor_hub_to_agent_2ba90bfa15900549) }
 
-var fileDescriptor1 = []byte{
+var fileDescriptor_hub_to_agent_2ba90bfa15900549 = []byte{
 	// 591 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x54, 0x5d, 0x6f, 0x12, 0x41,
 	0x14, 0xed, 0x4a, 0xd1, 0x72, 0x69, 0xa2, 0x1d, 0x6b, 0x5d, 0x57, 0x44, 0x3a, 0x69, 0x22, 0x26,

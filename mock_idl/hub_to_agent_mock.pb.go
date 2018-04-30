@@ -8,7 +8,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
-	. "gp_upgrade/idl"
+	"gp_upgrade/idl"
 	reflect "reflect"
 )
 
@@ -36,13 +36,13 @@ func (m *MockAgentClient) EXPECT() *MockAgentClientMockRecorder {
 }
 
 // CheckUpgradeStatus mocks base method
-func (m *MockAgentClient) CheckUpgradeStatus(ctx context.Context, in *CheckUpgradeStatusRequest, opts ...grpc.CallOption) (*CheckUpgradeStatusReply, error) {
+func (m *MockAgentClient) CheckUpgradeStatus(ctx context.Context, in *idl.CheckUpgradeStatusRequest, opts ...grpc.CallOption) (*idl.CheckUpgradeStatusReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "CheckUpgradeStatus", varargs...)
-	ret0, _ := ret[0].(*CheckUpgradeStatusReply)
+	ret0, _ := ret[0].(*idl.CheckUpgradeStatusReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -54,13 +54,13 @@ func (mr *MockAgentClientMockRecorder) CheckUpgradeStatus(ctx, in interface{}, o
 }
 
 // CheckConversionStatus mocks base method
-func (m *MockAgentClient) CheckConversionStatus(ctx context.Context, in *CheckConversionStatusRequest, opts ...grpc.CallOption) (*CheckConversionStatusReply, error) {
+func (m *MockAgentClient) CheckConversionStatus(ctx context.Context, in *idl.CheckConversionStatusRequest, opts ...grpc.CallOption) (*idl.CheckConversionStatusReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "CheckConversionStatus", varargs...)
-	ret0, _ := ret[0].(*CheckConversionStatusReply)
+	ret0, _ := ret[0].(*idl.CheckConversionStatusReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -72,13 +72,13 @@ func (mr *MockAgentClientMockRecorder) CheckConversionStatus(ctx, in interface{}
 }
 
 // CheckDiskUsageOnAgents mocks base method
-func (m *MockAgentClient) CheckDiskUsageOnAgents(ctx context.Context, in *CheckDiskUsageRequestToAgent, opts ...grpc.CallOption) (*CheckDiskUsageReplyFromAgent, error) {
+func (m *MockAgentClient) CheckDiskUsageOnAgents(ctx context.Context, in *idl.CheckDiskUsageRequestToAgent, opts ...grpc.CallOption) (*idl.CheckDiskUsageReplyFromAgent, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "CheckDiskUsageOnAgents", varargs...)
-	ret0, _ := ret[0].(*CheckDiskUsageReplyFromAgent)
+	ret0, _ := ret[0].(*idl.CheckDiskUsageReplyFromAgent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -90,13 +90,13 @@ func (mr *MockAgentClientMockRecorder) CheckDiskUsageOnAgents(ctx, in interface{
 }
 
 // PingAgents mocks base method
-func (m *MockAgentClient) PingAgents(ctx context.Context, in *PingAgentsRequest, opts ...grpc.CallOption) (*PingAgentsReply, error) {
+func (m *MockAgentClient) PingAgents(ctx context.Context, in *idl.PingAgentsRequest, opts ...grpc.CallOption) (*idl.PingAgentsReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "PingAgents", varargs...)
-	ret0, _ := ret[0].(*PingAgentsReply)
+	ret0, _ := ret[0].(*idl.PingAgentsReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -108,13 +108,13 @@ func (mr *MockAgentClientMockRecorder) PingAgents(ctx, in interface{}, opts ...i
 }
 
 // UpgradeConvertPrimarySegments mocks base method
-func (m *MockAgentClient) UpgradeConvertPrimarySegments(ctx context.Context, in *UpgradeConvertPrimarySegmentsRequest, opts ...grpc.CallOption) (*UpgradeConvertPrimarySegmentsReply, error) {
+func (m *MockAgentClient) UpgradeConvertPrimarySegments(ctx context.Context, in *idl.UpgradeConvertPrimarySegmentsRequest, opts ...grpc.CallOption) (*idl.UpgradeConvertPrimarySegmentsReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "UpgradeConvertPrimarySegments", varargs...)
-	ret0, _ := ret[0].(*UpgradeConvertPrimarySegmentsReply)
+	ret0, _ := ret[0].(*idl.UpgradeConvertPrimarySegmentsReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -149,9 +149,9 @@ func (m *MockAgentServer) EXPECT() *MockAgentServerMockRecorder {
 }
 
 // CheckUpgradeStatus mocks base method
-func (m *MockAgentServer) CheckUpgradeStatus(arg0 context.Context, arg1 *CheckUpgradeStatusRequest) (*CheckUpgradeStatusReply, error) {
+func (m *MockAgentServer) CheckUpgradeStatus(arg0 context.Context, arg1 *idl.CheckUpgradeStatusRequest) (*idl.CheckUpgradeStatusReply, error) {
 	ret := m.ctrl.Call(m, "CheckUpgradeStatus", arg0, arg1)
-	ret0, _ := ret[0].(*CheckUpgradeStatusReply)
+	ret0, _ := ret[0].(*idl.CheckUpgradeStatusReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -162,9 +162,9 @@ func (mr *MockAgentServerMockRecorder) CheckUpgradeStatus(arg0, arg1 interface{}
 }
 
 // CheckConversionStatus mocks base method
-func (m *MockAgentServer) CheckConversionStatus(arg0 context.Context, arg1 *CheckConversionStatusRequest) (*CheckConversionStatusReply, error) {
+func (m *MockAgentServer) CheckConversionStatus(arg0 context.Context, arg1 *idl.CheckConversionStatusRequest) (*idl.CheckConversionStatusReply, error) {
 	ret := m.ctrl.Call(m, "CheckConversionStatus", arg0, arg1)
-	ret0, _ := ret[0].(*CheckConversionStatusReply)
+	ret0, _ := ret[0].(*idl.CheckConversionStatusReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -175,9 +175,9 @@ func (mr *MockAgentServerMockRecorder) CheckConversionStatus(arg0, arg1 interfac
 }
 
 // CheckDiskUsageOnAgents mocks base method
-func (m *MockAgentServer) CheckDiskUsageOnAgents(arg0 context.Context, arg1 *CheckDiskUsageRequestToAgent) (*CheckDiskUsageReplyFromAgent, error) {
+func (m *MockAgentServer) CheckDiskUsageOnAgents(arg0 context.Context, arg1 *idl.CheckDiskUsageRequestToAgent) (*idl.CheckDiskUsageReplyFromAgent, error) {
 	ret := m.ctrl.Call(m, "CheckDiskUsageOnAgents", arg0, arg1)
-	ret0, _ := ret[0].(*CheckDiskUsageReplyFromAgent)
+	ret0, _ := ret[0].(*idl.CheckDiskUsageReplyFromAgent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -188,9 +188,9 @@ func (mr *MockAgentServerMockRecorder) CheckDiskUsageOnAgents(arg0, arg1 interfa
 }
 
 // PingAgents mocks base method
-func (m *MockAgentServer) PingAgents(arg0 context.Context, arg1 *PingAgentsRequest) (*PingAgentsReply, error) {
+func (m *MockAgentServer) PingAgents(arg0 context.Context, arg1 *idl.PingAgentsRequest) (*idl.PingAgentsReply, error) {
 	ret := m.ctrl.Call(m, "PingAgents", arg0, arg1)
-	ret0, _ := ret[0].(*PingAgentsReply)
+	ret0, _ := ret[0].(*idl.PingAgentsReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -201,9 +201,9 @@ func (mr *MockAgentServerMockRecorder) PingAgents(arg0, arg1 interface{}) *gomoc
 }
 
 // UpgradeConvertPrimarySegments mocks base method
-func (m *MockAgentServer) UpgradeConvertPrimarySegments(arg0 context.Context, arg1 *UpgradeConvertPrimarySegmentsRequest) (*UpgradeConvertPrimarySegmentsReply, error) {
+func (m *MockAgentServer) UpgradeConvertPrimarySegments(arg0 context.Context, arg1 *idl.UpgradeConvertPrimarySegmentsRequest) (*idl.UpgradeConvertPrimarySegmentsReply, error) {
 	ret := m.ctrl.Call(m, "UpgradeConvertPrimarySegments", arg0, arg1)
-	ret0, _ := ret[0].(*UpgradeConvertPrimarySegmentsReply)
+	ret0, _ := ret[0].(*idl.UpgradeConvertPrimarySegmentsReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

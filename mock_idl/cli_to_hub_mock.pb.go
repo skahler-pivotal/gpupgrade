@@ -5,11 +5,11 @@
 package mock_idl
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	context "golang.org/x/net/context"
-	grpc "google.golang.org/grpc"
-	. "gp_upgrade/idl"
-	reflect "reflect"
+	"github.com/golang/mock/gomock"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"gp_upgrade/idl"
+	"reflect"
 )
 
 // MockCliToHubClient is a mock of CliToHubClient interface
@@ -36,13 +36,13 @@ func (m *MockCliToHubClient) EXPECT() *MockCliToHubClientMockRecorder {
 }
 
 // Ping mocks base method
-func (m *MockCliToHubClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingReply, error) {
+func (m *MockCliToHubClient) Ping(ctx context.Context, in *idl.PingRequest, opts ...grpc.CallOption) (*idl.PingReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Ping", varargs...)
-	ret0, _ := ret[0].(*PingReply)
+	ret0, _ := ret[0].(*idl.PingReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -54,13 +54,13 @@ func (mr *MockCliToHubClientMockRecorder) Ping(ctx, in interface{}, opts ...inte
 }
 
 // StatusUpgrade mocks base method
-func (m *MockCliToHubClient) StatusUpgrade(ctx context.Context, in *StatusUpgradeRequest, opts ...grpc.CallOption) (*StatusUpgradeReply, error) {
+func (m *MockCliToHubClient) StatusUpgrade(ctx context.Context, in *idl.StatusUpgradeRequest, opts ...grpc.CallOption) (*idl.StatusUpgradeReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "StatusUpgrade", varargs...)
-	ret0, _ := ret[0].(*StatusUpgradeReply)
+	ret0, _ := ret[0].(*idl.StatusUpgradeReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -72,13 +72,13 @@ func (mr *MockCliToHubClientMockRecorder) StatusUpgrade(ctx, in interface{}, opt
 }
 
 // StatusConversion mocks base method
-func (m *MockCliToHubClient) StatusConversion(ctx context.Context, in *StatusConversionRequest, opts ...grpc.CallOption) (*StatusConversionReply, error) {
+func (m *MockCliToHubClient) StatusConversion(ctx context.Context, in *idl.StatusConversionRequest, opts ...grpc.CallOption) (*idl.StatusConversionReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "StatusConversion", varargs...)
-	ret0, _ := ret[0].(*StatusConversionReply)
+	ret0, _ := ret[0].(*idl.StatusConversionReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -90,13 +90,13 @@ func (mr *MockCliToHubClientMockRecorder) StatusConversion(ctx, in interface{}, 
 }
 
 // CheckConfig mocks base method
-func (m *MockCliToHubClient) CheckConfig(ctx context.Context, in *CheckConfigRequest, opts ...grpc.CallOption) (*CheckConfigReply, error) {
+func (m *MockCliToHubClient) CheckConfig(ctx context.Context, in *idl.CheckConfigRequest, opts ...grpc.CallOption) (*idl.CheckConfigReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "CheckConfig", varargs...)
-	ret0, _ := ret[0].(*CheckConfigReply)
+	ret0, _ := ret[0].(*idl.CheckConfigReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -108,13 +108,13 @@ func (mr *MockCliToHubClientMockRecorder) CheckConfig(ctx, in interface{}, opts 
 }
 
 // CheckSeginstall mocks base method
-func (m *MockCliToHubClient) CheckSeginstall(ctx context.Context, in *CheckSeginstallRequest, opts ...grpc.CallOption) (*CheckSeginstallReply, error) {
+func (m *MockCliToHubClient) CheckSeginstall(ctx context.Context, in *idl.CheckSeginstallRequest, opts ...grpc.CallOption) (*idl.CheckSeginstallReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "CheckSeginstall", varargs...)
-	ret0, _ := ret[0].(*CheckSeginstallReply)
+	ret0, _ := ret[0].(*idl.CheckSeginstallReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -126,13 +126,13 @@ func (mr *MockCliToHubClientMockRecorder) CheckSeginstall(ctx, in interface{}, o
 }
 
 // CheckObjectCount mocks base method
-func (m *MockCliToHubClient) CheckObjectCount(ctx context.Context, in *CheckObjectCountRequest, opts ...grpc.CallOption) (*CheckObjectCountReply, error) {
+func (m *MockCliToHubClient) CheckObjectCount(ctx context.Context, in *idl.CheckObjectCountRequest, opts ...grpc.CallOption) (*idl.CheckObjectCountReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "CheckObjectCount", varargs...)
-	ret0, _ := ret[0].(*CheckObjectCountReply)
+	ret0, _ := ret[0].(*idl.CheckObjectCountReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -144,13 +144,13 @@ func (mr *MockCliToHubClientMockRecorder) CheckObjectCount(ctx, in interface{}, 
 }
 
 // CheckVersion mocks base method
-func (m *MockCliToHubClient) CheckVersion(ctx context.Context, in *CheckVersionRequest, opts ...grpc.CallOption) (*CheckVersionReply, error) {
+func (m *MockCliToHubClient) CheckVersion(ctx context.Context, in *idl.CheckVersionRequest, opts ...grpc.CallOption) (*idl.CheckVersionReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "CheckVersion", varargs...)
-	ret0, _ := ret[0].(*CheckVersionReply)
+	ret0, _ := ret[0].(*idl.CheckVersionReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -162,13 +162,13 @@ func (mr *MockCliToHubClientMockRecorder) CheckVersion(ctx, in interface{}, opts
 }
 
 // CheckDiskUsage mocks base method
-func (m *MockCliToHubClient) CheckDiskUsage(ctx context.Context, in *CheckDiskUsageRequest, opts ...grpc.CallOption) (*CheckDiskUsageReply, error) {
+func (m *MockCliToHubClient) CheckDiskUsage(ctx context.Context, in *idl.CheckDiskUsageRequest, opts ...grpc.CallOption) (*idl.CheckDiskUsageReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "CheckDiskUsage", varargs...)
-	ret0, _ := ret[0].(*CheckDiskUsageReply)
+	ret0, _ := ret[0].(*idl.CheckDiskUsageReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -180,13 +180,13 @@ func (mr *MockCliToHubClientMockRecorder) CheckDiskUsage(ctx, in interface{}, op
 }
 
 // PrepareInitCluster mocks base method
-func (m *MockCliToHubClient) PrepareInitCluster(ctx context.Context, in *PrepareInitClusterRequest, opts ...grpc.CallOption) (*PrepareInitClusterReply, error) {
+func (m *MockCliToHubClient) PrepareInitCluster(ctx context.Context, in *idl.PrepareInitClusterRequest, opts ...grpc.CallOption) (*idl.PrepareInitClusterReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "PrepareInitCluster", varargs...)
-	ret0, _ := ret[0].(*PrepareInitClusterReply)
+	ret0, _ := ret[0].(*idl.PrepareInitClusterReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -198,13 +198,13 @@ func (mr *MockCliToHubClientMockRecorder) PrepareInitCluster(ctx, in interface{}
 }
 
 // PrepareShutdownClusters mocks base method
-func (m *MockCliToHubClient) PrepareShutdownClusters(ctx context.Context, in *PrepareShutdownClustersRequest, opts ...grpc.CallOption) (*PrepareShutdownClustersReply, error) {
+func (m *MockCliToHubClient) PrepareShutdownClusters(ctx context.Context, in *idl.PrepareShutdownClustersRequest, opts ...grpc.CallOption) (*idl.PrepareShutdownClustersReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "PrepareShutdownClusters", varargs...)
-	ret0, _ := ret[0].(*PrepareShutdownClustersReply)
+	ret0, _ := ret[0].(*idl.PrepareShutdownClustersReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -216,13 +216,13 @@ func (mr *MockCliToHubClientMockRecorder) PrepareShutdownClusters(ctx, in interf
 }
 
 // UpgradeConvertMaster mocks base method
-func (m *MockCliToHubClient) UpgradeConvertMaster(ctx context.Context, in *UpgradeConvertMasterRequest, opts ...grpc.CallOption) (*UpgradeConvertMasterReply, error) {
+func (m *MockCliToHubClient) UpgradeConvertMaster(ctx context.Context, in *idl.UpgradeConvertMasterRequest, opts ...grpc.CallOption) (*idl.UpgradeConvertMasterReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "UpgradeConvertMaster", varargs...)
-	ret0, _ := ret[0].(*UpgradeConvertMasterReply)
+	ret0, _ := ret[0].(*idl.UpgradeConvertMasterReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -234,13 +234,13 @@ func (mr *MockCliToHubClientMockRecorder) UpgradeConvertMaster(ctx, in interface
 }
 
 // PrepareStartAgents mocks base method
-func (m *MockCliToHubClient) PrepareStartAgents(ctx context.Context, in *PrepareStartAgentsRequest, opts ...grpc.CallOption) (*PrepareStartAgentsReply, error) {
+func (m *MockCliToHubClient) PrepareStartAgents(ctx context.Context, in *idl.PrepareStartAgentsRequest, opts ...grpc.CallOption) (*idl.PrepareStartAgentsReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "PrepareStartAgents", varargs...)
-	ret0, _ := ret[0].(*PrepareStartAgentsReply)
+	ret0, _ := ret[0].(*idl.PrepareStartAgentsReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -252,13 +252,13 @@ func (mr *MockCliToHubClientMockRecorder) PrepareStartAgents(ctx, in interface{}
 }
 
 // UpgradeShareOids mocks base method
-func (m *MockCliToHubClient) UpgradeShareOids(ctx context.Context, in *UpgradeShareOidsRequest, opts ...grpc.CallOption) (*UpgradeShareOidsReply, error) {
+func (m *MockCliToHubClient) UpgradeShareOids(ctx context.Context, in *idl.UpgradeShareOidsRequest, opts ...grpc.CallOption) (*idl.UpgradeShareOidsReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "UpgradeShareOids", varargs...)
-	ret0, _ := ret[0].(*UpgradeShareOidsReply)
+	ret0, _ := ret[0].(*idl.UpgradeShareOidsReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -270,13 +270,13 @@ func (mr *MockCliToHubClientMockRecorder) UpgradeShareOids(ctx, in interface{}, 
 }
 
 // UpgradeValidateStartCluster mocks base method
-func (m *MockCliToHubClient) UpgradeValidateStartCluster(ctx context.Context, in *UpgradeValidateStartClusterRequest, opts ...grpc.CallOption) (*UpgradeValidateStartClusterReply, error) {
+func (m *MockCliToHubClient) UpgradeValidateStartCluster(ctx context.Context, in *idl.UpgradeValidateStartClusterRequest, opts ...grpc.CallOption) (*idl.UpgradeValidateStartClusterReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "UpgradeValidateStartCluster", varargs...)
-	ret0, _ := ret[0].(*UpgradeValidateStartClusterReply)
+	ret0, _ := ret[0].(*idl.UpgradeValidateStartClusterReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -288,13 +288,13 @@ func (mr *MockCliToHubClientMockRecorder) UpgradeValidateStartCluster(ctx, in in
 }
 
 // UpgradeConvertPrimaries mocks base method
-func (m *MockCliToHubClient) UpgradeConvertPrimaries(ctx context.Context, in *UpgradeConvertPrimariesRequest, opts ...grpc.CallOption) (*UpgradeConvertPrimariesReply, error) {
+func (m *MockCliToHubClient) UpgradeConvertPrimaries(ctx context.Context, in *idl.UpgradeConvertPrimariesRequest, opts ...grpc.CallOption) (*idl.UpgradeConvertPrimariesReply, error) {
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "UpgradeConvertPrimaries", varargs...)
-	ret0, _ := ret[0].(*UpgradeConvertPrimariesReply)
+	ret0, _ := ret[0].(*idl.UpgradeConvertPrimariesReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -329,9 +329,9 @@ func (m *MockCliToHubServer) EXPECT() *MockCliToHubServerMockRecorder {
 }
 
 // Ping mocks base method
-func (m *MockCliToHubServer) Ping(arg0 context.Context, arg1 *PingRequest) (*PingReply, error) {
+func (m *MockCliToHubServer) Ping(arg0 context.Context, arg1 *idl.PingRequest) (*idl.PingReply, error) {
 	ret := m.ctrl.Call(m, "Ping", arg0, arg1)
-	ret0, _ := ret[0].(*PingReply)
+	ret0, _ := ret[0].(*idl.PingReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -342,9 +342,9 @@ func (mr *MockCliToHubServerMockRecorder) Ping(arg0, arg1 interface{}) *gomock.C
 }
 
 // StatusUpgrade mocks base method
-func (m *MockCliToHubServer) StatusUpgrade(arg0 context.Context, arg1 *StatusUpgradeRequest) (*StatusUpgradeReply, error) {
+func (m *MockCliToHubServer) StatusUpgrade(arg0 context.Context, arg1 *idl.StatusUpgradeRequest) (*idl.StatusUpgradeReply, error) {
 	ret := m.ctrl.Call(m, "StatusUpgrade", arg0, arg1)
-	ret0, _ := ret[0].(*StatusUpgradeReply)
+	ret0, _ := ret[0].(*idl.StatusUpgradeReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -355,9 +355,9 @@ func (mr *MockCliToHubServerMockRecorder) StatusUpgrade(arg0, arg1 interface{}) 
 }
 
 // StatusConversion mocks base method
-func (m *MockCliToHubServer) StatusConversion(arg0 context.Context, arg1 *StatusConversionRequest) (*StatusConversionReply, error) {
+func (m *MockCliToHubServer) StatusConversion(arg0 context.Context, arg1 *idl.StatusConversionRequest) (*idl.StatusConversionReply, error) {
 	ret := m.ctrl.Call(m, "StatusConversion", arg0, arg1)
-	ret0, _ := ret[0].(*StatusConversionReply)
+	ret0, _ := ret[0].(*idl.StatusConversionReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -368,9 +368,9 @@ func (mr *MockCliToHubServerMockRecorder) StatusConversion(arg0, arg1 interface{
 }
 
 // CheckConfig mocks base method
-func (m *MockCliToHubServer) CheckConfig(arg0 context.Context, arg1 *CheckConfigRequest) (*CheckConfigReply, error) {
+func (m *MockCliToHubServer) CheckConfig(arg0 context.Context, arg1 *idl.CheckConfigRequest) (*idl.CheckConfigReply, error) {
 	ret := m.ctrl.Call(m, "CheckConfig", arg0, arg1)
-	ret0, _ := ret[0].(*CheckConfigReply)
+	ret0, _ := ret[0].(*idl.CheckConfigReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -381,9 +381,9 @@ func (mr *MockCliToHubServerMockRecorder) CheckConfig(arg0, arg1 interface{}) *g
 }
 
 // CheckSeginstall mocks base method
-func (m *MockCliToHubServer) CheckSeginstall(arg0 context.Context, arg1 *CheckSeginstallRequest) (*CheckSeginstallReply, error) {
+func (m *MockCliToHubServer) CheckSeginstall(arg0 context.Context, arg1 *idl.CheckSeginstallRequest) (*idl.CheckSeginstallReply, error) {
 	ret := m.ctrl.Call(m, "CheckSeginstall", arg0, arg1)
-	ret0, _ := ret[0].(*CheckSeginstallReply)
+	ret0, _ := ret[0].(*idl.CheckSeginstallReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -394,9 +394,9 @@ func (mr *MockCliToHubServerMockRecorder) CheckSeginstall(arg0, arg1 interface{}
 }
 
 // CheckObjectCount mocks base method
-func (m *MockCliToHubServer) CheckObjectCount(arg0 context.Context, arg1 *CheckObjectCountRequest) (*CheckObjectCountReply, error) {
+func (m *MockCliToHubServer) CheckObjectCount(arg0 context.Context, arg1 *idl.CheckObjectCountRequest) (*idl.CheckObjectCountReply, error) {
 	ret := m.ctrl.Call(m, "CheckObjectCount", arg0, arg1)
-	ret0, _ := ret[0].(*CheckObjectCountReply)
+	ret0, _ := ret[0].(*idl.CheckObjectCountReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -407,9 +407,9 @@ func (mr *MockCliToHubServerMockRecorder) CheckObjectCount(arg0, arg1 interface{
 }
 
 // CheckVersion mocks base method
-func (m *MockCliToHubServer) CheckVersion(arg0 context.Context, arg1 *CheckVersionRequest) (*CheckVersionReply, error) {
+func (m *MockCliToHubServer) CheckVersion(arg0 context.Context, arg1 *idl.CheckVersionRequest) (*idl.CheckVersionReply, error) {
 	ret := m.ctrl.Call(m, "CheckVersion", arg0, arg1)
-	ret0, _ := ret[0].(*CheckVersionReply)
+	ret0, _ := ret[0].(*idl.CheckVersionReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -420,9 +420,9 @@ func (mr *MockCliToHubServerMockRecorder) CheckVersion(arg0, arg1 interface{}) *
 }
 
 // CheckDiskUsage mocks base method
-func (m *MockCliToHubServer) CheckDiskUsage(arg0 context.Context, arg1 *CheckDiskUsageRequest) (*CheckDiskUsageReply, error) {
+func (m *MockCliToHubServer) CheckDiskUsage(arg0 context.Context, arg1 *idl.CheckDiskUsageRequest) (*idl.CheckDiskUsageReply, error) {
 	ret := m.ctrl.Call(m, "CheckDiskUsage", arg0, arg1)
-	ret0, _ := ret[0].(*CheckDiskUsageReply)
+	ret0, _ := ret[0].(*idl.CheckDiskUsageReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -433,9 +433,9 @@ func (mr *MockCliToHubServerMockRecorder) CheckDiskUsage(arg0, arg1 interface{})
 }
 
 // PrepareInitCluster mocks base method
-func (m *MockCliToHubServer) PrepareInitCluster(arg0 context.Context, arg1 *PrepareInitClusterRequest) (*PrepareInitClusterReply, error) {
+func (m *MockCliToHubServer) PrepareInitCluster(arg0 context.Context, arg1 *idl.PrepareInitClusterRequest) (*idl.PrepareInitClusterReply, error) {
 	ret := m.ctrl.Call(m, "PrepareInitCluster", arg0, arg1)
-	ret0, _ := ret[0].(*PrepareInitClusterReply)
+	ret0, _ := ret[0].(*idl.PrepareInitClusterReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -446,9 +446,9 @@ func (mr *MockCliToHubServerMockRecorder) PrepareInitCluster(arg0, arg1 interfac
 }
 
 // PrepareShutdownClusters mocks base method
-func (m *MockCliToHubServer) PrepareShutdownClusters(arg0 context.Context, arg1 *PrepareShutdownClustersRequest) (*PrepareShutdownClustersReply, error) {
+func (m *MockCliToHubServer) PrepareShutdownClusters(arg0 context.Context, arg1 *idl.PrepareShutdownClustersRequest) (*idl.PrepareShutdownClustersReply, error) {
 	ret := m.ctrl.Call(m, "PrepareShutdownClusters", arg0, arg1)
-	ret0, _ := ret[0].(*PrepareShutdownClustersReply)
+	ret0, _ := ret[0].(*idl.PrepareShutdownClustersReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -459,9 +459,9 @@ func (mr *MockCliToHubServerMockRecorder) PrepareShutdownClusters(arg0, arg1 int
 }
 
 // UpgradeConvertMaster mocks base method
-func (m *MockCliToHubServer) UpgradeConvertMaster(arg0 context.Context, arg1 *UpgradeConvertMasterRequest) (*UpgradeConvertMasterReply, error) {
+func (m *MockCliToHubServer) UpgradeConvertMaster(arg0 context.Context, arg1 *idl.UpgradeConvertMasterRequest) (*idl.UpgradeConvertMasterReply, error) {
 	ret := m.ctrl.Call(m, "UpgradeConvertMaster", arg0, arg1)
-	ret0, _ := ret[0].(*UpgradeConvertMasterReply)
+	ret0, _ := ret[0].(*idl.UpgradeConvertMasterReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -472,9 +472,9 @@ func (mr *MockCliToHubServerMockRecorder) UpgradeConvertMaster(arg0, arg1 interf
 }
 
 // PrepareStartAgents mocks base method
-func (m *MockCliToHubServer) PrepareStartAgents(arg0 context.Context, arg1 *PrepareStartAgentsRequest) (*PrepareStartAgentsReply, error) {
+func (m *MockCliToHubServer) PrepareStartAgents(arg0 context.Context, arg1 *idl.PrepareStartAgentsRequest) (*idl.PrepareStartAgentsReply, error) {
 	ret := m.ctrl.Call(m, "PrepareStartAgents", arg0, arg1)
-	ret0, _ := ret[0].(*PrepareStartAgentsReply)
+	ret0, _ := ret[0].(*idl.PrepareStartAgentsReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -485,9 +485,9 @@ func (mr *MockCliToHubServerMockRecorder) PrepareStartAgents(arg0, arg1 interfac
 }
 
 // UpgradeShareOids mocks base method
-func (m *MockCliToHubServer) UpgradeShareOids(arg0 context.Context, arg1 *UpgradeShareOidsRequest) (*UpgradeShareOidsReply, error) {
+func (m *MockCliToHubServer) UpgradeShareOids(arg0 context.Context, arg1 *idl.UpgradeShareOidsRequest) (*idl.UpgradeShareOidsReply, error) {
 	ret := m.ctrl.Call(m, "UpgradeShareOids", arg0, arg1)
-	ret0, _ := ret[0].(*UpgradeShareOidsReply)
+	ret0, _ := ret[0].(*idl.UpgradeShareOidsReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -498,9 +498,9 @@ func (mr *MockCliToHubServerMockRecorder) UpgradeShareOids(arg0, arg1 interface{
 }
 
 // UpgradeValidateStartCluster mocks base method
-func (m *MockCliToHubServer) UpgradeValidateStartCluster(arg0 context.Context, arg1 *UpgradeValidateStartClusterRequest) (*UpgradeValidateStartClusterReply, error) {
+func (m *MockCliToHubServer) UpgradeValidateStartCluster(arg0 context.Context, arg1 *idl.UpgradeValidateStartClusterRequest) (*idl.UpgradeValidateStartClusterReply, error) {
 	ret := m.ctrl.Call(m, "UpgradeValidateStartCluster", arg0, arg1)
-	ret0, _ := ret[0].(*UpgradeValidateStartClusterReply)
+	ret0, _ := ret[0].(*idl.UpgradeValidateStartClusterReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -511,9 +511,9 @@ func (mr *MockCliToHubServerMockRecorder) UpgradeValidateStartCluster(arg0, arg1
 }
 
 // UpgradeConvertPrimaries mocks base method
-func (m *MockCliToHubServer) UpgradeConvertPrimaries(arg0 context.Context, arg1 *UpgradeConvertPrimariesRequest) (*UpgradeConvertPrimariesReply, error) {
+func (m *MockCliToHubServer) UpgradeConvertPrimaries(arg0 context.Context, arg1 *idl.UpgradeConvertPrimariesRequest) (*idl.UpgradeConvertPrimariesReply, error) {
 	ret := m.ctrl.Call(m, "UpgradeConvertPrimaries", arg0, arg1)
-	ret0, _ := ret[0].(*UpgradeConvertPrimariesReply)
+	ret0, _ := ret[0].(*idl.UpgradeConvertPrimariesReply)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
