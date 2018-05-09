@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"gp_upgrade/hub/services"
+	"github.com/greenplum-db/gpupgrade/hub/services"
 
 	"github.com/greenplum-db/gp-common-go-libs/dbconn"
 	"github.com/greenplum-db/gp-common-go-libs/operating"

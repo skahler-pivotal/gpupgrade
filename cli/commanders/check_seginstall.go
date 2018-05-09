@@ -3,7 +3,7 @@ package commanders
 import (
 	"context"
 
-	pb "gp_upgrade/idl"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 )
 
 type SeginstallChecker struct {

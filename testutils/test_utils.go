@@ -6,7 +6,7 @@ import (
 	"net"
 	"os"
 
-	"gp_upgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
 )
 
 const (

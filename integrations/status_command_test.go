@@ -4,11 +4,11 @@ import (
 	"io/ioutil"
 	"os"
 
-	agentServices "gp_upgrade/agent/services"
-	"gp_upgrade/hub/cluster"
-	"gp_upgrade/hub/configutils"
-	hubServices "gp_upgrade/hub/services"
-	"gp_upgrade/testutils"
+	agentServices "github.com/greenplum-db/gpupgrade/agent/services"
+	"github.com/greenplum-db/gpupgrade/hub/cluster"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	hubServices "github.com/greenplum-db/gpupgrade/hub/services"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
 	"github.com/onsi/gomega/gbytes"
 	"google.golang.org/grpc"

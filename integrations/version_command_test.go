@@ -7,10 +7,10 @@ import (
 	"os/exec"
 	"time"
 
-	"gp_upgrade/hub/cluster"
-	"gp_upgrade/hub/configutils"
-	"gp_upgrade/hub/services"
-	"gp_upgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/hub/cluster"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/services"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -56,7 +56,7 @@ var _ = Describe("version command", func() {
 
 	It("reports the version that's injected at build-time", func() {
 		fake_version := fmt.Sprintf("v0.0.0-dev.%d", time.Now().Unix())
-		commandPathWithVersion, err := Build("gp_upgrade/cli", "-ldflags", "-X gp_upgrade/cli/commanders.GpdbVersion="+fake_version)
+		commandPathWithVersion, err := Build("github.com/greenplum-db/gpupgrade/cli", "-ldflags", "-X github.com/greenplum-db/gpupgrade/cli/commanders.UpgradeVersion="+fake_version)
 		Expect(err).NotTo(HaveOccurred())
 
 		// can't use the runCommand() integration helper function because we calculated a separate path
@@ -66,7 +66,7 @@ var _ = Describe("version command", func() {
 
 		Eventually(session).Should(Exit(0))
 		Consistently(session.Out).ShouldNot(Say("unknown version"))
-		Eventually(session.Out).Should(Say("gp_upgrade version")) //scans session.Out buffer beyond the matching tokens
+		Eventually(session.Out).Should(Say("gpupgrade version")) //scans session.Out buffer beyond the matching tokens
 		Eventually(session.Out).Should(Say(fake_version))
 	})
 })

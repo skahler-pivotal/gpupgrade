@@ -5,8 +5,8 @@ import (
 	. "github.com/onsi/gomega"
 
 	"errors"
-	"gp_upgrade/hub/upgradestatus"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/hub/upgradestatus"
+	"github.com/greenplum-db/gpupgrade/utils"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -21,11 +21,11 @@ var _ = Describe("upgradestatus/ChecklistManager", func() {
 		It("Leaves an in-progress file in the state dir", func() {
 			tempdir, _ := ioutil.TempDir("", "")
 
-			cm := upgradestatus.NewChecklistManager(filepath.Join(tempdir, ".gp_upgrade"))
+			cm := upgradestatus.NewChecklistManager(filepath.Join(tempdir, ".gpupgrade"))
 			cm.ResetStateDir("fancy_step")
 			err := cm.MarkInProgress("fancy_step")
 			Expect(err).ToNot(HaveOccurred())
-			expectedFile := filepath.Join(tempdir, ".gp_upgrade", "fancy_step", "in.progress")
+			expectedFile := filepath.Join(tempdir, ".gpupgrade", "fancy_step", "in.progress")
 			_, err = os.Stat(expectedFile)
 			Expect(err).ToNot(HaveOccurred())
 		})
@@ -33,12 +33,12 @@ var _ = Describe("upgradestatus/ChecklistManager", func() {
 		It("still succeeds if file already exists", func() {
 			tempdir, _ := ioutil.TempDir("", "")
 
-			cm := upgradestatus.NewChecklistManager(filepath.Join(tempdir, ".gp_upgrade"))
+			cm := upgradestatus.NewChecklistManager(filepath.Join(tempdir, ".gpupgrade"))
 			cm.ResetStateDir("fancy_step")
 			cm.MarkInProgress("fancy_step") // lay the file down once
 			err := cm.MarkInProgress("fancy_step")
 			Expect(err).ToNot(HaveOccurred())
-			expectedFile := filepath.Join(tempdir, ".gp_upgrade", "fancy_step", "in.progress")
+			expectedFile := filepath.Join(tempdir, ".gpupgrade", "fancy_step", "in.progress")
 			_, err = os.Stat(expectedFile)
 			Expect(err).ToNot(HaveOccurred())
 		})
@@ -50,7 +50,7 @@ var _ = Describe("upgradestatus/ChecklistManager", func() {
 
 			tempdir, _ := ioutil.TempDir("", "")
 
-			cm := upgradestatus.NewChecklistManager(filepath.Join(tempdir, ".gp_upgrade"))
+			cm := upgradestatus.NewChecklistManager(filepath.Join(tempdir, ".gpupgrade"))
 			cm.ResetStateDir("fancy_step")
 			err := cm.MarkInProgress("fancy_step")
 			Expect(err).To(HaveOccurred())

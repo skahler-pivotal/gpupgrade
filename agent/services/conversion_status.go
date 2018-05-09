@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
-	"gp_upgrade/hub/upgradestatus"
-	pb "gp_upgrade/idl"
+	"github.com/greenplum-db/gpupgrade/hub/upgradestatus"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 	"path/filepath"
 )
 

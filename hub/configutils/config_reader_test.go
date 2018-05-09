@@ -2,10 +2,10 @@ package configutils_test
 
 import (
 	"encoding/json"
-	"gp_upgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/testutils"
 	"io/ioutil"
 
-	"gp_upgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
 	"regexp"
 
 	. "github.com/onsi/ginkgo"

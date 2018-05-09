@@ -1,8 +1,8 @@
 package services_test
 
 import (
-	"gp_upgrade/hub/services"
-	"gp_upgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/hub/services"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -10,7 +10,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ = Describe("HubClient", func() {

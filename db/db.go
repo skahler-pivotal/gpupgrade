@@ -3,7 +3,7 @@ package db
 import (
 	"strconv"
 
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/dbconn"
 	_ "github.com/lib/pq" //_ import for the side effect of having postgres driver available

@@ -8,7 +8,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
-	idl "gp_upgrade/idl"
+	idl "github.com/greenplum-db/gpupgrade/idl"
 	reflect "reflect"
 )
 

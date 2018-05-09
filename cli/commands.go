@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"gp_upgrade/cli/commanders"
-	pb "gp_upgrade/idl"
+	"github.com/greenplum-db/gpupgrade/cli/commanders"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"github.com/spf13/cobra"
@@ -17,18 +17,18 @@ var dbPort int
 var newClusterDbPort int
 var oldDataDir, oldBinDir, newDataDir, newBinDir string
 
-var root = &cobra.Command{Use: "gp_upgrade"}
+var root = &cobra.Command{Use: "gpupgrade"}
 
 var prepare = &cobra.Command{
 	Use:   "prepare",
-	Short: "subcommands to help you get ready for a gp_upgrade",
-	Long:  "subcommands to help you get ready for a gp_upgrade",
+	Short: "subcommands to help you get ready for a gpupgrade",
+	Long:  "subcommands to help you get ready for a gpupgrade",
 }
 
 var status = &cobra.Command{
 	Use:   "status",
-	Short: "subcommands to show the status of a gp_upgrade",
-	Long:  "subcommands to show the status of a gp_upgrade",
+	Short: "subcommands to show the status of a gpupgrade",
+	Long:  "subcommands to show the status of a gpupgrade",
 }
 
 var check = &cobra.Command{
@@ -39,8 +39,8 @@ var check = &cobra.Command{
 
 var version = &cobra.Command{
 	Use:   "version",
-	Short: "Version of gp_upgrade",
-	Long:  `Version of gp_upgrade`,
+	Short: "Version of gpupgrade",
+	Long:  `Version of gpupgrade`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(commanders.VersionString())
 	},
@@ -73,7 +73,7 @@ var subStartHub = &cobra.Command{
 		err = preparer.VerifyConnectivity(client)
 
 		if err != nil {
-			gplog.Error("gp_upgrade is unable to connect via gRPC to the hub")
+			gplog.Error("gpupgrade is unable to connect via gRPC to the hub")
 			gplog.Error("%v", err)
 			os.Exit(1)
 		}
@@ -255,7 +255,7 @@ var subSeginstall = &cobra.Command{
 	Use:   "seginstall",
 	Short: "confirms that the new software is installed on all segments",
 	Long: "Running this command will validate that the new software is installed on all segments, " +
-		"and register successful or failed validation (available in `gp_upgrade status upgrade`)",
+		"and register successful or failed validation (available in `gpupgrade status upgrade`)",
 	Run: func(cmd *cobra.Command, args []string) {
 		conn, connConfigErr := grpc.Dial("localhost:"+hubPort, grpc.WithInsecure())
 		if connConfigErr != nil {
@@ -270,7 +270,7 @@ var subSeginstall = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println("Seginstall is underway. Use command \"gp_upgrade status upgrade\" " +
+		fmt.Println("Seginstall is underway. Use command \"gpupgrade status upgrade\" " +
 			"to check its current status, and/or hub logs for possible errors.")
 	},
 }

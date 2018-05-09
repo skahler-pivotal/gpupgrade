@@ -1,7 +1,7 @@
 package shellparsers_test
 
 import (
-	"gp_upgrade/shellparsers"
+	"github.com/greenplum-db/gpupgrade/shellparsers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

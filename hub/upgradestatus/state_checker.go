@@ -1,8 +1,8 @@
 package upgradestatus
 
 import (
-	pb "gp_upgrade/idl"
-	"gp_upgrade/utils"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/utils"
 	"path/filepath"
 
 	"github.com/pkg/errors"

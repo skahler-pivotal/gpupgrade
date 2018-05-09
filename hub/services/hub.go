@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"gp_upgrade/helpers"
-	"gp_upgrade/hub/configutils"
-	"gp_upgrade/hub/upgradestatus"
-	pb "gp_upgrade/idl"
+	"github.com/greenplum-db/gpupgrade/helpers"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/upgradestatus"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"google.golang.org/grpc"

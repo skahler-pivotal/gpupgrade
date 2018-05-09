@@ -1,7 +1,7 @@
 package utils_test
 
 import (
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

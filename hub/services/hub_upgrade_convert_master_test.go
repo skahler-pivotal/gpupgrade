@@ -6,10 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"gp_upgrade/hub/services"
-	pb "gp_upgrade/idl"
-	"gp_upgrade/testutils"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/hub/services"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	"google.golang.org/grpc"
 

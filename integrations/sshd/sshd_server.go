@@ -20,7 +20,7 @@ import (
 	"path"
 	"runtime"
 
-	"gp_upgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
 	"golang.org/x/crypto/ssh"
 )

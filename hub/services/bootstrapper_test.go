@@ -1,10 +1,10 @@
 package services_test
 
 import (
-	_ "gp_upgrade/hub/services"
+	_ "github.com/greenplum-db/gpupgrade/hub/services"
 
-	"gp_upgrade/hub/services"
-	pb "gp_upgrade/idl"
+	"github.com/greenplum-db/gpupgrade/hub/services"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"errors"
 

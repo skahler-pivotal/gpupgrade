@@ -6,10 +6,10 @@ import (
 	"strings"
 	"sync"
 
-	"gp_upgrade/hub/cluster"
-	"gp_upgrade/hub/services"
-	pb "gp_upgrade/idl"
-	"gp_upgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/hub/cluster"
+	"github.com/greenplum-db/gpupgrade/hub/services"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -74,12 +74,12 @@ var _ = Describe("check", func() {
 		os.RemoveAll(dir)
 	})
 
-	// `gp_upgrade check seginstall` verifies that the user has installed the software on all hosts
+	// `gpupgrade check seginstall` verifies that the user has installed the software on all hosts
 	// As a single-node check, this test verifies the mechanics of the check, but would typically succeed.
-	// The implementation, however, uses the gp_upgrade_agent binary to verify installation. In real life,
-	// all the binaries, gp_upgrade_hub and gp_upgrade_agent included, would be alongside each other.
+	// The implementation, however, uses the gpupgrade_agent binary to verify installation. In real life,
+	// all the binaries, gpupgrade_hub and gpupgrade_agent included, would be alongside each other.
 	// But in our integration tests' context, only the necessary Golang code is compiled, and Ginkgo's default
-	// is to compile gp_upgrade_hub and gp_upgrade_agent in separate directories. As such, this test depends on the
+	// is to compile gpupgrade_hub and gpupgrade_agent in separate directories. As such, this test depends on the
 	// setup in `integrations_suite_test.go` to replicate the real-world scenario of "install binaries side-by-side".
 	//
 	// TODO: This test might be interesting to run multi-node; for that, figure out how "installation" should be done

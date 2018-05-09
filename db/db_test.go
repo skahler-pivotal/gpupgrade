@@ -3,7 +3,7 @@ package db
 import (
 	"os"
 
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

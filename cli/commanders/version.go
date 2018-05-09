@@ -1,16 +1,16 @@
 package commanders
 
-// This global var GpdbVersion should have a value set at build time.
+// This global var UpgradeVersion should have a value set at build time.
 // see Makefile for -ldflags "-X etc"
-var GpdbVersion = ""
+var UpgradeVersion = ""
 
 type VersionCommand struct{}
 
-const DefaultGpdbVersion = "gp_upgrade unknown version"
+const DefaultUpgradeVersion = "gpupgrade unknown version"
 
 func VersionString() string {
-	if GpdbVersion == "" {
-		return DefaultGpdbVersion
+	if UpgradeVersion == "" {
+		return DefaultUpgradeVersion
 	}
-	return "gp_upgrade version " + GpdbVersion
+	return "gpupgrade version " + UpgradeVersion
 }

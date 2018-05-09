@@ -14,7 +14,7 @@ type CheatSheet struct {
 	ReturnCode []byte
 }
 
-const CHEAT_SHEET_FILE = "/tmp/test_sshd_gp_upgrade_response.txt"
+const CHEAT_SHEET_FILE = "/tmp/test_sshd_gpupgrade_response.txt"
 
 func (cheatSheet CheatSheet) WriteToFile() {
 	f, err := os.Create(CHEAT_SHEET_FILE)

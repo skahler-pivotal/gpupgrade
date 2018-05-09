@@ -4,17 +4,17 @@ import (
 	"errors"
 	"io/ioutil"
 
-	"gp_upgrade/hub/configutils"
-	"gp_upgrade/hub/services"
-	pb "gp_upgrade/idl"
-	"gp_upgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/services"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	"google.golang.org/grpc"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ = Describe("hub.UpgradeConvertPrimaries()", func() {

@@ -8,17 +8,17 @@ import (
 	"strings"
 	"sync"
 
-	"gp_upgrade/hub/configutils"
-	"gp_upgrade/hub/services"
-	"gp_upgrade/hub/upgradestatus"
-	pb "gp_upgrade/idl"
-	"gp_upgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/services"
+	"github.com/greenplum-db/gpupgrade/hub/upgradestatus"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
 	"google.golang.org/grpc"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ = Describe("upgrade validate start cluster", func() {

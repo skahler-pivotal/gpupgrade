@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gp_upgrade/hub/services"
-	pb "gp_upgrade/idl"
-	"gp_upgrade/testutils"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/hub/services"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	"google.golang.org/grpc"
 
@@ -217,7 +217,7 @@ var _ = Describe("status upgrade", func() {
 			}
 		})
 
-		It("reports that master upgrade is done when no *.inprogress files exist in ~/.gp_upgrade/pg_upgrade", func() {
+		It("reports that master upgrade is done when no *.inprogress files exist in ~/.gpupgrade/pg_upgrade", func() {
 			outChan <- []byte("stdout/stderr message")
 			errChan <- errors.New("bogus error")
 

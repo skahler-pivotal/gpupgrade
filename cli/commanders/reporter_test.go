@@ -2,8 +2,8 @@ package commanders_test
 
 import (
 	"errors"
-	"gp_upgrade/cli/commanders"
-	pb "gp_upgrade/idl"
+	"github.com/greenplum-db/gpupgrade/cli/commanders"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"github.com/golang/mock/gomock"
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ = Describe("Reporter", func() {

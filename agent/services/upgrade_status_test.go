@@ -3,9 +3,9 @@ package services_test
 import (
 	"context"
 
-	"gp_upgrade/agent/services"
-	"gp_upgrade/testutils"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/agent/services"
+	"github.com/greenplum-db/gpupgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	"github.com/onsi/gomega/gbytes"

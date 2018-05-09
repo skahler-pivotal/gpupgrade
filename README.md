@@ -1,12 +1,11 @@
-# gp_upgrade
+# gpupgrade
 
 ## Developer Workflow
 
 ### Prerequisites
 
-- Golang. We currently develop against latest stable Golang, which was v1.10 as of February 2018
-- See the [overall go-utils README](../../README.md) for more information about setting GOPATH.
-- protoc This is the compiler for the [gRPC protobuffer](https://grpc.io/) system. 
+- Golang. We currently develop against latest stable Golang, which was v1.10 as of May 2018.
+- protoc. This is the compiler for the [gRPC protobuffer](https://grpc.io/) system. 
 On macos, one way to install this is via `brew install protobuf`   
 
 ### Build and test the upgrade tool
@@ -14,10 +13,11 @@ On macos, one way to install this is via `brew install protobuf`
 ```
 make
 ```
-from here, the gp_upgrade directory, should build and then test the code
+This command will install dependencies, build gpupgrade, and run tests.
 
 ### Dependency vendoring
-gp_upgrade uses go dep to vendor its dependencies.
+
+gpupgrade uses go dep to vendor its dependencies.
 
 To view the state of dependencies in the project, use the command
 ```
@@ -41,31 +41,36 @@ For additional information please refer to the [dep documentation](https://golan
 ```
 make build
 ```
-should build the code without running the tests
+builds the code without running the tests.
 
-We build with a ldflag to set the version of the code (whatever git sha we
-were on at build-time)
+We build with a ldflag to set the version of the code based on the current
+git SHA and latest tag at build time.
 
-We build into $GOPATH/bin/gp_upgrade, and expect that after a build,
-`which gp_upgrade` is what you just built, assuming your PATH is configured
-correctly
+We build into $GOPATH/bin/gpupgrade and expect that, after a build,
+`which gpupgrade` points to the binary that you just built, assuming
+your PATH is configured correctly.
 
 We build as part of our (integration tests)[#integration-testing]; see more
-information there
+information there.
 
 We support cross-compilation into Linux or Darwin, as the GPDB servers that
-this tool upgrades run Linux, but many dev workstations are macOS
+this tool upgrades run Linux but many dev workstations run MacOS
 
-For a target-specific build, run:
+For a target-specific build, run
 ```
-BUILD_TARGET=[linux | darwin] make build
+make build_linux
 ```
+or
+```
+make build_mac
+```
+as appropriate for the target platform.
 
 ### Run the tests
 
 We use [ginkgo](https://github.com/onsi/ginkgo) and [gomega](https://github.com/onsi/gomega) to run our tests. We have `unit` and `integration` targets predefined.
 
-***Note:*** In order to run integration tests you need a running local gpdemo cluster. Instructions to setup one can be found [here](../../../../gpAux/gpdemo/README).
+***Note:*** In order to run integration tests you need to have GPDB installed and running. Instructions to set up a GPDB cluster can be found in [the main GPDB repo](https://github.com/greenplum-db/gpdb).
 
 #### Unit tests
 ```
@@ -86,23 +91,15 @@ make test
 ### Generate mocked gRPC client/server code
 ```
 # To generate mocked files
-make generate_mock
+make protobuf
 ```
 
 ## Command line parsing
 
-We are using [the go-flags library](https://github.com/jessevdk/go-flags) for
+We are using [the cobra library](https://github.com/spf13/cobra) for
 parsing our commands and flags.
 
-The way in which go-flags executes commands is through the `Parse` function.
-`Parse` not only parses the commands but also executes them.
-
-To implement a new command, first define a struct, such as `CheckCommand`.
-
-On this struct, define a function `Execute` so that your new struct satisfies
-[the `Commander` interface of go-flags](https://github.com/jessevdk/go-flags/blob/4cc2832a6e6d1d3b815e2b9d544b2a4dfb3ce8fa/command.go#L42).
-
-Finally, add your command to the AllCommands struct to tell the parser about your new command.
+To implement a new command, you will need to implement a commander (see the cobra documentation and files in the `cli/commanders` directory for examples) and add it to the tree of commands in `cli/gpupgrade_main.go` to tell the parser about your new command.
 
 ## Testing
 
@@ -113,7 +110,7 @@ make unit
 ```
 should only run the unit tests
 
-We use ginkgo and gomega because they provide BDD-style syntax while still
+We use Ginkgo and Gomega because they provide BDD-style syntax while still
 running `go test` under the hood. Core team members strive to TDD the code as
 much as possible so that the unit test coverage is driven out alongside the code
 
@@ -133,17 +130,6 @@ We selected this unit testing approach rather than these alternatives:
 - defining dependencies that aren't under test as `var`s and then redefining
   them at test-time
 
-### Unit testing command line parsing and execution
-
-The implementation of any command's `Execute` function should be as thin as possible.
-`Execute` functions should only:
-
-- make in-memory Golang objects
-- inject them into the appropriate (private) `execute` function for that command
-
-This lets us write unit tests for gp_upgrade using the dependency injection
-pattern. We are able to call `execute` with our fake dependencies as arguments.
-
 ### Integration testing
 
 ```
@@ -151,15 +137,15 @@ make integration
 ```
 should only run the integration tests
 
-In order to run the integration tests, the greenplum database must be up and
+In order to run the integration tests, a Greenplum Database cluster must be up and
 running.
-We typically integration test the "happy path" expected behavior of the code
-when writing new features. We allow the unit tests to cover error messaging
+We typically integration test the "happy path" (expected behavior) of the code
+when writing new features and allow the unit tests to cover error messaging
 and other edge cases. We are not strict about outside-in (integration-first)
 or inside-out (unit-first) TDD.
 
 Integration tests here signify end-to-end testing from the outside, starting
-with a call to an actual gp_upgrade binary. Therefore, the integration tests
+with a call to an actual gpupgrade binary. Therefore, the integration tests
 do their own `Build()` of the code, using the gomega `gexec` library.
 
 The default integration tests do not build with the special build flags that
@@ -172,7 +158,7 @@ any such requirements automated.
 
 ### Directly using pg_upgrade
 
-Under the covers, gp_upgrade is calling pg_upgrade, first on the master, and
+Under the covers, gpupgrade is calling pg_upgrade, first on the master, and
 then on the segments. If needed, you can call pg_upgrade directly. There is
 make target that runs a test, upgrading from version x to x. To do this, two
 clusters are setup on the local machine using demo_cluster.sh. In the root

@@ -2,7 +2,7 @@
 
 # You can override the fly target and/or pipeline on the command line.
 TARGET=dev
-PIPELINE_NAME=gp_upgrade_multiple_cluster_test
+PIPELINE_NAME=gpupgrade_multiple_cluster_test
 
 # Set DEBUG to something non-empty during deployment to get really verbose
 # testing output.
@@ -27,7 +27,7 @@ deploy6to6: PIPELINE_NAME := "${PIPELINE_NAME}:6to6"
 # Alias for deploy6to6.
 deploy: deploy6to6
 
-deploy4to5 deploy4to6 deploy5to6 deploy6to6: gp_upgrade_min_cluster.yml
+deploy4to5 deploy4to6 deploy5to6 deploy6to6: gpupgrade_min_cluster.yml
 	fly -t $(TARGET) set-pipeline -p $(PIPELINE_NAME) -c $< \
 	-l ~/workspace/continuous-integration/secrets/gpdb-perf-secrets.dev.yml \
 	-l ~/workspace/continuous-integration/secrets/gpdb_common-ci-secrets.yml \
@@ -36,4 +36,4 @@ deploy4to5 deploy4to6 deploy5to6 deploy6to6: gp_upgrade_min_cluster.yml
 	-v initial-cluster-gpdb-binary=$(GPDB_BINARY_OLD) \
 	-v upgraded-cluster-gpdb-binary=$(GPDB_BINARY_NEW) \
 	-v enable-debug-output=$(DEBUG) \
-	-v gpdb-git-branch=gp_upgrade
+	-v gpdb-git-branch=gpupgrade

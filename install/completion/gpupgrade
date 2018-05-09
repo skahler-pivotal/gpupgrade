@@ -1,6 +1,6 @@
-# bash completion for gp_upgrade
+# bash completion for gpupgrade
 
-_gp_upgrade() {
+_gpupgrade() {
     # All arguments except the first one
     args=("${COMP_WORDS[@]:1:$COMP_CWORD}")
     # Only split on newlines
@@ -10,4 +10,4 @@ _gp_upgrade() {
     COMPREPLY=($(GO_FLAGS_COMPLETION=1 ${COMP_WORDS[0]} "${args[@]}"))
     return 0
 }
-complete -F _gp_upgrade gp_upgrade
+complete -F _gpupgrade gpupgrade

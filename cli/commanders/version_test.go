@@ -1,24 +1,24 @@
 package commanders_test
 
 import (
+	"github.com/greenplum-db/gpupgrade/cli/commanders"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gp_upgrade/cli/commanders"
 )
 
 var _ = Describe("Version", func() {
 	Describe("VersionString", func() {
-		Context("when global var GpdbVersion is the empty string", func() {
+		Context("when global var UpgradeVersion is the empty string", func() {
 			It("returns the default version", func() {
-				commanders.GpdbVersion = ""
-				Expect(commanders.VersionString()).To(Equal("gp_upgrade unknown version"))
+				commanders.UpgradeVersion = ""
+				Expect(commanders.VersionString()).To(Equal("gpupgrade unknown version"))
 			})
 		})
 
-		Context("when global var GpdbVersion is set to something", func() {
+		Context("when global var UpgradeVersion is set to something", func() {
 			It("returns what it's set to", func() {
-				commanders.GpdbVersion = "Something"
-				Expect(commanders.VersionString()).To(Equal("gp_upgrade version Something"))
+				commanders.UpgradeVersion = "Something"
+				Expect(commanders.VersionString()).To(Equal("gpupgrade version Something"))
 			})
 		})
 	})

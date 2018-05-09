@@ -1,7 +1,7 @@
 package upgradestatus
 
 import (
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 	"path"
 
 	"os"

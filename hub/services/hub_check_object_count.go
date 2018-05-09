@@ -1,9 +1,9 @@
 package services
 
 import (
-	"gp_upgrade/db"
-	pb "gp_upgrade/idl"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/db"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/dbconn"
 	"github.com/greenplum-db/gp-common-go-libs/gplog"

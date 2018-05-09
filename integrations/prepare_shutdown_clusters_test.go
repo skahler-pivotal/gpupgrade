@@ -5,17 +5,17 @@ import (
 	"os"
 	"strings"
 
-	"gp_upgrade/hub/configutils"
-	"gp_upgrade/hub/services"
-	pb "gp_upgrade/idl"
-	"gp_upgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/services"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
-	"gp_upgrade/hub/cluster"
+	"github.com/greenplum-db/gpupgrade/hub/cluster"
 )
 
 var _ = Describe("prepare shutdown-clusters", func() {

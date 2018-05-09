@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"gp_upgrade/db"
-	"gp_upgrade/hub/configutils"
-	pb "gp_upgrade/idl"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/db"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/dbconn"
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
