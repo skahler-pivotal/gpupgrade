@@ -4,10 +4,10 @@ import (
 	"io/ioutil"
 	"os"
 
-	"gp_upgrade/hub/cluster"
-	"gp_upgrade/hub/configutils"
-	"gp_upgrade/hub/services"
-	"gp_upgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/hub/cluster"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/services"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
 	"github.com/onsi/gomega/gbytes"
 	"google.golang.org/grpc"

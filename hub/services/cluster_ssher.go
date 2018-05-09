@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"gp_upgrade/helpers"
+	"github.com/greenplum-db/gpupgrade/helpers"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
@@ -36,17 +36,17 @@ func NewClusterSsher(cw ChecklistWriter, ap AgentPinger, commandExecer helpers.C
 }
 
 func (c *ClusterSsher) VerifySoftware(hostnames []string) {
-	agentPath := filepath.Join(os.Getenv("GPHOME"), "bin", "gp_upgrade_agent")
+	agentPath := filepath.Join(os.Getenv("GPHOME"), "bin", "gpupgrade_agent")
 	statedir := "seginstall"
 	anyFailed := c.remoteExec(hostnames, statedir, []string{"ls", agentPath})
 	handleStatusLogging(c, statedir, anyFailed)
 }
 
 func (c *ClusterSsher) Start(hostnames []string) {
-	// ssh -o "StrictHostKeyChecking=no" hostname /path/to/gp_upgrade_agent
+	// ssh -o "StrictHostKeyChecking=no" hostname /path/to/gpupgrade_agent
 	statedir := "start-agents"
 	gphome := os.Getenv("GPHOME")
-	agentPath := filepath.Join(gphome, "bin", "gp_upgrade_agent")
+	agentPath := filepath.Join(gphome, "bin", "gpupgrade_agent")
 	greenplumPath := filepath.Join(gphome, "greenplum_path.sh")
 	////ssh -n -f user@host "sh -c 'cd /whereever; nohup ./whatever > /dev/null 2>&1 &'"
 	completeCommandString := fmt.Sprintf(`sh -c '. %s ; nohup %s > /dev/null 2>&1 & '`, greenplumPath, agentPath)
@@ -73,7 +73,7 @@ func (c *ClusterSsher) remoteExec(hostnames []string, statedir string, command [
 		return true
 	}
 	//default assumption: GPDB is installed on the same path on all hosts in cluster
-	//we're looking for gp_upgrade_agent as proof that the new binary is installed
+	//we're looking for gpupgrade_agent as proof that the new binary is installed
 	//TODO: if this finds nothing, should we err out? do a fallback check based on $GPHOME?
 	var anyFailed = false
 	for _, hostname := range hostnames {

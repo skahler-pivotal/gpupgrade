@@ -2,7 +2,7 @@ package commanders
 
 import (
 	"context"
-	pb "gp_upgrade/idl"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
@@ -25,9 +25,9 @@ func (req VersionChecker) Execute(masterHost string, dbPort int) error {
 		return err
 	}
 	if resp.IsVersionCompatible {
-		gplog.Info("gp_upgrade: Version Compatibility Check [OK]\n")
+		gplog.Info("gpupgrade: Version Compatibility Check [OK]\n")
 	} else {
-		gplog.Info("gp_upgrade: Version Compatibility Check [Failed]\n")
+		gplog.Info("gpupgrade: Version Compatibility Check [Failed]\n")
 	}
 	gplog.Info("Check version request is processed.")
 

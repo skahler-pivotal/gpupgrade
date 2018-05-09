@@ -1,4 +1,4 @@
-# gp_upgrade
+# gpupgrade
 
 ## Developer Workflow
 
@@ -14,10 +14,10 @@ On macos, one way to install this is via `brew install protobuf`
 ```
 make
 ```
-from here, the gp_upgrade directory, should build and then test the code
+from here, the gpupgrade directory, should build and then test the code
 
 ### Dependency vendoring
-gp_upgrade uses go dep to vendor its dependencies.
+gpupgrade uses go dep to vendor its dependencies.
 
 To view the state of dependencies in the project, use the command
 ```
@@ -46,8 +46,8 @@ should build the code without running the tests
 We build with a ldflag to set the version of the code (whatever git sha we
 were on at build-time)
 
-We build into $GOPATH/bin/gp_upgrade, and expect that after a build,
-`which gp_upgrade` is what you just built, assuming your PATH is configured
+We build into $GOPATH/bin/gpupgrade, and expect that after a build,
+`which gpupgrade` is what you just built, assuming your PATH is configured
 correctly
 
 We build as part of our (integration tests)[#integration-testing]; see more
@@ -141,7 +141,7 @@ The implementation of any command's `Execute` function should be as thin as poss
 - make in-memory Golang objects
 - inject them into the appropriate (private) `execute` function for that command
 
-This lets us write unit tests for gp_upgrade using the dependency injection
+This lets us write unit tests for gpupgrade using the dependency injection
 pattern. We are able to call `execute` with our fake dependencies as arguments.
 
 ### Integration testing
@@ -159,7 +159,7 @@ and other edge cases. We are not strict about outside-in (integration-first)
 or inside-out (unit-first) TDD.
 
 Integration tests here signify end-to-end testing from the outside, starting
-with a call to an actual gp_upgrade binary. Therefore, the integration tests
+with a call to an actual gpupgrade binary. Therefore, the integration tests
 do their own `Build()` of the code, using the gomega `gexec` library.
 
 The default integration tests do not build with the special build flags that
@@ -172,7 +172,7 @@ any such requirements automated.
 
 ### Directly using pg_upgrade
 
-Under the covers, gp_upgrade is calling pg_upgrade, first on the master, and
+Under the covers, gpupgrade is calling pg_upgrade, first on the master, and
 then on the segments. If needed, you can call pg_upgrade directly. There is
 make target that runs a test, upgrading from version x to x. To do this, two
 clusters are setup on the local machine using demo_cluster.sh. In the root

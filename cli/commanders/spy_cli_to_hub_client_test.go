@@ -1,7 +1,7 @@
 package commanders_test
 
 import (
-	pb "gp_upgrade/idl"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"

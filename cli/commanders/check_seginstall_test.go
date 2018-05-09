@@ -1,7 +1,7 @@
 package commanders_test
 
 import (
-	"gp_upgrade/cli/commanders"
+	"github.com/greenplum-db/gpupgrade/cli/commanders"
 
 	"errors"
 

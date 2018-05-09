@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	agentServices "gp_upgrade/agent/services"
-	"gp_upgrade/hub/cluster"
-	"gp_upgrade/hub/configutils"
-	"gp_upgrade/hub/services"
-	"gp_upgrade/testutils"
+	agentServices "github.com/greenplum-db/gpupgrade/agent/services"
+	"github.com/greenplum-db/gpupgrade/hub/cluster"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/services"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

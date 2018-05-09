@@ -1,8 +1,8 @@
 package services
 
 import (
-	"gp_upgrade/hub/configutils"
-	pb "gp_upgrade/idl"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"time"
 

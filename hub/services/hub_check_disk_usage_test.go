@@ -1,18 +1,18 @@
 package services_test
 
 import (
-	pb "gp_upgrade/idl"
-	mockpb "gp_upgrade/mock_idl"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	mockpb "github.com/greenplum-db/gpupgrade/mock_idl"
 
-	"gp_upgrade/hub/configutils"
-	"gp_upgrade/hub/services"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/services"
 
 	"github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ = Describe("object count tests", func() {

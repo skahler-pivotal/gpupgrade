@@ -1,7 +1,7 @@
 package configutils
 
 import (
-	pb "gp_upgrade/idl"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"google.golang.org/grpc"

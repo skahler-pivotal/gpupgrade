@@ -7,11 +7,11 @@ import (
 	"os"
 	"path/filepath"
 
-	pb "gp_upgrade/idl"
-	"gp_upgrade/testutils"
-	"gp_upgrade/utils"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/utils"
 
-	"gp_upgrade/agent/services"
+	"github.com/greenplum-db/gpupgrade/agent/services"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 

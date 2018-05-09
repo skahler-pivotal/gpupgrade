@@ -2,9 +2,9 @@ package commanders_test
 
 import (
 	"errors"
-	"gp_upgrade/cli/commanders"
-	pb "gp_upgrade/idl"
-	mockpb "gp_upgrade/mock_idl"
+	"github.com/greenplum-db/gpupgrade/cli/commanders"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	mockpb "github.com/greenplum-db/gpupgrade/mock_idl"
 
 	"github.com/golang/mock/gomock"
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ = Describe("preparer", func() {
@@ -116,7 +116,7 @@ var _ = Describe("preparer", func() {
 			preparer := commanders.NewPreparer(client)
 			err := preparer.StartAgents()
 			Expect(err).To(BeNil())
-			Eventually(testStdout).Should(gbytes.Say("Started Agents in progress, check gp_upgrade_agent logs for details"))
+			Eventually(testStdout).Should(gbytes.Say("Started Agents in progress, check gpupgrade_agent logs for details"))
 		})
 	})
 })

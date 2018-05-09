@@ -3,19 +3,19 @@ package services_test
 import (
 	"errors"
 
-	"gp_upgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
 	"google.golang.org/grpc"
 
-	pb "gp_upgrade/idl"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
-	"gp_upgrade/hub/services"
+	"github.com/greenplum-db/gpupgrade/hub/services"
 
-	"gp_upgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ = Describe("hub", func() {

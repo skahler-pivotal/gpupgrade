@@ -3,7 +3,7 @@ package commanders_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gp_upgrade/cli/commanders"
+	"github.com/greenplum-db/gpupgrade/cli/commanders"
 )
 
 var _ = Describe("Version", func() {
@@ -11,14 +11,14 @@ var _ = Describe("Version", func() {
 		Context("when global var GpdbVersion is the empty string", func() {
 			It("returns the default version", func() {
 				commanders.GpdbVersion = ""
-				Expect(commanders.VersionString()).To(Equal("gp_upgrade unknown version"))
+				Expect(commanders.VersionString()).To(Equal("gpupgrade unknown version"))
 			})
 		})
 
 		Context("when global var GpdbVersion is set to something", func() {
 			It("returns what it's set to", func() {
 				commanders.GpdbVersion = "Something"
-				Expect(commanders.VersionString()).To(Equal("gp_upgrade version Something"))
+				Expect(commanders.VersionString()).To(Equal("gpupgrade version Something"))
 			})
 		})
 	})

@@ -15,7 +15,7 @@ var (
 )
 
 func main() {
-	upgradePort := os.Getenv("GP_UPGRADE_HUB_PORT")
+	upgradePort := os.Getenv("GPUPGRADE_HUB_PORT")
 	if upgradePort != "" {
 		hubPort = upgradePort
 	}
@@ -50,7 +50,7 @@ func confirmValidCommand() {
 func setUpLogging() {
 	debug.SetTraceback("all")
 	//empty logdir defaults to ~/gpAdminLogs
-	gplog.InitializeLogging("gp_upgrade_cli", "")
+	gplog.InitializeLogging("gpupgrade_cli", "")
 }
 
 func addFlagOptions() {
@@ -82,7 +82,7 @@ func addFlagOptionsToConvertPrimaries() {
 
 func addFlagOptionsToCheck() {
 	check.PersistentFlags().StringVar(&masterHost, "master-host", "", "host IP for master")
-	check.PersistentFlags().IntVar(&dbPort, "port", 15432, "port for Greenplum on master")
+	check.PersistentFlags().IntVar(&dbPort, "port", 0, "port for Greenplum on master")
 	check.MarkPersistentFlagRequired("master-host")
 }
 

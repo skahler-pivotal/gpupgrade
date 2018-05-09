@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"runtime/debug"
 
-	"gp_upgrade/helpers"
-	"gp_upgrade/hub/cluster"
-	"gp_upgrade/hub/configutils"
-	"gp_upgrade/hub/services"
+	"github.com/greenplum-db/gpupgrade/helpers"
+	"github.com/greenplum-db/gpupgrade/hub/cluster"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/services"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"github.com/spf13/cobra"
@@ -22,17 +22,17 @@ import (
 func main() {
 	var logdir string
 	var RootCmd = &cobra.Command{
-		Use:   "gp_upgrade_hub [--log-directory path]",
-		Short: "Start the gp_upgrade_hub (blocks)",
-		Long:  `Start the gp_upgrade_hub (blocks)`,
+		Use:   "gpupgrade_hub [--log-directory path]",
+		Short: "Start the gpupgrade_hub (blocks)",
+		Long:  `Start the gpupgrade_hub (blocks)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			gplog.InitializeLogging("gp_upgrade_hub", logdir)
+			gplog.InitializeLogging("gpupgrade_hub", logdir)
 			debug.SetTraceback("all")
 
 			conf := &services.HubConfig{
 				CliToHubPort:   7527,
 				HubToAgentPort: 6416,
-				StateDir:       filepath.Join(os.Getenv("HOME"), ".gp_upgrade"),
+				StateDir:       filepath.Join(os.Getenv("HOME"), ".gpupgrade"),
 				LogDir:         logdir,
 			}
 			reader := configutils.NewReader()
@@ -49,7 +49,7 @@ func main() {
 		},
 	}
 
-	RootCmd.PersistentFlags().StringVar(&logdir, "log-directory", "", "gp_upgrade_hub log directory")
+	RootCmd.PersistentFlags().StringVar(&logdir, "log-directory", "", "gpupgrade_hub log directory")
 
 	if err := RootCmd.Execute(); err != nil {
 		gplog.Error(err.Error())

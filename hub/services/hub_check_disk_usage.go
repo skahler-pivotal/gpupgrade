@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"gp_upgrade/hub/configutils"
-	pb "gp_upgrade/idl"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"golang.org/x/net/context"

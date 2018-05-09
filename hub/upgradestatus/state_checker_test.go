@@ -4,9 +4,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"gp_upgrade/hub/upgradestatus"
-	pb "gp_upgrade/idl"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/hub/upgradestatus"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	"os"
 

@@ -3,7 +3,7 @@ package services_test
 import (
 	"testing"
 
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 

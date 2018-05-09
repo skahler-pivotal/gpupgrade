@@ -3,7 +3,7 @@ package testutils
 import (
 	"context"
 
-	pb "gp_upgrade/idl"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"google.golang.org/grpc"
 )

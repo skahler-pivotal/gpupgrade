@@ -17,7 +17,7 @@ var _ = Describe("Start Hub", func() {
 	)
 
 	BeforeEach(func() {
-		killCommand := exec.Command("pkill", "-9", "gp_upgrade_hub")
+		killCommand := exec.Command("pkill", "-9", "gpupgrade_hub")
 		Start(killCommand, GinkgoWriter, GinkgoWriter)
 
 		var err error
@@ -28,7 +28,7 @@ var _ = Describe("Start Hub", func() {
 	})
 
 	AfterEach(func() {
-		killCommand := exec.Command("pkill", "-9", "gp_upgrade_hub")
+		killCommand := exec.Command("pkill", "-9", "gpupgrade_hub")
 		Start(killCommand, GinkgoWriter, GinkgoWriter)
 
 		Expect(checkPortIsAvailable(port)).To(BeTrue())
@@ -38,14 +38,14 @@ var _ = Describe("Start Hub", func() {
 		gpUpgradeSession := runCommand("prepare", "start-hub")
 		Eventually(gpUpgradeSession).Should(Exit(0))
 
-		verificationCmd := exec.Command("bash", "-c", `ps -ef | grep -Gq "[g]p_upgrade_hub$"`)
+		verificationCmd := exec.Command("bash", "-c", `ps -ef | grep -Gq "[g]pupgrade_hub$"`)
 		verificationSession, err := Start(verificationCmd, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(verificationSession).Should(Exit(0))
 	})
 
-	It("does not return an error if a non-gp_upgrade_hub process with gp_upgrade_hub in the name is running", func() {
-		path := filepath.Join(dir, "gp_upgrade_hub_test_log")
+	It("does not return an error if a non-gpupgrade_hub process with gpupgrade_hub in the name is running", func() {
+		path := filepath.Join(dir, "gpupgrade_hub_test_log")
 		f, err := os.Create(path)
 		Expect(err).ToNot(HaveOccurred())
 		f.Close()
@@ -60,7 +60,7 @@ var _ = Describe("Start Hub", func() {
 		Eventually(firstSession).Should(Exit(0))
 	})
 
-	It("returns an error if gp_upgrade_hub is already running", func() {
+	It("returns an error if gpupgrade_hub is already running", func() {
 		firstSession := runCommand("prepare", "start-hub")
 		Eventually(firstSession).Should(Exit(0))
 		//second start should return error
@@ -68,7 +68,7 @@ var _ = Describe("Start Hub", func() {
 		Eventually(secondSession).Should(Exit(1))
 	})
 
-	It("returns an error if gp_upgrade_hub is not on the path", func() {
+	It("returns an error if gpupgrade_hub is not on the path", func() {
 		origPath := os.Getenv("PATH")
 		os.Setenv("PATH", "")
 		gpUpgradeSession := runCommand("prepare", "start-hub")

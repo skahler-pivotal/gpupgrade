@@ -1,9 +1,9 @@
 package commanders_test
 
 import (
-	"gp_upgrade/cli/commanders"
-	pb "gp_upgrade/idl"
-	mockpb "gp_upgrade/mock_idl"
+	"github.com/greenplum-db/gpupgrade/cli/commanders"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	mockpb "github.com/greenplum-db/gpupgrade/mock_idl"
 
 	"errors"
 
@@ -11,7 +11,7 @@ import (
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ bool = Describe("object count tests", func() {
@@ -41,7 +41,7 @@ var _ bool = Describe("object count tests", func() {
 			err := request.Execute("localhost", 9999)
 			Expect(err).To(BeNil())
 			// this eventually should actually be an expect -- convert it
-			Eventually(string(testStdout.Contents())).Should(ContainSubstring("gp_upgrade: Version Compatibility Check [OK]\n"))
+			Eventually(string(testStdout.Contents())).Should(ContainSubstring("gpupgrade: Version Compatibility Check [OK]\n"))
 			Eventually(string(testStdout.Contents())).Should(ContainSubstring("Check version request is processed."))
 		})
 		It("prints out version check failed and that check version request was processed", func() {
@@ -54,7 +54,7 @@ var _ bool = Describe("object count tests", func() {
 			err := request.Execute("localhost", 9999)
 			Expect(err).To(BeNil())
 			// this eventually should actually be an expect -- convert it
-			Eventually(string(testStdout.Contents())).Should(ContainSubstring("gp_upgrade: Version Compatibility Check [Failed]\n"))
+			Eventually(string(testStdout.Contents())).Should(ContainSubstring("gpupgrade: Version Compatibility Check [Failed]\n"))
 			Eventually(string(testStdout.Contents())).Should(ContainSubstring("Check version request is processed."))
 		})
 		It("prints out that it was unable to connect to hub", func() {

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"sync"
 
-	"gp_upgrade/helpers"
+	"github.com/greenplum-db/gpupgrade/helpers"
 )
 
 type FakeCommandExecer struct {

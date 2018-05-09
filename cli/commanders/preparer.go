@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	pb "gp_upgrade/idl"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
@@ -40,18 +40,18 @@ func (p Preparer) StartHub() error {
 		return err
 	}
 	if countHubs >= 1 {
-		gplog.Error("gp_upgrade_hub process already running")
-		return errors.New("gp_upgrade_hub process already running")
+		gplog.Error("gpupgrade_hub process already running")
+		return errors.New("gpupgrade_hub process already running")
 	}
 
-	//assume that gp_upgrade_hub is on the PATH
-	cmd := exec.Command("gp_upgrade_hub")
+	//assume that gpupgrade_hub is on the PATH
+	cmd := exec.Command("gpupgrade_hub")
 	cmdErr := cmd.Start()
 	if cmdErr != nil {
-		gplog.Error("gp_upgrade_hub kickoff failed")
+		gplog.Error("gpupgrade_hub kickoff failed")
 		return cmdErr
 	}
-	gplog.Debug("gp_upgrade_hub started")
+	gplog.Debug("gpupgrade_hub started")
 	return nil
 }
 
@@ -80,12 +80,12 @@ func (p Preparer) StartAgents() error {
 		return err
 	}
 
-	gplog.Info("Started Agents in progress, check gp_upgrade_agent logs for details")
+	gplog.Info("Started Agents in progress, check gpupgrade_agent logs for details")
 	return nil
 }
 
 func HowManyHubsRunning() (int, error) {
-	howToLookForHub := `ps -ef | grep -Gc "[g]p_upgrade_hub$"` // use square brackets to avoid finding yourself in matches
+	howToLookForHub := `ps -ef | grep -Gc "[g]pupgrade_hub$"` // use square brackets to avoid finding yourself in matches
 	output, err := exec.Command("bash", "-c", howToLookForHub).Output()
 	value, convErr := strconv.Atoi(strings.TrimSpace(string(output)))
 	if convErr != nil {

@@ -4,12 +4,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"gp_upgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"gp_upgrade/hub/services"
+	"github.com/greenplum-db/gpupgrade/hub/services"
 
 	"github.com/pkg/errors"
 )
@@ -53,7 +53,7 @@ var _ = Describe("ClusterSsher", func() {
 			clusterSsher.VerifySoftware([]string{"doesnt matter"})
 
 			Expect(commandExecer.Command()).To(Equal("ssh"))
-			pathToAgent := filepath.Join(os.Getenv("GPHOME"), "bin", "gp_upgrade_agent")
+			pathToAgent := filepath.Join(os.Getenv("GPHOME"), "bin", "gpupgrade_agent")
 			Expect(commandExecer.Args()).To(Equal([]string{
 				"-o",
 				"StrictHostKeyChecking=no",
@@ -80,7 +80,7 @@ var _ = Describe("ClusterSsher", func() {
 
 			Expect(commandExecer.Command()).To(Equal("ssh"))
 			pathToGreenplumPathScript := filepath.Join(os.Getenv("GPHOME"), "greenplum_path.sh")
-			pathToAgent := filepath.Join(os.Getenv("GPHOME"), "bin", "gp_upgrade_agent")
+			pathToAgent := filepath.Join(os.Getenv("GPHOME"), "bin", "gpupgrade_agent")
 			Expect(commandExecer.Args()).To(Equal([]string{
 				"-o",
 				"StrictHostKeyChecking=no",

@@ -1,7 +1,7 @@
 package services
 
 import (
-	pb "gp_upgrade/idl"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"github.com/pkg/errors"
@@ -37,7 +37,7 @@ func (s *Bootstrapper) CheckSeginstall(ctx context.Context, in *pb.CheckSeginsta
 
 	clusterHostnames, err := s.hostnameGetter.GetHostnames()
 	if err != nil || len(clusterHostnames) == 0 {
-		return &pb.CheckSeginstallReply{}, errors.New("no cluster config found, did you forget to run gp_upgrade check config?")
+		return &pb.CheckSeginstallReply{}, errors.New("no cluster config found, did you forget to run gpupgrade check config?")
 	}
 
 	go s.remoteExecutor.VerifySoftware(clusterHostnames)
@@ -52,7 +52,7 @@ func (s *Bootstrapper) PrepareStartAgents(ctx context.Context,
 
 	clusterHostnames, err := s.hostnameGetter.GetHostnames()
 	if err != nil || len(clusterHostnames) == 0 {
-		return &pb.PrepareStartAgentsReply{}, errors.New("no cluster config found, did you forget to run gp_upgrade check config?")
+		return &pb.PrepareStartAgentsReply{}, errors.New("no cluster config found, did you forget to run gpupgrade check config?")
 	}
 
 	go s.remoteExecutor.Start(clusterHostnames)

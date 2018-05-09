@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"gp_upgrade/hub/cluster"
-	"gp_upgrade/testutils"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/hub/cluster"
+	"github.com/greenplum-db/gpupgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"

@@ -1,6 +1,6 @@
 package testutils
 
-import "gp_upgrade/hub/configutils"
+import "github.com/greenplum-db/gpupgrade/hub/configutils"
 
 type SpyReader struct {
 	Hostnames             []string

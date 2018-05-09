@@ -3,9 +3,9 @@ package cluster
 import (
 	"fmt"
 
-	"gp_upgrade/helpers"
-	"gp_upgrade/hub/configutils"
-	"gp_upgrade/hub/upgradestatus"
+	"github.com/greenplum-db/gpupgrade/helpers"
+	"github.com/greenplum-db/gpupgrade/hub/configutils"
+	"github.com/greenplum-db/gpupgrade/hub/upgradestatus"
 	"github.com/pkg/errors"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"

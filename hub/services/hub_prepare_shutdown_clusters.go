@@ -1,7 +1,7 @@
 package services
 
 import (
-	pb "gp_upgrade/idl"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"golang.org/x/net/context"
 
@@ -34,7 +34,7 @@ func (h *HubClient) PrepareShutdownClusters(ctx context.Context, in *pb.PrepareS
 	 * Use go routine along with using files as a way to keep track of gpstop state
 	 */
 
-	// XXX: May be tell user to run status, or if that seems stuck, check gpAdminLogs/gp_upgrade_hub*.log
+	// XXX: May be tell user to run status, or if that seems stuck, check gpAdminLogs/gpupgrade_hub*.log
 
 	return &pb.PrepareShutdownClustersReply{}, nil
 }

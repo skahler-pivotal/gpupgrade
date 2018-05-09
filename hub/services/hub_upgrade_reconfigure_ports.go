@@ -3,8 +3,8 @@ package services
 import (
 	"context"
 	"fmt"
-	"gp_upgrade/hub/upgradestatus"
-	pb "gp_upgrade/idl"
+	"github.com/greenplum-db/gpupgrade/hub/upgradestatus"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )

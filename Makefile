@@ -2,13 +2,17 @@ all: depend build test
 
 SHELL := /bin/bash
 .DEFAULT_GOAL := all
+MODULE_NAME=gpupgrade
+AGENT=gpupgrade_agent
 CLI=gpupgrade
 HUB=gpupgrade_hub
-AGENT=gpupgrade_agent
+AGENT_PACKAGE=github.com/greenplum-db/gpupgrade/agent
+CLI_PACKAGE=github.com/greenplum-db/gpupgrade/cli
+HUB_PACKAGE=github.com/greenplum-db/gpupgrade/hub
 BIN_DIR=$(shell echo $${GOPATH:-~/go} | awk -F':' '{ print $$1 "/bin"}')
 
 GIT_VERSION := $(shell git describe --tags | perl -pe 's/(.*)-([0-9]*)-(g[0-9a-f]*)/\1+dev.\2.\3/')
-UPGRADE_VERSION_STR="-X gpupgrade/cli/commanders.GpdbVersion=$(GIT_VERSION)"
+UPGRADE_VERSION_STR="-X $(MODULE_NAME)/cli/commanders.GpdbVersion=$(GIT_VERSION)"
 
 BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}")
 LINUX_PREFIX := "env GOOS=linux GOARCH=amd64"
@@ -58,23 +62,23 @@ sshd_build :
 protobuf :
 		protoc -I idl/ idl/*.proto --go_out=plugins=grpc:idl
 		go get github.com/golang/mock/mockgen
-		mockgen -source idl/cli_to_hub.pb.go -imports ".=gpupgrade/idl" > mock_idl/cli_to_hub_mock.pb.go
-		mockgen -source idl/hub_to_agent.pb.go -imports ".=gpupgrade/idl" > mock_idl/hub_to_agent_mock.pb.go
+		mockgen -source idl/cli_to_hub.pb.go -imports ".=github.com/greenplum-db/gpupgrade/idl" > mock_idl/cli_to_hub_mock.pb.go
+		mockgen -source idl/hub_to_agent.pb.go -imports ".=github.com/greenplum-db/gpupgrade/idl" > mock_idl/hub_to_agent_mock.pb.go
 
 build :
-		go build $(GOFLAGS) ./agent -o $(BIN_DIR)/$(AGENT) -ldflags $(UPGRADE_VERSION_STR)
-		go build $(GOFLAGS) ./cli -o $(BIN_DIR)/$(CLI) -ldflags $(UPGRADE_VERSION_STR)
-		go build $(GOFLAGS) ./hub -o $(BIN_DIR)/$(HUB) -ldflags $(UPGRADE_VERSION_STR)
+		go build $(GOFLAGS) -o $(BIN_DIR)/$(AGENT) -ldflags $(UPGRADE_VERSION_STR) $(AGENT_PACKAGE)
+		go build $(GOFLAGS) -o $(BIN_DIR)/$(CLI) -ldflags $(UPGRADE_VERSION_STR) $(CLI_PACKAGE)
+		go build $(GOFLAGS) -o $(BIN_DIR)/$(HUB) -ldflags $(UPGRADE_VERSION_STR) $(HUB_PACKAGE)
 
 build_linux :
-		$(LINUX_PREFIX) go build $(GOFLAGS) ./agent -o $(BIN_DIR)/$(AGENT)$(LINUX_POSTFIX) -ldflags $(UPGRADE_VERSION_STR)
-		$(LINUX_PREFIX) go build $(GOFLAGS) ./cli -o $(BIN_DIR)/$(CLI)$(LINUX_POSTFIX) -ldflags $(UPGRADE_VERSION_STR)
-		$(LINUX_PREFIX) go build $(GOFLAGS) ./hub -o $(BIN_DIR)/$(HUB)$(LINUX_POSTFIX) -ldflags $(UPGRADE_VERSION_STR)
+		$(LINUX_PREFIX) go build $(GOFLAGS) -o $(BIN_DIR)/$(AGENT)$(LINUX_POSTFIX) -ldflags $(UPGRADE_VERSION_STR) $(AGENT_PACKAGE)
+		$(LINUX_PREFIX) go build $(GOFLAGS) -o $(BIN_DIR)/$(CLI)$(LINUX_POSTFIX) -ldflags $(UPGRADE_VERSION_STR) $(CLI_PACKAGE)
+		$(LINUX_PREFIX) go build $(GOFLAGS) -o $(BIN_DIR)/$(HUB)$(LINUX_POSTFIX) -ldflags $(UPGRADE_VERSION_STR) $(HUB_PACKAGE)
 
 build_mac:
-		$(MAC_PREFIX) go build $(GOFLAGS) ./agent -o $(BIN_DIR)/$(AGENT)$(MAC_POSTFIX) -ldflags $(UPGRADE_VERSION_STR)
-		$(MAC_PREFIX) go build $(GOFLAGS) ./cli -o $(BIN_DIR)/$(CLI)$(MAC_POSTFIX) -ldflags $(UPGRADE_VERSION_STR)
-		$(MAC_PREFIX) go build $(GOFLAGS) ./hub -o $(BIN_DIR)/$(HUB)$(MAC_POSTFIX) -ldflags $(UPGRADE_VERSION_STR)
+		$(MAC_PREFIX) go build $(GOFLAGS) -o $(BIN_DIR)/$(AGENT)$(MAC_POSTFIX) -ldflags $(UPGRADE_VERSION_STR) $(AGENT_PACKAGE)
+		$(MAC_PREFIX) go build $(GOFLAGS) -o $(BIN_DIR)/$(CLI)$(MAC_POSTFIX) -ldflags $(UPGRADE_VERSION_STR) $(CLI_PACKAGE)
+		$(MAC_PREFIX) go build $(GOFLAGS) -o $(BIN_DIR)/$(HUB)$(MAC_POSTFIX) -ldflags $(UPGRADE_VERSION_STR) $(HUB_PACKAGE)
 
 install_agent :
 		@psql -t -d template1 -c 'SELECT DISTINCT hostname FROM gp_segment_configuration WHERE content != -1' > /tmp/seg_hosts 2>/dev/null; \

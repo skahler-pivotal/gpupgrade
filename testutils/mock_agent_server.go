@@ -5,7 +5,7 @@ import (
 	"net"
 	"sync"
 
-	pb "gp_upgrade/idl"
+	pb "github.com/greenplum-db/gpupgrade/idl"
 
 	"google.golang.org/grpc"
 )

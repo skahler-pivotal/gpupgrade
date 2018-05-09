@@ -1,9 +1,9 @@
 package upgradestatus
 
 import (
-	"gp_upgrade/helpers"
-	pb "gp_upgrade/idl"
-	"gp_upgrade/utils"
+	"github.com/greenplum-db/gpupgrade/helpers"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )

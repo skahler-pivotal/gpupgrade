@@ -35,29 +35,29 @@ var (
 
 var _ = BeforeSuite(func() {
 	var err error
-	cliBinaryPath, err = Build("gp_upgrade/cli") // if you want build flags, do a separate Build() in a specific integration test
+	cliBinaryPath, err = Build("github.com/greenplum-db/gpupgrade/cli") // if you want build flags, do a separate Build() in a specific integration test
 	Expect(err).NotTo(HaveOccurred())
 	cliDirectoryPath := path.Dir(cliBinaryPath)
 
-	hubBinaryPath, err = Build("gp_upgrade/hub")
+	hubBinaryPath, err = Build("github.com/greenplum-db/gpupgrade/hub")
 	Expect(err).NotTo(HaveOccurred())
 	hubDirectoryPath := path.Dir(hubBinaryPath)
 
-	agentBinaryPath, err = Build("gp_upgrade/agent")
+	agentBinaryPath, err = Build("github.com/greenplum-db/gpupgrade/agent")
 	Expect(err).NotTo(HaveOccurred())
 	// move the agent binary into the hub directory and rename to match expected name
-	renamedAgentBinaryPath := filepath.Join(hubDirectoryPath, "/gp_upgrade_agent")
+	renamedAgentBinaryPath := filepath.Join(hubDirectoryPath, "/gpupgrade_agent")
 	err = os.Rename(agentBinaryPath, renamedAgentBinaryPath)
 	Expect(err).NotTo(HaveOccurred())
 
 	// hub gets built as "hub", but rename for integration tests that expect
-	// "gp_upgrade_hub" to be on the path
-	renamedHubBinaryPath := hubDirectoryPath + "/gp_upgrade_hub"
+	// "gpupgrade_hub" to be on the path
+	renamedHubBinaryPath := hubDirectoryPath + "/gpupgrade_hub"
 	err = os.Rename(hubBinaryPath, renamedHubBinaryPath)
 	Expect(err).NotTo(HaveOccurred())
 	hubBinaryPath = renamedHubBinaryPath
 
-	// put the gp_upgrade_hub on the path don't need to rename the cli nor put
+	// put the gpupgrade_hub on the path don't need to rename the cli nor put
 	// it on the path: integration tests should use RunCommand() below
 	userPreviousPathVariable = os.Getenv("PATH")
 	os.Setenv("PATH", cliDirectoryPath+":"+hubDirectoryPath+":"+userPreviousPathVariable)
@@ -83,7 +83,7 @@ func runCommand(args ...string) *Session {
 	// which has its own Golang context; any mocks/fakes you set up in
 	// the test context will NOT be meaningful in the new exec.Command context.
 	cmd := exec.Command(cliBinaryPath, args...)
-	cmd.Env = append(os.Environ(), fmt.Sprintf("GP_UPGRADE_HUB_PORT=%d", port))
+	cmd.Env = append(os.Environ(), fmt.Sprintf("GPUPGRADE_HUB_PORT=%d", port))
 	session, err := Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
 	<-session.Exited
@@ -92,7 +92,7 @@ func runCommand(args ...string) *Session {
 }
 
 func killAll() {
-	pkillCmd := exec.Command("pkill", "-9", "gp_upgrade_*")
+	pkillCmd := exec.Command("pkill", "-9", "gpupgrade_*")
 	pkillCmd.Run()
 }
 

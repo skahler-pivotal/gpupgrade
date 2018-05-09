@@ -7,8 +7,8 @@ import (
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"github.com/spf13/cobra"
-	"gp_upgrade/agent/services"
-	"gp_upgrade/helpers"
+	"github.com/greenplum-db/gpupgrade/agent/services"
+	"github.com/greenplum-db/gpupgrade/helpers"
 )
 
 func main() {
@@ -21,11 +21,11 @@ func main() {
 	//}
 	var logdir, statedir string
 	var RootCmd = &cobra.Command{
-		Use:   "gp_upgrade_agent ",
+		Use:   "gpupgrade_agent ",
 		Short: "Start the Command Listener (blocks)",
 		Long:  `Start the Command Listener (blocks)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			gplog.InitializeLogging("gp_upgrade_agent", logdir)
+			gplog.InitializeLogging("gpupgrade_agent", logdir)
 
 			conf := services.AgentConfig{
 				Port:     6416,
@@ -50,7 +50,7 @@ func main() {
 		gplog.Error("$HOME is empty")
 		os.Exit(1)
 	}
-	RootCmd.Flags().StringVar(&statedir, "state-directory", filepath.Join(homeDir, ".gp_upgrade"), "Agent state directory")
+	RootCmd.Flags().StringVar(&statedir, "state-directory", filepath.Join(homeDir, ".gpupgrade"), "Agent state directory")
 
 	if err := RootCmd.Execute(); err != nil {
 		gplog.Error(err.Error())
