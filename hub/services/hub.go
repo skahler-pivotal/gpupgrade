@@ -146,7 +146,8 @@ func (h *HubClient) AgentConns() ([]*Connection, error) {
 
 	for _, host := range hostnames {
 		ctx, cancelFunc := context.WithTimeout(context.Background(), DialTimeout)
-		conn, err := h.grpcDialer(ctx, host+":"+strconv.Itoa(h.conf.HubToAgentPort), grpc.WithInsecure())
+		// grpc.WithBlock() is potentially slowing down the tests. Leaving it in to keep tests green.
+		conn, err := h.grpcDialer(ctx, host+":"+strconv.Itoa(h.conf.HubToAgentPort), grpc.WithInsecure(), grpc.WithBlock())
 		if err != nil {
 			gplog.Error("grpcDialer failed: ", err)
 			cancelFunc()

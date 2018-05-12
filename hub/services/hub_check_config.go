@@ -18,10 +18,6 @@ import (
 	"golang.org/x/net/context"
 )
 
-type VersionNum struct {
-	GpServerVersionNum int `db:"gp_server_version_num"`
-}
-
 var CONFIGQUERY5 = `SELECT
 	s.content,
 	s.hostname,
@@ -61,7 +57,7 @@ func (h *HubClient) CheckConfig(ctx context.Context,
 	}
 	dbConnector.Version.Initialize(dbConnector)
 
-	err = SaveOldClusterConfigAndVersion(dbConnector, h.conf.StateDir)
+	err = SaveOldClusterConfig(dbConnector, h.conf.StateDir)
 	if err != nil {
 		gplog.Error(err.Error())
 		return &pb.CheckConfigReply{}, err
@@ -72,7 +68,7 @@ func (h *HubClient) CheckConfig(ctx context.Context,
 	return successReply, nil
 }
 
-func SaveOldClusterConfigAndVersion(dbConnector *dbconn.DBConn, stateDir string) error {
+func SaveOldClusterConfig(dbConnector *dbconn.DBConn, stateDir string) error {
 	err := os.MkdirAll(stateDir, 0700)
 	if err != nil {
 		return err
@@ -98,28 +94,6 @@ func SaveOldClusterConfigAndVersion(dbConnector *dbconn.DBConn, stateDir string)
 	}
 
 	err = SaveQueryResultToJSON(&segConfig, configFileHandle)
-	if err != nil {
-		return err
-	}
-
-	versionFile := configutils.GetVersionFilePath(stateDir)
-	versionFileHandle, err := operating.System.OpenFileWrite(versionFile, os.O_CREATE|os.O_WRONLY, 0700)
-	if err != nil {
-		errMsg := fmt.Sprintf("Unable to write to version file %s. Err: %s", versionFile, err.Error())
-		return errors.New(errMsg)
-	}
-
-	versionQuery := `show gp_server_version_num`
-	versionNum := VersionNum{}
-	err = dbConnector.Get(&versionNum, versionQuery)
-	if err != nil {
-		errMsg := fmt.Sprintf("Unable to execute query %s. Err: %s", versionQuery, err.Error())
-		return errors.New(errMsg)
-	}
-	versionSlice := make([]VersionNum, 1)
-	versionSlice[0] = versionNum
-
-	err = SaveQueryResultToJSON(&versionSlice, versionFileHandle)
 	if err != nil {
 		return err
 	}
