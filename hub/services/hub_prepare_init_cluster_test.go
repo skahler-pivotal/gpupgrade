@@ -7,7 +7,11 @@ import (
 	"os"
 
 	"github.com/greenplum-db/gpupgrade/hub/services"
+	pb "github.com/greenplum-db/gpupgrade/idl"
+	"github.com/greenplum-db/gpupgrade/mock_idl"
+	"github.com/greenplum-db/gpupgrade/testutils"
 
+	"github.com/golang/mock/gomock"
 	"github.com/greenplum-db/gp-common-go-libs/dbconn"
 	"github.com/greenplum-db/gp-common-go-libs/operating"
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
@@ -86,5 +90,82 @@ var _ = Describe("Hub prepare init-cluster", func() {
 		err := services.SaveTargetClusterConfig(dbConnector, dir, newBinDir)
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(MatchError("Unable to execute query " + configQuery + ". Err: fail config query"))
+	})
+
+	Describe("CheckAllFreePorts", func() {
+		It("successfully finds a free port range", func() {
+			ctrl := gomock.NewController(T)
+			mockAgent1 := mock_idl.NewMockAgentClient(ctrl)
+			mockAgent2 := mock_idl.NewMockAgentClient(ctrl)
+			mockAgentConns := []*services.Connection{
+				{PbAgentClient: mockAgent1},
+				{PbAgentClient: mockAgent2},
+			}
+			defer ctrl.Finish()
+
+			possiblePortBase := 1
+			numPrimaries := 1
+
+			mockAgent1.EXPECT().CheckFreePorts(gomock.Any(), &pb.CheckFreePortsRequest{
+				PossiblePortBase: int32(possiblePortBase),
+				NumPrimaries:     int32(numPrimaries),
+			}).Return(nil, nil)
+
+			mockAgent2.EXPECT().CheckFreePorts(gomock.Any(), &pb.CheckFreePortsRequest{
+				PossiblePortBase: int32(possiblePortBase),
+				NumPrimaries:     int32(numPrimaries),
+			}).Return(nil, nil)
+
+			result := services.CheckAllFreePorts(mockAgentConns, possiblePortBase, numPrimaries)
+			Expect(result).To(BeTrue())
+		})
+
+		It("fails to find a free port range", func() {
+			ctrl := gomock.NewController(T)
+			mockAgent1 := mock_idl.NewMockAgentClient(ctrl)
+			mockAgent2 := mock_idl.NewMockAgentClient(ctrl)
+			mockAgentConns := []*services.Connection{
+				{
+					PbAgentClient: mockAgent1,
+				},
+				{
+					PbAgentClient: mockAgent2,
+				},
+			}
+			defer ctrl.Finish()
+
+			possiblePortBase := 1
+			numPrimaries := 1
+
+			mockAgent1.EXPECT().CheckFreePorts(gomock.Any(), &pb.CheckFreePortsRequest{
+				PossiblePortBase: int32(possiblePortBase),
+				NumPrimaries:     int32(numPrimaries),
+			}).Return(nil, errors.New("no free ports"))
+
+			mockAgent2.EXPECT().CheckFreePorts(gomock.Any(), &pb.CheckFreePortsRequest{
+				PossiblePortBase: int32(possiblePortBase),
+				NumPrimaries:     int32(numPrimaries),
+			}).Return(nil, nil)
+
+			result := services.CheckAllFreePorts(mockAgentConns, possiblePortBase, numPrimaries)
+			Expect(result).To(BeFalse())
+		})
+	})
+
+	Describe("GetFreePortBase", func() {
+		It("finds a free port range", func() {
+			mockReader := &testutils.SpyReader{}
+
+			var mockCheckAllFreePorts services.CheckAllFreePortsFunc
+			mockCheckAllFreePorts = func([]*services.Connection, int, int) bool {
+				return true
+			}
+
+			mockAgentConns := []*services.Connection{}
+
+			_, err := services.GetFreePortBase(mockReader, mockCheckAllFreePorts, mockAgentConns)
+			Expect(err).To(BeNil())
+
+		})
 	})
 })

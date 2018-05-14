@@ -125,6 +125,24 @@ func (mr *MockAgentClientMockRecorder) UpgradeConvertPrimarySegments(ctx, in int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeConvertPrimarySegments", reflect.TypeOf((*MockAgentClient)(nil).UpgradeConvertPrimarySegments), varargs...)
 }
 
+// CheckFreePorts mocks base method
+func (m *MockAgentClient) CheckFreePorts(ctx context.Context, in *idl.CheckFreePortsRequest, opts ...grpc.CallOption) (*idl.CheckFreePortsReply, error) {
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CheckFreePorts", varargs...)
+	ret0, _ := ret[0].(*idl.CheckFreePortsReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckFreePorts indicates an expected call of CheckFreePorts
+func (mr *MockAgentClientMockRecorder) CheckFreePorts(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckFreePorts", reflect.TypeOf((*MockAgentClient)(nil).CheckFreePorts), varargs...)
+}
+
 // MockAgentServer is a mock of AgentServer interface
 type MockAgentServer struct {
 	ctrl     *gomock.Controller
@@ -211,4 +229,17 @@ func (m *MockAgentServer) UpgradeConvertPrimarySegments(arg0 context.Context, ar
 // UpgradeConvertPrimarySegments indicates an expected call of UpgradeConvertPrimarySegments
 func (mr *MockAgentServerMockRecorder) UpgradeConvertPrimarySegments(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeConvertPrimarySegments", reflect.TypeOf((*MockAgentServer)(nil).UpgradeConvertPrimarySegments), arg0, arg1)
+}
+
+// CheckFreePorts mocks base method
+func (m *MockAgentServer) CheckFreePorts(arg0 context.Context, arg1 *idl.CheckFreePortsRequest) (*idl.CheckFreePortsReply, error) {
+	ret := m.ctrl.Call(m, "CheckFreePorts", arg0, arg1)
+	ret0, _ := ret[0].(*idl.CheckFreePortsReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckFreePorts indicates an expected call of CheckFreePorts
+func (mr *MockAgentServerMockRecorder) CheckFreePorts(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckFreePorts", reflect.TypeOf((*MockAgentServer)(nil).CheckFreePorts), arg0, arg1)
 }

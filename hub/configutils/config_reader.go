@@ -2,6 +2,7 @@ package configutils
 
 import (
 	"encoding/json"
+	"sort"
 	"sync"
 
 	"github.com/greenplum-db/gpupgrade/utils"
@@ -68,6 +69,30 @@ func (reader *Reader) Read() error {
 }
 
 // returns -1 for not found
+func (reader *Reader) GetMaxSegmentPort() int {
+	reader.mu.RLock()
+	defer reader.mu.RUnlock()
+
+	result := -1
+	if len(reader.config) == 0 {
+		err := reader.Read()
+		if err != nil {
+			return result
+		}
+	}
+
+	allPorts := make([]int, 0)
+	for i := 0; i < len(reader.config); i++ {
+		segment := reader.config[i]
+		if segment.Content != -1 {
+			allPorts = append(allPorts, segment.Port)
+		}
+	}
+	sort.Ints(allPorts)
+
+	return allPorts[len(allPorts)-1]
+}
+
 func (reader *Reader) GetPortForSegment(segmentDbid int) int {
 	reader.mu.RLock()
 	defer reader.mu.RUnlock()
@@ -139,6 +164,18 @@ func (reader *Reader) GetMasterDataDir() string {
 		}
 	}
 	return ""
+}
+
+func (reader *Reader) GetSegmentDataDirs() []string {
+	config := reader.GetSegmentConfiguration()
+	dirs := make([]string, 0)
+	for i := 0; i < len(config); i++ {
+		segment := config[i]
+		if segment.Content != -1 {
+			dirs = append(dirs, segment.Datadir)
+		}
+	}
+	return dirs
 }
 
 func (reader *Reader) GetMaster() *Segment {

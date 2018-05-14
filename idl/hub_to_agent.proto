@@ -8,6 +8,15 @@ service Agent {
     rpc CheckDiskSpaceOnAgents (CheckDiskSpaceRequestToAgent) returns (CheckDiskSpaceReplyFromAgent) {}
     rpc PingAgents (PingAgentsRequest) returns (PingAgentsReply) {}
     rpc UpgradeConvertPrimarySegments (UpgradeConvertPrimarySegmentsRequest) returns (UpgradeConvertPrimarySegmentsReply) {}
+    rpc CheckFreePorts (CheckFreePortsRequest) returns (CheckFreePortsReply) {}
+}
+
+message CheckFreePortsRequest {
+    int32 PossiblePortBase = 1;
+    int32 NumPrimaries     = 2;
+}
+message CheckFreePortsReply {
+    bool Result = 1;
 }
 
 message UpgradeConvertPrimarySegmentsRequest {

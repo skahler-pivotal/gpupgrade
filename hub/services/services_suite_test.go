@@ -11,8 +11,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+var T *testing.T
+
 func TestCommands(t *testing.T) {
 	RegisterFailHandler(Fail)
+	T = t
 	RunSpecs(t, "Hub Services Suite")
 }
 

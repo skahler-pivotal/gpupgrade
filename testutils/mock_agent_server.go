@@ -90,6 +90,11 @@ func (m *MockAgentServer) UpgradeConvertPrimarySegments(ctx context.Context, in 
 	return &pb.UpgradeConvertPrimarySegmentsReply{}, err
 }
 
+func (m *MockAgentServer) CheckFreePorts(ctx context.Context, in *pb.CheckFreePortsRequest) (*pb.CheckFreePortsReply, error) {
+
+	return &pb.CheckFreePortsReply{}, nil
+}
+
 func (m *MockAgentServer) Stop() {
 	m.grpcServer.Stop()
 }

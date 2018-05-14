@@ -1574,8 +1574,7 @@ func (c *cliToHubClient) UpgradeReconfigurePorts(ctx context.Context, in *Upgrad
 	return out, nil
 }
 
-// Server API for CliToHub service
-
+// CliToHubServer is the server API for CliToHub service.
 type CliToHubServer interface {
 	Ping(context.Context, *PingRequest) (*PingReply, error)
 	StatusUpgrade(context.Context, *StatusUpgradeRequest) (*StatusUpgradeReply, error)

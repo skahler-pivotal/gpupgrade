@@ -30,6 +30,7 @@ type reader interface {
 	OfNewClusterConfig(baseDir string)
 	GetMasterDataDir() string
 	GetPortForSegment(segmentDbid int) int
+	GetMaxSegmentPort() int
 }
 type pairOperator interface {
 	StopEverything(string)
@@ -59,6 +60,7 @@ type Hub struct {
 }
 
 type Connection struct {
+	PbAgentClient pb.AgentClient
 	Conn          *grpc.ClientConn
 	Hostname      string
 	CancelContext func()
@@ -150,6 +152,7 @@ func (h *Hub) AgentConns() ([]*Connection, error) {
 			return nil, err
 		}
 		h.agentConns = append(h.agentConns, &Connection{
+			PbAgentClient: pb.NewAgentClient(conn),
 			Conn:          conn,
 			Hostname:      host,
 			CancelContext: cancelFunc,
