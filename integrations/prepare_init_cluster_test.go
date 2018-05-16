@@ -68,7 +68,7 @@ var _ = Describe("prepare", func() {
 		In the future, the upgrade tool might take responsibility for starting its own cluster,
 		in which case it won't need the port, but would still generate new_cluster_config
 	*/
-	Describe("Given that a gpdb cluster is up, in this case reusing the single cluster for other test.", func() {
+	XDescribe("Given that a gpdb cluster is up, in this case reusing the single cluster for other test.", func() {
 		It("can save the database configuration json under the name 'new cluster'", func() {
 			statusSessionPending := runCommand("status", "upgrade")
 			Eventually(statusSessionPending).Should(gbytes.Say("PENDING - Initialize upgrade target cluster"))

@@ -7,7 +7,7 @@ type SpyReader struct {
 	MasterDataDir         string
 	Port                  chan int
 	SegmentConfigurations chan configutils.SegmentConfiguration
-	maxPort               int
+	MaxPort               int
 
 	Err error
 }
@@ -30,7 +30,7 @@ func (r *SpyReader) GetSegmentConfiguration() configutils.SegmentConfiguration {
 }
 
 func (r *SpyReader) GetMaxSegmentPort() int {
-	return r.maxPort
+	return r.MaxPort
 }
 
 func (r *SpyReader) OfOldClusterConfig(string) {}

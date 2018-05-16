@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/greenplum-db/gpupgrade/db"
+	"github.com/greenplum-db/gpupgrade/helpers"
 	"github.com/greenplum-db/gpupgrade/hub/configutils"
 	pb "github.com/greenplum-db/gpupgrade/idl"
 	"github.com/greenplum-db/gpupgrade/utils"
@@ -58,6 +59,10 @@ func SaveTargetClusterConfig(dbConnector *dbconn.DBConn, stateDir string, newBin
 	return nil
 }
 
+func x(GetOpenPort) {
+
+}
+
 func GetOpenPort() (int, error) {
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
 	if err != nil {
@@ -73,16 +78,23 @@ func GetOpenPort() (int, error) {
 	return l.Addr().(*net.TCPAddr).Port, nil
 }
 
-func (h *HubClient) getNewMasterPort(port int) (int, error) {
-	masterPort := port + 1
-	cmdStr := fmt.Sprintf(`netstat -n | awk '{ print $4 }' | grep -o "\.%d*$"`, masterPort)
-	findPortCmd := h.commandExecer("bash", "-c", cmdStr)
+func GetNewMasterPort(commandExecer helpers.CommandExecer, port int) (int, error) {
+	newMasterPort := port + 1
+	cmdStr := fmt.Sprintf(`netstat -n | awk '{ print $4 }' | grep -o "\.%d*$"`,
+		newMasterPort)
+	findPortCmd := commandExecer("bash", "-c", cmdStr)
 	output, err := findPortCmd.Output()
-	if err == nil && string(output) == "" {
-		return masterPort, nil
+	if err != nil {
+		return 0, err
 	}
-	masterPort, err = GetOpenPort()
-	return masterPort, err
+	if string(output) == "" {
+		return newMasterPort, nil
+	}
+	newMasterPort, err = GetOpenPort()
+	if err != nil {
+		return 0, err
+	}
+	return newMasterPort, nil
 }
 
 func CheckAllFreePorts(agentConns []*Connection, possiblePortBase int, numPrimaries int) bool {
@@ -181,7 +193,7 @@ func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterR
 	gpinitsystemConfig = append(gpinitsystemConfig, masterDataDir)
 
 	//set master port
-	masterPort, err := h.getNewMasterPort(oldReader.GetPortForSegment(-1))
+	masterPort, err := GetNewMasterPort(h.commandExecer, oldReader.GetPortForSegment(-1))
 	if err != nil {
 		return &pb.PrepareInitClusterReply{}, err
 	}
@@ -194,6 +206,9 @@ func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterR
 	gpinitsystemContents := []byte(strings.Join(gpinitsystemConfig, "\n"))
 	gpinitsystemFilepath := filepath.Join(h.conf.StateDir, "gpinitsystem_config")
 	err = ioutil.WriteFile(gpinitsystemFilepath, gpinitsystemContents, 0644)
+	if err != nil {
+		return &pb.PrepareInitClusterReply{}, err
+	}
 
 	//write the hostnameFile
 	hostnames, err := oldReader.GetHostnames()
