@@ -21,7 +21,7 @@ import (
 )
 
 // the `prepare start-hub` tests are currently in master_only_integration_test
-var _ = Describe("prepare", func() {
+var _ = Describe("prepare init-cluster", func() {
 	var (
 		dir           string
 		hub           *services.Hub
@@ -61,20 +61,14 @@ var _ = Describe("prepare", func() {
 		Expect(checkPortIsAvailable(port)).To(BeTrue())
 	})
 
-	/* This is demonstrating the limited implementation of init-cluster.
-	    Assuming the user has already set up their new cluster, they should `init-cluster`
-		with the port at which they stood it up, so the upgrade tool can create new_cluster_config
+	It("starts the target cluster, and generates a new_cluster_config.json", func() {
+		statusSessionPending := runCommand("status", "upgrade")
+		Eventually(statusSessionPending).Should(gbytes.Say("PENDING - Initialize upgrade target cluster"))
 
-		In the future, the upgrade tool might take responsibility for starting its own cluster,
-		in which case it won't need the port, but would still generate new_cluster_config
-	*/
-	XDescribe("Given that a gpdb cluster is up, in this case reusing the single cluster for other test.", func() {
-		It("can save the database configuration json under the name 'new cluster'", func() {
-			statusSessionPending := runCommand("status", "upgrade")
-			Eventually(statusSessionPending).Should(gbytes.Say("PENDING - Initialize upgrade target cluster"))
+		session := runCommand("prepare", "init-cluster")
+		Eventually(session).Should(Exit(0))
 
-			port := os.Getenv("PGPORT")
-			Expect(port).ToNot(BeEmpty())
+		Expect(runStatusUpgrade()).To(ContainSubstring("COMPLETE - Initialize upgrade target cluster"))
 
 			session := runCommand("prepare", "init-cluster", "--port", port, "--new-bindir", "/tmp")
 			Eventually(session).Should(Exit(0))
@@ -90,7 +84,7 @@ var _ = Describe("prepare", func() {
 		})
 	})
 
-	It("fails if the port flag is missing", func() {
+	It("fails if some flags are missing", func() {
 		prepareStartAgentsSession := runCommand("prepare", "init-cluster")
 		Expect(prepareStartAgentsSession).Should(Exit(1))
 		Expect(string(prepareStartAgentsSession.Out.Contents())).To(Equal("Required flag(s) \"new-bindir\", \"port\" have/has not been set\n"))

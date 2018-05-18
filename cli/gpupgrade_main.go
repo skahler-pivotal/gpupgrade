@@ -55,7 +55,6 @@ func setUpLogging() {
 
 func addFlagOptions() {
 	addFlagOptionsToShutdownClusters()
-	addFlagOptionsToInitCluster()
 	addFlagOptionsToCheck()
 	addFlagOptionsToConvertMaster()
 	addFlagOptionsToValidateStartCluster()

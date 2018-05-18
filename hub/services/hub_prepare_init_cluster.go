@@ -59,10 +59,6 @@ func SaveTargetClusterConfig(dbConnector *dbconn.DBConn, stateDir string, newBin
 	return nil
 }
 
-func x(GetOpenPort) {
-
-}
-
 func GetOpenPort() (int, error) {
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
 	if err != nil {
@@ -154,6 +150,7 @@ func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterR
 
 	//seg prefix
 	segPrefix := path.Base(oldReader.GetMasterDataDir())
+	gplog.Info("segPrefix: %v", segPrefix)
 	segPrefix = segPrefix[:len(segPrefix)-2]
 	gpinitsystemConfig = append(gpinitsystemConfig, "SEG_PREFIX="+segPrefix)
 
@@ -193,7 +190,9 @@ func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterR
 	gpinitsystemConfig = append(gpinitsystemConfig, masterDataDir)
 
 	//set master port
-	masterPort, err := GetNewMasterPort(h.commandExecer, oldReader.GetPortForSegment(-1))
+	oldMasterPort := oldReader.GetPortForSegment(1)
+	gplog.Info("oldMasterPort: %v", oldMasterPort)
+	masterPort, err := GetNewMasterPort(h.commandExecer, oldMasterPort)
 	if err != nil {
 		return &pb.PrepareInitClusterReply{}, err
 	}
@@ -203,30 +202,34 @@ func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterR
 	gpinitsystemConfig = append(gpinitsystemConfig, "CHECK_POINT_SEGMENTS=8")
 	gpinitsystemConfig = append(gpinitsystemConfig, "ENCODING=UNICODE")
 
-	gpinitsystemContents := []byte(strings.Join(gpinitsystemConfig, "\n"))
-	gpinitsystemFilepath := filepath.Join(h.conf.StateDir, "gpinitsystem_config")
-	err = ioutil.WriteFile(gpinitsystemFilepath, gpinitsystemContents, 0644)
+	gpinitsystemConfigContents := []byte(strings.Join(gpinitsystemConfig, "\n"))
+	gpinitsystemConfigFilepath := filepath.Join(h.conf.StateDir,
+		"gpinitsystem_config")
+	err = ioutil.WriteFile(gpinitsystemConfigFilepath, gpinitsystemConfigContents,
+		0644)
 	if err != nil {
 		return &pb.PrepareInitClusterReply{}, err
 	}
 
-	//write the hostnameFile
+	//write the hostname File
 	hostnames, err := oldReader.GetHostnames()
 	if err != nil {
 		return &pb.PrepareInitClusterReply{}, err
 	}
 	hostnameFilepath := filepath.Join(h.conf.StateDir, "hostfile")
-	err = ioutil.WriteFile(hostnameFilepath, []byte(strings.Join(hostnames, "\n")), 0644)
+	err = ioutil.WriteFile(hostnameFilepath, []byte(strings.Join(hostnames, "\n")),
+		0644)
 
 	// gpinitsystem the new cluster
-	cmdStr := fmt.Sprintf("gpinitsystem -c %s -h %s", gpinitsystemFilepath, hostnameFilepath)
+	cmdStr := fmt.Sprintf("gpinitsystem -c %s -h %s", gpinitsystemConfigFilepath,
+		hostnameFilepath)
 	gpinitsystemCmd := h.commandExecer("bash", "-c", cmdStr)
 	_, err = gpinitsystemCmd.Output()
 	if err != nil {
 		return &pb.PrepareInitClusterReply{}, err
 	}
 
-	dbConnector := db.NewDBConn("localhost", int(in.DbPort), "template1")
+	dbConnector := db.NewDBConn("localhost", int(masterPort), "template1")
 	defer dbConnector.Close()
 	err = dbConnector.Connect(1)
 	if err != nil {

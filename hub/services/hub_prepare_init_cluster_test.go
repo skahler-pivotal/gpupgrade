@@ -236,11 +236,20 @@ var _ = Describe("Hub prepare init-cluster", func() {
 		})
 
 		It("determines master+1 is not a free port, then finds a free port", func() {
+			errChan := make(chan error, 2)
+			outChan := make(chan []byte, 2)
+			commandExecer := &testutils.FakeCommandExecer{}
+			commandExecer.SetOutput(&testutils.FakeCommand{
+				Err: errChan,
+				Out: outChan,
+			})
+			outChan <- []byte("15432")
+			errChan <- nil
 
+			output, err := services.GetNewMasterPort(commandExecer.Exec, 15432)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(output).ToNot(Equal(15433))
 		})
 
-		It("does not find a free port", func() {
-
-		})
 	})
 })

@@ -75,7 +75,8 @@ func (p Preparer) VerifyConnectivity(client pb.CliToHubClient) error {
 }
 
 func (p Preparer) StartAgents() error {
-	_, err := p.client.PrepareStartAgents(context.Background(), &pb.PrepareStartAgentsRequest{})
+	_, err := p.client.PrepareStartAgents(context.Background(),
+		&pb.PrepareStartAgentsRequest{})
 	if err != nil {
 		return err
 	}

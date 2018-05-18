@@ -25,7 +25,6 @@ func (s *AgentServer) CheckFreePorts(ctx context.Context, in *pb.CheckFreePortsR
 		return &pb.CheckFreePortsReply{}, err
 	}
 
-	fmt.Printf("===%s===", string(output))
 	if string(output) == "" {
 		return &pb.CheckFreePortsReply{Result: true}, nil
 	}

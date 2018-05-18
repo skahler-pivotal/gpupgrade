@@ -8,10 +8,11 @@ import (
 	"github.com/greenplum-db/gpupgrade/helpers"
 	pb "github.com/greenplum-db/gpupgrade/idl"
 
+	"os"
+
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"os"
 )
 
 type AgentServer struct {
@@ -40,7 +41,6 @@ func NewAgentServer(execer helpers.CommandExecer, conf AgentConfig) *AgentServer
 }
 
 func (a *AgentServer) Start() {
-	gplog.Error("something")
 	createIfNotExists(a.conf.StateDir)
 	lis, err := net.Listen("tcp", ":"+strconv.Itoa(a.conf.Port))
 	if err != nil {

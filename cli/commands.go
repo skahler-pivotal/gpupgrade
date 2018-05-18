@@ -14,7 +14,6 @@ import (
 
 var masterHost string
 var dbPort int
-var newClusterDbPort int
 var oldDataDir, oldBinDir, newDataDir, newBinDir string
 
 var root = &cobra.Command{Use: "gpupgrade"}
@@ -122,8 +121,8 @@ var subStartAgents = &cobra.Command{
 
 var subInitCluster = &cobra.Command{
 	Use:   "init-cluster",
-	Short: "inits the cluster",
-	Long:  "Current assumptions is that the cluster already exists. And will only generate json config file for now.",
+	Short: "inits the new cluster",
+	Long:  "initializes and brings up the new cluster",
 	Run: func(cmd *cobra.Command, args []string) {
 		conn, connConfigErr := grpc.Dial("localhost:"+hubPort, grpc.WithInsecure())
 		if connConfigErr != nil {
