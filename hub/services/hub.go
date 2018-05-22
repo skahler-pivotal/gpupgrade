@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var DialTimeout = 3 * time.Second
+var DialTimeout = 30 * time.Second
 
 type dialer func(ctx context.Context, target string, opts ...grpc.DialOption) (*grpc.ClientConn, error)
 

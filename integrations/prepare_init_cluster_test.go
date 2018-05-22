@@ -65,8 +65,14 @@ var _ = Describe("prepare init-cluster", func() {
 		statusSessionPending := runCommand("status", "upgrade")
 		Eventually(statusSessionPending).Should(gbytes.Say("PENDING - Initialize upgrade target cluster"))
 
-		session := runCommand("prepare", "init-cluster")
-		Eventually(session).Should(Exit(0))
+		checkConfigSession := runCommand("check", "config", "--master-host", "localhost")
+		Eventually(checkConfigSession).Should(Exit(0))
+
+		agentSession := runCommand("prepare", "start-agents")
+		Eventually(agentSession).Should(Exit(0))
+
+		prepareSession := runCommand("prepare", "init-cluster")
+		Eventually(prepareSession).Should(Exit(0))
 
 		Expect(runStatusUpgrade()).To(ContainSubstring("COMPLETE - Initialize upgrade target cluster"))
 

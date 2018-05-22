@@ -143,6 +143,24 @@ func (mr *MockAgentClientMockRecorder) CheckFreePorts(ctx, in interface{}, opts 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckFreePorts", reflect.TypeOf((*MockAgentClient)(nil).CheckFreePorts), varargs...)
 }
 
+// CreateSegmentDataDirectories mocks base method
+func (m *MockAgentClient) CreateSegmentDataDirectories(ctx context.Context, in *idl.CreateSegmentDataDirRequest, opts ...grpc.CallOption) (*idl.CreateSegmentDataDirReply, error) {
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateSegmentDataDirectories", varargs...)
+	ret0, _ := ret[0].(*idl.CreateSegmentDataDirReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSegmentDataDirectories indicates an expected call of CreateSegmentDataDirectories
+func (mr *MockAgentClientMockRecorder) CreateSegmentDataDirectories(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSegmentDataDirectories", reflect.TypeOf((*MockAgentClient)(nil).CreateSegmentDataDirectories), varargs...)
+}
+
 // MockAgentServer is a mock of AgentServer interface
 type MockAgentServer struct {
 	ctrl     *gomock.Controller
@@ -242,4 +260,17 @@ func (m *MockAgentServer) CheckFreePorts(arg0 context.Context, arg1 *idl.CheckFr
 // CheckFreePorts indicates an expected call of CheckFreePorts
 func (mr *MockAgentServerMockRecorder) CheckFreePorts(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckFreePorts", reflect.TypeOf((*MockAgentServer)(nil).CheckFreePorts), arg0, arg1)
+}
+
+// CreateSegmentDataDirectories mocks base method
+func (m *MockAgentServer) CreateSegmentDataDirectories(arg0 context.Context, arg1 *idl.CreateSegmentDataDirRequest) (*idl.CreateSegmentDataDirReply, error) {
+	ret := m.ctrl.Call(m, "CreateSegmentDataDirectories", arg0, arg1)
+	ret0, _ := ret[0].(*idl.CreateSegmentDataDirReply)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSegmentDataDirectories indicates an expected call of CreateSegmentDataDirectories
+func (mr *MockAgentServerMockRecorder) CreateSegmentDataDirectories(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSegmentDataDirectories", reflect.TypeOf((*MockAgentServer)(nil).CreateSegmentDataDirectories), arg0, arg1)
 }

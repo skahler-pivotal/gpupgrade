@@ -3,7 +3,6 @@ package services
 import (
 	"fmt"
 	"io/ioutil"
-	"math"
 	"math/rand"
 	"net"
 	"os"
@@ -11,12 +10,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"sync"
+
 	"github.com/greenplum-db/gpupgrade/db"
 	"github.com/greenplum-db/gpupgrade/helpers"
 	"github.com/greenplum-db/gpupgrade/hub/configutils"
 	pb "github.com/greenplum-db/gpupgrade/idl"
 	"github.com/greenplum-db/gpupgrade/utils"
-	"sync"
 
 	"github.com/greenplum-db/gp-common-go-libs/dbconn"
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
@@ -76,14 +76,12 @@ func GetOpenPort() (int, error) {
 
 func GetNewMasterPort(commandExecer helpers.CommandExecer, port int) (int, error) {
 	newMasterPort := port + 1
-	cmdStr := fmt.Sprintf(`netstat -n | awk '{ print $4 }' | grep -o "\.%d*$"`,
+	// If the following command returns 0, the port is not in the output and so is free for use.
+	cmdStr := fmt.Sprintf(`netstat -n | grep -v -o "\.%d*$"`,
 		newMasterPort)
 	findPortCmd := commandExecer("bash", "-c", cmdStr)
-	output, err := findPortCmd.Output()
-	if err != nil {
-		return 0, err
-	}
-	if string(output) == "" {
+	_, err := findPortCmd.Output()
+	if err == nil {
 		return newMasterPort, nil
 	}
 	newMasterPort, err = GetOpenPort()
@@ -95,30 +93,33 @@ func GetNewMasterPort(commandExecer helpers.CommandExecer, port int) (int, error
 
 func CheckAllFreePorts(agentConns []*Connection, possiblePortBase int, numPrimaries int) bool {
 	wg := sync.WaitGroup{}
-	agentErrs := make(chan error, len(agentConns))
+	freeChan := make(chan bool, len(agentConns))
 	for _, agentConn := range agentConns {
 		wg.Add(1)
 		go func(c *Connection) {
 			defer wg.Done()
 
-			_, err := c.PbAgentClient.CheckFreePorts(context.Background(), &pb.CheckFreePortsRequest{
+			freeRangeFound, err := c.PbAgentClient.CheckFreePorts(context.Background(), &pb.CheckFreePortsRequest{
 				PossiblePortBase: int32(possiblePortBase),
 				NumPrimaries:     int32(numPrimaries),
 			})
 
 			if err != nil {
-				gplog.Error("failed to find free ports: %v", err)
-				agentErrs <- err
+				gplog.Error("Error checking ports: %s", err.Error())
 			}
+			freeChan <- freeRangeFound.GetResult() && err == nil
+
 		}(agentConn)
 	}
 
 	wg.Wait()
+	close(freeChan)
 
-	if len(agentErrs) != 0 {
-		return false
+	for b := range freeChan {
+		if !b {
+			return false
+		}
 	}
-
 	return true
 }
 
@@ -129,13 +130,46 @@ func GetFreePortBase(oldReader reader, checkAllFreePorts CheckAllFreePortsFunc, 
 	possiblePortBase := oldReader.GetMaxSegmentPort() + 1
 	maxTries := 10
 	for i := 0; i < maxTries; i++ {
+		gplog.Info("Checking if port %d is free", possiblePortBase)
 		allPortsFree := checkAllFreePorts(agentConns, possiblePortBase, numPrimaries)
 		if allPortsFree {
+			gplog.Info("Found free port %d", possiblePortBase)
 			return possiblePortBase, nil
 		}
-		possiblePortBase = rand.Intn(math.MaxInt32-1024) + 1024
+		possiblePortBase = rand.Intn(100000-1024) + 1024
 	}
+	gplog.Info("Did not find any free port after %d tries", maxTries)
 	return 0, errors.New("no free port base found")
+}
+
+func CreateSegmentDataDirectories(agentConns []*Connection, datadirs []string) error {
+	wg := sync.WaitGroup{}
+	errChan := make(chan error, len(agentConns))
+	for _, agentConn := range agentConns {
+		wg.Add(1)
+		go func(c *Connection) {
+			defer wg.Done()
+
+			_, err := c.PbAgentClient.CreateSegmentDataDirectories(context.Background(), &pb.CreateSegmentDataDirRequest{
+				Datadirs: datadirs,
+			})
+
+			if err != nil {
+				gplog.Error("Error creating segment data directories on host %s: %s", agentConn.Hostname, err.Error())
+				errChan <- err
+			}
+		}(agentConn)
+	}
+
+	wg.Wait()
+	close(errChan)
+
+	for err := range errChan {
+		if err != nil {
+			return errors.Errorf("Error creating segment data directories: %s", err.Error())
+		}
+	}
+	return nil
 }
 
 func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterRequest) (*pb.PrepareInitClusterReply, error) {
@@ -149,10 +183,12 @@ func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterR
 	gpinitsystemConfig := []string{`ARRAY_NAME="gp_upgrade cluster"`}
 
 	//seg prefix
-	segPrefix := path.Base(oldReader.GetMasterDataDir())
+	mdd := oldReader.GetMasterDataDir()
+	segPrefix := path.Base(mdd)
+	gplog.Info("Data Dir: %s", mdd)
 	gplog.Info("segPrefix: %v", segPrefix)
 	segPrefix = segPrefix[:len(segPrefix)-2]
-	gpinitsystemConfig = append(gpinitsystemConfig, "SEG_PREFIX="+segPrefix)
+	gpinitsystemConfig = append(gpinitsystemConfig, fmt.Sprintf("SEG_PREFIX=%s_upgrade", segPrefix))
 
 	//determine good chunk of port base, try old port base +1 first
 	agentConns, err := h.AgentConns()
@@ -167,14 +203,14 @@ func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterR
 
 	gpinitsystemConfig = append(gpinitsystemConfig, fmt.Sprintf("PORT_BASE=%d", portBase))
 
-	//set datadirs
-	var datadirs []string
+	//set segmentDatadirs
+	var segmentDatadirs []string
 	for _, datadir := range oldReader.GetSegmentDataDirs() {
 		dir := fmt.Sprintf("%s_upgrade", path.Dir(datadir))
-		datadirs = append(datadirs, dir)
+		segmentDatadirs = append(segmentDatadirs, dir)
 	}
 
-	datadirDeclare := fmt.Sprintf("declare -a DATA_DIRECTORY=(%s)", strings.Join(datadirs, " "))
+	datadirDeclare := fmt.Sprintf("declare -a DATA_DIRECTORY=(%s)", strings.Join(segmentDatadirs, " "))
 	gpinitsystemConfig = append(gpinitsystemConfig, datadirDeclare)
 
 	//set master hostname
@@ -186,7 +222,8 @@ func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterR
 	gpinitsystemConfig = append(gpinitsystemConfig, fmt.Sprintf("MASTER_HOSTNAME=%s", hostname))
 
 	//set master datadir
-	masterDataDir := fmt.Sprintf("MASTER_DIRECTORY=%s_upgrade", oldReader.GetMasterDataDir())
+	mddBase := path.Dir(oldReader.GetMasterDataDir())
+	masterDataDir := fmt.Sprintf("MASTER_DIRECTORY=%s", mddBase)
 	gpinitsystemConfig = append(gpinitsystemConfig, masterDataDir)
 
 	//set master port
@@ -196,7 +233,7 @@ func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterR
 	if err != nil {
 		return &pb.PrepareInitClusterReply{}, err
 	}
-	gpinitsystemConfig = append(gpinitsystemConfig, string(masterPort))
+	gpinitsystemConfig = append(gpinitsystemConfig, fmt.Sprintf("MASTER_PORT=%d", masterPort))
 
 	gpinitsystemConfig = append(gpinitsystemConfig, "TRUSTED_SHELL=ssh")
 	gpinitsystemConfig = append(gpinitsystemConfig, "CHECK_POINT_SEGMENTS=8")
@@ -220,8 +257,14 @@ func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterR
 	err = ioutil.WriteFile(hostnameFilepath, []byte(strings.Join(hostnames, "\n")),
 		0644)
 
-	// gpinitsystem the new cluster
-	cmdStr := fmt.Sprintf("gpinitsystem -c %s -h %s", gpinitsystemConfigFilepath,
+	// create directories for gpinitsystem
+	os.Mkdir(mddBase, 0755)
+
+	err = CreateSegmentDataDirectories(agentConns, segmentDatadirs)
+	// Need to created sgement data directories
+
+	// init the new cluster
+	cmdStr := fmt.Sprintf("gpinitsystem -a -c %s -h %s", gpinitsystemConfigFilepath,
 		hostnameFilepath)
 	gpinitsystemCmd := h.commandExecer("bash", "-c", cmdStr)
 	_, err = gpinitsystemCmd.Output()

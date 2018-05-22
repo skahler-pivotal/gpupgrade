@@ -9,6 +9,7 @@ service Agent {
     rpc PingAgents (PingAgentsRequest) returns (PingAgentsReply) {}
     rpc UpgradeConvertPrimarySegments (UpgradeConvertPrimarySegmentsRequest) returns (UpgradeConvertPrimarySegmentsReply) {}
     rpc CheckFreePorts (CheckFreePortsRequest) returns (CheckFreePortsReply) {}
+    rpc CreateSegmentDataDirectories (CreateSegmentDataDirRequest) returns (CreateSegmentDataDirReply) {}
 }
 
 message CheckFreePortsRequest {
@@ -69,3 +70,9 @@ message CheckDiskSpaceRequestToAgent {}
 message CheckDiskSpaceReplyFromAgent {
     repeated FileSysUsage ListOfFileSysUsage = 1;
 }
+
+message CreateSegmentDataDirRequest {
+	repeated string datadirs = 1;
+}
+
+message CreateSegmentDataDirReply {}
