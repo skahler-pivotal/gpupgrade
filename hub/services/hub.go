@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var DialTimeout = 30 * time.Second
+var DialTimeout = 3 * time.Second
 
 type dialer func(ctx context.Context, target string, opts ...grpc.DialOption) (*grpc.ClientConn, error)
 
@@ -144,7 +144,8 @@ func (h *Hub) AgentConns() ([]*Connection, error) {
 
 	for _, host := range hostnames {
 		ctx, cancelFunc := context.WithTimeout(context.Background(), DialTimeout)
-		// grpc.WithBlock() is potentially slowing down the tests. Leaving it in to keep tests green.
+		// grpc.WithBlock() is potentially slowing down the tests.
+		// Leaving it in to keep tests green.
 		conn, err := h.grpcDialer(ctx, host+":"+strconv.Itoa(h.conf.HubToAgentPort), grpc.WithInsecure(), grpc.WithBlock())
 		if err != nil {
 			gplog.Error("grpcDialer failed: ", err)

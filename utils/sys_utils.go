@@ -3,6 +3,7 @@ package utils
 import (
 	//"github.com/jmoiron/sqlx"
 	"io/ioutil"
+	"net"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -22,40 +23,42 @@ var (
  */
 
 type SystemFunctions struct {
-	CurrentUser  func() (*user.User, error)
-	Getenv       func(key string) string
-	Getpid       func() int
-	Hostname     func() (string, error)
-	IsNotExist   func(err error) bool
-	MkdirAll     func(path string, perm os.FileMode) error
-	Now          func() time.Time
-	Open         func(name string) (*os.File, error)
-	OpenFile     func(name string, flag int, perm os.FileMode) (*os.File, error)
-	Remove       func(name string) error
-	RemoveAll    func(name string) error
-	ReadFile     func(filename string) ([]byte, error)
-	Stat         func(name string) (os.FileInfo, error)
-	FilePathGlob func(pattern string) ([]string, error)
-	Create       func(name string) (*os.File, error)
+	CurrentUser    func() (*user.User, error)
+	Getenv         func(key string) string
+	Getpid         func() int
+	Hostname       func() (string, error)
+	IsNotExist     func(err error) bool
+	MkdirAll       func(path string, perm os.FileMode) error
+	Now            func() time.Time
+	Open           func(name string) (*os.File, error)
+	OpenFile       func(name string, flag int, perm os.FileMode) (*os.File, error)
+	Remove         func(name string) error
+	RemoveAll      func(name string) error
+	ReadFile       func(filename string) ([]byte, error)
+	Stat           func(name string) (os.FileInfo, error)
+	FilePathGlob   func(pattern string) ([]string, error)
+	Create         func(name string) (*os.File, error)
+	ResolveTCPAddr func(network, address string) (*net.TCPAddr, error)
 }
 
 func InitializeSystemFunctions() *SystemFunctions {
 	return &SystemFunctions{
-		CurrentUser:  user.Current,
-		Getenv:       os.Getenv,
-		Getpid:       os.Getpid,
-		Hostname:     os.Hostname,
-		IsNotExist:   os.IsNotExist,
-		MkdirAll:     os.MkdirAll,
-		Now:          time.Now,
-		Open:         os.Open,
-		OpenFile:     os.OpenFile,
-		Remove:       os.Remove,
-		RemoveAll:    os.RemoveAll,
-		Stat:         os.Stat,
-		FilePathGlob: filepath.Glob,
-		ReadFile:     ioutil.ReadFile,
-		Create:       os.Create,
+		CurrentUser:    user.Current,
+		Getenv:         os.Getenv,
+		Getpid:         os.Getpid,
+		Hostname:       os.Hostname,
+		IsNotExist:     os.IsNotExist,
+		MkdirAll:       os.MkdirAll,
+		Now:            time.Now,
+		Open:           os.Open,
+		OpenFile:       os.OpenFile,
+		Remove:         os.Remove,
+		RemoveAll:      os.RemoveAll,
+		Stat:           os.Stat,
+		FilePathGlob:   filepath.Glob,
+		ReadFile:       ioutil.ReadFile,
+		Create:         os.Create,
+		ResolveTCPAddr: net.ResolveTCPAddr,
 	}
 }
 

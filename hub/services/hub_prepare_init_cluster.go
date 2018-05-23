@@ -60,7 +60,7 @@ func SaveTargetClusterConfig(dbConnector *dbconn.DBConn, stateDir string, newBin
 }
 
 func GetOpenPort() (int, error) {
-	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	addr, err := utils.System.ResolveTCPAddr("tcp", "localhost:0")
 	if err != nil {
 		return 0, err
 	}

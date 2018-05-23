@@ -20,30 +20,15 @@ func (s *AgentServer) CheckFreePorts(ctx context.Context, in *pb.CheckFreePortsR
 	// Find if there are any conflicting ports within the range
 	cmd := fmt.Sprintf(`netstat -n | grep -o '\.[0-9]*$' | grep -o '[0-9]*$' | uniq | sort | awk '{if ($1 >= %d && $1 <= %d) print $1}'`, startPort, endPort)
 
-	defer func() {
-		if r := recover(); r != nil {
-			gplog.Error("Recovered from netstat command: %s", r)
-		}
-	}()
+	findConflictPortCmd := s.commandExecer("bash", "-c", cmd)
 
-	gplog.Info("Running command %s using command execer %+v", cmd, s.commandExecer)
-	//findConflictPortCmd := s.commandExecer("bash", "-c", cmd)
-	findConflictPortCmd := exec.Command("bash", "-c", cmd)
-
-	gplog.Info("Finished running command %s", cmd)
-
-	gplog.Info("findConflictPortCmd is %v, output is %v", findConflictPortCmd, findConflictPortCmd.Output)
 	output, err := findConflictPortCmd.Output()
-	gplog.Info("Finished checking port range, output was %s", string(output))
 	if err != nil {
-		gplog.Info("Error was %s", err.Error())
 		return &pb.CheckFreePortsReply{}, err
 	}
 
 	if string(output) == "" {
-		gplog.Info("Port range is free")
 		return &pb.CheckFreePortsReply{Result: true}, nil
 	}
-	gplog.Info("Port range is not free")
 	return &pb.CheckFreePortsReply{Result: false}, nil
 }

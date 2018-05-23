@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math"
+	"net"
 	"os"
 
 	"github.com/greenplum-db/gpupgrade/hub/configutils"
@@ -113,12 +114,12 @@ var _ = Describe("Hub prepare init-cluster", func() {
 			mockAgent1.EXPECT().CheckFreePorts(gomock.Any(), &pb.CheckFreePortsRequest{
 				PossiblePortBase: int32(possiblePortBase),
 				NumPrimaries:     int32(numPrimaries),
-			}).Return(nil, nil)
+			}).Return(&pb.CheckFreePortsReply{Result: true}, nil)
 
 			mockAgent2.EXPECT().CheckFreePorts(gomock.Any(), &pb.CheckFreePortsRequest{
 				PossiblePortBase: int32(possiblePortBase),
 				NumPrimaries:     int32(numPrimaries),
-			}).Return(nil, nil)
+			}).Return(&pb.CheckFreePortsReply{Result: true}, nil)
 
 			result := services.CheckAllFreePorts(mockAgentConns, possiblePortBase, numPrimaries)
 			Expect(result).To(BeTrue())
@@ -140,12 +141,12 @@ var _ = Describe("Hub prepare init-cluster", func() {
 			mockAgent1.EXPECT().CheckFreePorts(gomock.Any(), &pb.CheckFreePortsRequest{
 				PossiblePortBase: int32(possiblePortBase),
 				NumPrimaries:     int32(numPrimaries),
-			}).Return(nil, errors.New("no free ports"))
+			}).Return(&pb.CheckFreePortsReply{Result: false}, errors.New("no free ports"))
 
 			mockAgent2.EXPECT().CheckFreePorts(gomock.Any(), &pb.CheckFreePortsRequest{
 				PossiblePortBase: int32(possiblePortBase),
 				NumPrimaries:     int32(numPrimaries),
-			}).Return(nil, nil)
+			}).Return(&pb.CheckFreePortsReply{Result: true}, nil)
 
 			result := services.CheckAllFreePorts(mockAgentConns, possiblePortBase, numPrimaries)
 			Expect(result).To(BeFalse())
@@ -206,20 +207,6 @@ var _ = Describe("Hub prepare init-cluster", func() {
 	})
 
 	Describe("GetNewMasterPort", func() {
-		It("cannot run netstat to see if port is used", func() {
-			errChan := make(chan error, 2)
-			outChan := make(chan []byte, 2)
-			commandExecer := &testutils.FakeCommandExecer{}
-			commandExecer.SetOutput(&testutils.FakeCommand{
-				Err: errChan,
-				Out: outChan,
-			})
-			outChan <- []byte("")
-			errChan <- errors.New("bash could not run netstat")
-			_, err := services.GetNewMasterPort(commandExecer.Exec, 15432)
-			Expect(err).To(HaveOccurred())
-		})
-
 		It("determines master+1 is a free port", func() {
 			errChan := make(chan error, 2)
 			outChan := make(chan []byte, 2)
@@ -243,12 +230,16 @@ var _ = Describe("Hub prepare init-cluster", func() {
 				Err: errChan,
 				Out: outChan,
 			})
-			outChan <- []byte("15432")
-			errChan <- nil
+			outChan <- []byte("15433")
+			errChan <- errors.New("exit status 1")
+			utils.System.ResolveTCPAddr = func(network, address string) (*net.TCPAddr, error) {
+				return &net.TCPAddr{Port: 42000}, nil
+			}
+			defer utils.InitializeSystemFunctions()
 
 			output, err := services.GetNewMasterPort(commandExecer.Exec, 15432)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(output).ToNot(Equal(15433))
+			Expect(output).To(Equal(42000))
 		})
 
 	})
