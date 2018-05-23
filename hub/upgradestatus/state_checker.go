@@ -1,9 +1,10 @@
 package upgradestatus
 
 import (
+	"path/filepath"
+
 	pb "github.com/greenplum-db/gpupgrade/idl"
 	"github.com/greenplum-db/gpupgrade/utils"
-	"path/filepath"
 
 	"github.com/pkg/errors"
 )

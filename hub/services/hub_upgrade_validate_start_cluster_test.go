@@ -16,9 +16,9 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/greenplum-db/gpupgrade/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ = Describe("upgrade validate start cluster", func() {

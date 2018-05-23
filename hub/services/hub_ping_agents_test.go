@@ -12,9 +12,9 @@ import (
 	"github.com/greenplum-db/gpupgrade/hub/configutils"
 	"github.com/greenplum-db/gpupgrade/hub/services"
 
+	"github.com/greenplum-db/gpupgrade/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ = Describe("hub pings agents test", func() {

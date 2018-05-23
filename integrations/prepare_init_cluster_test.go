@@ -61,7 +61,7 @@ var _ = Describe("prepare init-cluster", func() {
 		Expect(checkPortIsAvailable(port)).To(BeTrue())
 	})
 
-	It("starts the target cluster, and generates a new_cluster_config.json", func() {
+	FIt("starts the target cluster, and generates a new_cluster_config.json", func() {
 		statusSessionPending := runCommand("status", "upgrade")
 		Eventually(statusSessionPending).Should(gbytes.Say("PENDING - Initialize upgrade target cluster"))
 

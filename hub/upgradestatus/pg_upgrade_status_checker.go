@@ -11,6 +11,7 @@ import (
 	"regexp"
 
 	"fmt"
+
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 )
 

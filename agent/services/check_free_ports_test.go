@@ -7,6 +7,7 @@ import (
 	"github.com/greenplum-db/gpupgrade/utils"
 
 	"errors"
+
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

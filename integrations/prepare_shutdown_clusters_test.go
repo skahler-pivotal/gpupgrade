@@ -10,25 +10,24 @@ import (
 	pb "github.com/greenplum-db/gpupgrade/idl"
 	"github.com/greenplum-db/gpupgrade/testutils"
 
+	"github.com/greenplum-db/gpupgrade/hub/cluster"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
-	"github.com/greenplum-db/gpupgrade/hub/cluster"
-	"fmt"
 )
 
 var _ = Describe("prepare shutdown-clusters", func() {
 	var (
-		dir           string
-		hub           *services.Hub
-		mockAgent     *testutils.MockAgentServer
-		commandExecer *testutils.FakeCommandExecer
-		outChan       chan []byte
-		errChan       chan error
-		oldBinDir     string
-		newBinDir     string
+		dir                string
+		hub                *services.Hub
+		mockAgent          *testutils.MockAgentServer
+		commandExecer      *testutils.FakeCommandExecer
+		outChan            chan []byte
+		errChan            chan error
+		oldBinDir          string
+		newBinDir          string
 		stubRemoteExecutor *testutils.StubRemoteExecutor
 	)
 

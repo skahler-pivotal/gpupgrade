@@ -2,6 +2,7 @@ package commanders_test
 
 import (
 	"errors"
+
 	"github.com/greenplum-db/gpupgrade/cli/commanders"
 	pb "github.com/greenplum-db/gpupgrade/idl"
 	mockpb "github.com/greenplum-db/gpupgrade/mock_idl"

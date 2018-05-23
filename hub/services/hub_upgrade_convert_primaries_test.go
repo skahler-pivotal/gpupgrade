@@ -12,9 +12,9 @@ import (
 	"github.com/greenplum-db/gp-common-go-libs/testhelper"
 	"google.golang.org/grpc"
 
+	"github.com/greenplum-db/gpupgrade/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ = Describe("hub.UpgradeConvertPrimaries()", func() {

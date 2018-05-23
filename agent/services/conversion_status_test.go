@@ -9,11 +9,12 @@ import (
 
 	"github.com/greenplum-db/gpupgrade/agent/services"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("CommandListener", func() {

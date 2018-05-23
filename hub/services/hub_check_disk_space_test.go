@@ -9,10 +9,10 @@ import (
 
 	"github.com/golang/mock/gomock"
 
+	"github.com/greenplum-db/gpupgrade/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
-	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ = Describe("object count tests", func() {

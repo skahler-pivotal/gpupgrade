@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"os/exec"
 
 	pb "github.com/greenplum-db/gpupgrade/idl"
 

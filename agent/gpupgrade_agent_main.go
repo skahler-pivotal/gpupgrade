@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
-	"github.com/spf13/cobra"
 	"github.com/greenplum-db/gpupgrade/agent/services"
 	"github.com/greenplum-db/gpupgrade/helpers"
+	"github.com/spf13/cobra"
 )
 
 func main() {

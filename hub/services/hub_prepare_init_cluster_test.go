@@ -13,6 +13,7 @@ import (
 	pb "github.com/greenplum-db/gpupgrade/idl"
 	"github.com/greenplum-db/gpupgrade/mock_idl"
 	"github.com/greenplum-db/gpupgrade/testutils"
+	"github.com/greenplum-db/gpupgrade/utils"
 
 	"github.com/golang/mock/gomock"
 	"github.com/greenplum-db/gp-common-go-libs/dbconn"

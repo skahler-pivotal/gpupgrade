@@ -3,13 +3,14 @@ package services_test
 import (
 	"github.com/greenplum-db/gpupgrade/utils"
 
-	"github.com/greenplum-db/gp-common-go-libs/testhelper"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/greenplum-db/gpupgrade/agent/services"
-	"github.com/greenplum-db/gpupgrade/testutils"
 	"io/ioutil"
 	"os"
+
+	"github.com/greenplum-db/gp-common-go-libs/testhelper"
+	"github.com/greenplum-db/gpupgrade/agent/services"
+	"github.com/greenplum-db/gpupgrade/testutils"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("AgentServer", func() {
