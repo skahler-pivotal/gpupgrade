@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/greenplum-db/gpupgrade/db"
 	"github.com/greenplum-db/gpupgrade/helpers"
@@ -175,7 +174,6 @@ func CreateSegmentDataDirectories(agentConns []*Connection, datadirs []string) e
 func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterRequest) (*pb.PrepareInitClusterReply, error) {
 	gplog.Info("starting PrepareInitCluster()")
 
-	time.Sleep(60 * time.Second)
 	// Read original cluster config file
 	oldReader := configutils.NewReader()
 	oldReader.OfOldClusterConfig(h.conf.StateDir)
