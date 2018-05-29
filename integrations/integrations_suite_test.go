@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/greenplum-db/gp-common-go-libs/testhelper"
+	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -28,8 +28,6 @@ var (
 	agentBinaryPath          string
 	userPreviousPathVariable string
 	port                     int
-	testout                  *gbytes.Buffer
-	testerr                  *gbytes.Buffer
 	testlog                  *gbytes.Buffer
 )
 
@@ -62,7 +60,11 @@ var _ = BeforeSuite(func() {
 	userPreviousPathVariable = os.Getenv("PATH")
 	os.Setenv("PATH", cliDirectoryPath+":"+hubDirectoryPath+":"+userPreviousPathVariable)
 
-	testout, testerr, testlog = testhelper.SetupTestLogger()
+	// Redirect the stdout and stderr logger streams into the GinkgoWriter
+	// itself. testlog is initialized to a new gbytes Buffer.
+	testlog = gbytes.NewBuffer()
+	testlogger := gplog.NewLogger(GinkgoWriter, GinkgoWriter, testlog, "gbytes.Buffer", gplog.LOGINFO, "testProgram")
+	gplog.SetLogger(testlogger)
 })
 
 var _ = BeforeEach(func() {
