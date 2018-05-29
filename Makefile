@@ -54,7 +54,7 @@ integration:
 test : lint unit integration
 
 coverage :
-		@./scripts/show_coverage.sh
+		@./scripts/run_coverage.sh
 
 sshd_build :
 		make -C integrations/sshd
