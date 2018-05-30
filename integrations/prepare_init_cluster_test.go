@@ -3,6 +3,7 @@ package integrations_test
 import (
 	"io/ioutil"
 	"os"
+	"strconv"
 
 	"github.com/greenplum-db/gpupgrade/hub/cluster"
 	"github.com/greenplum-db/gpupgrade/hub/configutils"
@@ -12,11 +13,11 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	"google.golang.org/grpc"
 
+	"github.com/greenplum-db/gpupgrade/hub/cluster_ssher"
+	"github.com/greenplum-db/gpupgrade/hub/upgradestatus"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"github.com/greenplum-db/gpupgrade/hub/cluster_ssher"
-	"github.com/greenplum-db/gpupgrade/hub/upgradestatus"
 	"time"
 )
 
@@ -76,18 +77,17 @@ var _ = Describe("prepare init-cluster", func() {
 
 		Expect(runStatusUpgrade()).To(ContainSubstring("COMPLETE - Initialize upgrade target cluster"))
 
-			session := runCommand("prepare", "init-cluster", "--port", port, "--new-bindir", "/tmp")
-			Eventually(session).Should(Exit(0))
+		session := runCommand("prepare", "init-cluster", "--port", strconv.Itoa(port), "--new-bindir", "/tmp")
+		Eventually(session).Should(Exit(0))
 
-			Expect(runStatusUpgrade()).To(ContainSubstring("COMPLETE - Initialize upgrade target cluster"))
+		Expect(runStatusUpgrade()).To(ContainSubstring("COMPLETE - Initialize upgrade target cluster"))
 
-			reader := configutils.NewReader()
-			reader.OfNewClusterConfig(dir)
-			err := reader.Read()
-			Expect(err).ToNot(HaveOccurred())
+		reader := configutils.NewReader()
+		reader.OfNewClusterConfig(dir)
+		err := reader.Read()
+		Expect(err).ToNot(HaveOccurred())
 
-			Expect(len(reader.GetSegmentConfiguration())).To(BeNumerically(">", 1))
-		})
+		Expect(len(reader.GetSegmentConfiguration())).To(BeNumerically(">", 1))
 	})
 
 	It("fails if some flags are missing", func() {

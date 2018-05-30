@@ -15,6 +15,7 @@ import (
 var masterHost string
 var dbPort int
 var oldDataDir, oldBinDir, newDataDir, newBinDir string
+var newClusterDbPort int
 
 var root = &cobra.Command{Use: "gpupgrade"}
 

@@ -23,8 +23,9 @@ func (scr *SpyConfigReader) GetHostnames() ([]string, error) {
 	}
 }
 
-func (scr *SpyConfigReader) GetSegmentConfiguration() configutils.SegmentConfiguration {return nil}
-func (scr *SpyConfigReader) OfOldClusterConfig(baseDir string) {}
-func (scr *SpyConfigReader) OfNewClusterConfig(baseDir string) {}
-func (scr *SpyConfigReader) GetMasterDataDir() string {return ""}
-func (scr *SpyConfigReader) GetPortForSegment(segmentDbid int) int {return 0}
+func (scr *SpyConfigReader) GetSegmentConfiguration() configutils.SegmentConfiguration { return nil }
+func (scr *SpyConfigReader) OfOldClusterConfig(baseDir string)                         {}
+func (scr *SpyConfigReader) OfNewClusterConfig(baseDir string)                         {}
+func (scr *SpyConfigReader) GetMasterDataDir() string                                  { return "" }
+func (scr *SpyConfigReader) GetPortForSegment(segmentDbid int) int                     { return 0 }
+func (scr *SpyConfigReader) GetMaxSegmentPort() int                                    { return 0 }
