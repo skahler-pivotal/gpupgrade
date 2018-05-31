@@ -18,6 +18,7 @@ import (
 	"github.com/onsi/gomega/gbytes"
 
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
+	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 var _ = Describe("Hub check config", func() {
@@ -56,6 +57,10 @@ var _ = Describe("Hub check config", func() {
 			return fakeConfigFile, nil
 		}
 
+		utils.System.Rename = func (oldpath, newpath string) error {
+			return nil
+		}
+
 		err := services.SaveOldClusterConfig(dbConnector, dir, oldBinDir)
 		Expect(err).ToNot(HaveOccurred())
 
@@ -73,6 +78,10 @@ var _ = Describe("Hub check config", func() {
 
 		operating.System.OpenFileWrite = func(name string, flag int, perm os.FileMode) (io.WriteCloser, error) {
 			return fakeConfigFile, nil
+		}
+
+		utils.System.Rename = func (oldpath, newpath string) error {
+			return nil
 		}
 
 		err := services.SaveOldClusterConfig(dbConnector, dir, oldBinDir)

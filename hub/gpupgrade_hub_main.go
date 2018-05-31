@@ -48,7 +48,6 @@ func main() {
 			clusterPair, err := cluster.NewClusterPair(conf.StateDir, commandExecer)
 			if err != nil {
 				gplog.Error(err.Error())
-				return err
 			}
 
 			clusterSsher := cluster_ssher.NewClusterSsher(

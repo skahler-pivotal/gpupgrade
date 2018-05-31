@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/greenplum-db/gpupgrade/db"
@@ -16,6 +15,10 @@ import (
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
+	"github.com/greenplum-db/gpupgrade/hub/cluster"
+	"github.com/greenplum-db/gp-common-go-libs/operating"
+	"time"
+	"strconv"
 )
 
 var CONFIGQUERY5 = `SELECT
@@ -57,11 +60,21 @@ func (h *Hub) CheckConfig(ctx context.Context,
 	}
 	dbConnector.Version.Initialize(dbConnector)
 
+
+
 	err = SaveOldClusterConfig(dbConnector, h.conf.StateDir, in.OldBinDir)
 	if err != nil {
 		gplog.Error(err.Error())
 		return &pb.CheckConfigReply{}, err
 	}
+
+	updatedClusterPair, err := cluster.NewClusterPair(h.conf.StateDir, h.commandExecer)
+	if err != nil {
+		errMsg := fmt.Sprintf("Hub was unable to update Config. Err: %s", err.Error())
+		return &pb.CheckConfigReply{}, errors.New(errMsg)
+	}
+
+	h.clusterPair = updatedClusterPair
 
 	successReply := &pb.CheckConfigReply{ConfigStatus: "All good"}
 
@@ -79,8 +92,6 @@ func SaveOldClusterConfig(dbConnector *dbconn.DBConn, stateDir string, oldBinDir
 		configQuery = CONFIGQUERY5
 	}
 
-	configFile := configutils.GetConfigFilePath(stateDir)
-
 	segConfig := make(configutils.SegmentConfiguration, 0)
 	err = dbConnector.Select(&segConfig, configQuery)
 	if err != nil {
@@ -93,7 +104,10 @@ func SaveOldClusterConfig(dbConnector *dbconn.DBConn, stateDir string, oldBinDir
 		BinDir:    oldBinDir,
 	}
 
-	tmpfile, err := ioutil.TempFile(stateDir, "gpupgrade_")
+	configFile := configutils.GetConfigFilePath(stateDir)
+	tmpConfigFileName := configutils.GetConfigFilePath(stateDir) + strconv.FormatInt(time.Now().Unix(), 10)
+	configFileHandle, err := operating.System.OpenFileWrite(tmpConfigFileName, os.O_CREATE|os.O_WRONLY, 0700)
+	//tmpfile, err := utils.System.TempFile(stateDir, "gpupgrade_")
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to create temporary file. Err: %s", err.Error())
 		return errors.New(errMsg)
@@ -103,23 +117,23 @@ func SaveOldClusterConfig(dbConnector *dbconn.DBConn, stateDir string, oldBinDir
 	cleanup := true
 	defer func() {
 		if cleanup {
-			os.Remove(tmpfile.Name())
+			os.Remove(tmpConfigFileName)
 		}
 	}()
 
-	err = SaveQueryResultToJSON(configJSON, tmpfile)
+	err = SaveQueryResultToJSON(configJSON, configFileHandle)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error converting config to JSON. Err: %s", err.Error())
 		return errors.New(errMsg)
 	}
 
-	err = tmpfile.Close()
+	err = configFileHandle.Close()
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to close temporary file. Err: %s", err.Error())
 		return errors.New(errMsg)
 	}
 
-	err = os.Rename(tmpfile.Name(), configFile)
+	err = utils.System.Rename(tmpConfigFileName, configFile)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to move temporary file. Err: %s", err.Error())
 		return errors.New(errMsg)

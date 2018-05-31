@@ -23,6 +23,7 @@ var _ = Describe("ClusterPair", func() {
 		errChan       chan error
 		outChan       chan []byte
 		subject       *cluster.Pair
+		err error
 	)
 
 	BeforeEach(func() {
@@ -67,7 +68,8 @@ var _ = Describe("ClusterPair", func() {
 				filesLaidDown = filteredFiles
 				return nil
 			}
-			subject = cluster.NewClusterPair(dir, commandExecer.Exec)
+			subject, err = cluster.NewClusterPair(dir, commandExecer.Exec)
+			Expect(err).ToNot(HaveOccurred())
 
 			subject.OldMasterPort = 25437
 			subject.NewMasterPort = 35437
@@ -119,7 +121,9 @@ var _ = Describe("ClusterPair", func() {
 				return []byte(testutils.MASTER_ONLY_JSON), nil
 			}
 
-			subject = cluster.NewClusterPair(dir, commandExecer.Exec)
+			subject, err = cluster.NewClusterPair(dir, commandExecer.Exec)
+			Expect(err).ToNot(HaveOccurred())
+
 			subject.OldMasterPort = 25437
 			subject.NewMasterPort = 35437
 			subject.OldMasterDataDirectory = "/old/datadir"
@@ -159,15 +163,16 @@ var _ = Describe("ClusterPair", func() {
 				return []byte(testutils.NEW_MASTER_JSON), nil
 			}
 
-			subject = cluster.NewClusterPair(dir, commandExecer.Exec)
+			subject, err = cluster.NewClusterPair(dir, commandExecer.Exec)
+			Expect(err).ToNot(HaveOccurred())
+
 		})
 
 		It("returns both master ports correctly", func() {
 			oldMasterPort, newMasterPort, err := subject.GetMasterPorts()
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(oldMasterPort).To(Equal(25437))
 			Expect(newMasterPort).To(Equal(35437))
 		})
-
 	})
 })

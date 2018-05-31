@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
+	"github.com/greenplum-db/gpupgrade/utils"
 )
 
 type Pair struct {
@@ -18,8 +19,8 @@ type Pair struct {
 	NewMasterPort          int
 	OldMasterDataDirectory string
 	NewMasterDataDirectory string
-	oldBinDir              string
-	newBinDir              string
+	OldBinDir              string
+	NewBinDir              string
 	commandExecer          helpers.CommandExecer
 	oldPostmasterRunning   bool
 	newPostmasterRunning   bool
@@ -31,7 +32,7 @@ func NewClusterPair(basedir string, execer helpers.CommandExecer) (*Pair, error)
 	}
 	err := clusterPair.init(basedir)
 	if err != nil {
-		return nil, err
+		gplog.Error(err.Error())
 	}
 
 	return clusterPair, nil
@@ -40,24 +41,26 @@ func NewClusterPair(basedir string, execer helpers.CommandExecer) (*Pair, error)
 func (cp *Pair) init(baseDir string) error {
 	var err error
 
-	if oldClusterConfigFileExists && newClusterConfigFileExists {
-		cp.oldClusterReader = configutils.Reader{}
-		cp.oldClusterReader.OfOldClusterConfig(baseDir)
+	cp.oldClusterReader = configutils.Reader{}
+	cp.oldClusterReader.OfOldClusterConfig(baseDir)
+	if _, err := utils.System.Stat(configutils.GetConfigFilePath(baseDir)); err != nil {
 		err = cp.oldClusterReader.Read()
 		if err != nil {
-			return fmt.Errorf("couldn't read old config file: %+v", err)
+			return fmt.Errorf("found existing config file for old cluster, but could not read it: %+v", err)
 		}
-		cp.newClusterReader = configutils.Reader{}
-		cp.newClusterReader.OfNewClusterConfig(baseDir)
-		err = cp.newClusterReader.Read()
-		if err != nil {
-			return fmt.Errorf("couldn't read new config file: %+v", err)
-		}
-
 	}
 
-	cp.oldBinDir = cp.oldClusterReader.GetBinDir()
-	cp.newBinDir = cp.newClusterReader.GetBinDir()
+	cp.newClusterReader = configutils.Reader{}
+	cp.newClusterReader.OfNewClusterConfig(baseDir)
+	if _, err := utils.System.Stat(configutils.GetNewClusterConfigFilePath(baseDir)); err != nil {
+		err = cp.newClusterReader.Read()
+		if err != nil {
+			return fmt.Errorf("found existing config file for new cluster, but could not read it: %+v", err)
+		}
+	}
+
+	cp.OldBinDir = cp.oldClusterReader.GetBinDir()
+	cp.NewBinDir = cp.newClusterReader.GetBinDir()
 
 	cp.OldMasterPort, cp.NewMasterPort, err = cp.GetMasterPorts()
 	if err != nil {
@@ -85,11 +88,11 @@ func (cp *Pair) StopEverything(pathToGpstopStateDir string) {
 	checklistManager := upgradestatus.NewChecklistManager(pathToGpstopStateDir)
 
 	if cp.oldPostmasterRunning {
-		cp.stopCluster(checklistManager, "gpstop.old", cp.oldBinDir, cp.OldMasterDataDirectory)
+		cp.stopCluster(checklistManager, "gpstop.old", cp.OldBinDir, cp.OldMasterDataDirectory)
 	}
 
 	if cp.newPostmasterRunning {
-		cp.stopCluster(checklistManager, "gpstop.new", cp.newBinDir, cp.NewMasterDataDirectory)
+		cp.stopCluster(checklistManager, "gpstop.new", cp.NewBinDir, cp.NewMasterDataDirectory)
 	}
 }
 
