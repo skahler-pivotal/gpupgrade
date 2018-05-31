@@ -25,28 +25,35 @@ type Pair struct {
 	newPostmasterRunning   bool
 }
 
-func NewClusterPair(basedir string, execer helpers.CommandExecer) *Pair {
+func NewClusterPair(basedir string, execer helpers.CommandExecer) (*Pair, error) {
 	clusterPair := &Pair{
 		commandExecer: execer,
 	}
-	clusterPair.init(basedir)
-	return clusterPair
+	err := clusterPair.init(basedir)
+	if err != nil {
+		return nil, err
+	}
+
+	return clusterPair, nil
 }
 
 func (cp *Pair) init(baseDir string) error {
 	var err error
 
-	cp.oldClusterReader = configutils.Reader{}
-	cp.oldClusterReader.OfOldClusterConfig(baseDir)
-	err = cp.oldClusterReader.Read()
-	if err != nil {
-		return fmt.Errorf("couldn't read old config file: %+v", err)
-	}
-	cp.newClusterReader = configutils.Reader{}
-	cp.newClusterReader.OfNewClusterConfig(baseDir)
-	err = cp.newClusterReader.Read()
-	if err != nil {
-		return fmt.Errorf("couldn't read new config file: %+v", err)
+	if oldClusterConfigFileExists && newClusterConfigFileExists {
+		cp.oldClusterReader = configutils.Reader{}
+		cp.oldClusterReader.OfOldClusterConfig(baseDir)
+		err = cp.oldClusterReader.Read()
+		if err != nil {
+			return fmt.Errorf("couldn't read old config file: %+v", err)
+		}
+		cp.newClusterReader = configutils.Reader{}
+		cp.newClusterReader.OfNewClusterConfig(baseDir)
+		err = cp.newClusterReader.Read()
+		if err != nil {
+			return fmt.Errorf("couldn't read new config file: %+v", err)
+		}
+
 	}
 
 	cp.oldBinDir = cp.oldClusterReader.GetBinDir()

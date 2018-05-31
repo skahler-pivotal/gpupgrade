@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 
 	"github.com/greenplum-db/gpupgrade/db"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/greenplum-db/gp-common-go-libs/dbconn"
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
-	"github.com/greenplum-db/gp-common-go-libs/operating"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 )
@@ -80,11 +80,6 @@ func SaveOldClusterConfig(dbConnector *dbconn.DBConn, stateDir string, oldBinDir
 	}
 
 	configFile := configutils.GetConfigFilePath(stateDir)
-	configFileHandle, err := operating.System.OpenFileWrite(configFile, os.O_CREATE|os.O_WRONLY, 0700)
-	if err != nil {
-		errMsg := fmt.Sprintf("Unable to write to config file %s. Err: %s", configFile, err.Error())
-		return errors.New(errMsg)
-	}
 
 	segConfig := make(configutils.SegmentConfiguration, 0)
 	err = dbConnector.Select(&segConfig, configQuery)
@@ -98,10 +93,39 @@ func SaveOldClusterConfig(dbConnector *dbconn.DBConn, stateDir string, oldBinDir
 		BinDir:    oldBinDir,
 	}
 
-	err = SaveQueryResultToJSON(configJSON, configFileHandle)
+	tmpfile, err := ioutil.TempFile(stateDir, "gpupgrade_")
 	if err != nil {
-		return err
+		errMsg := fmt.Sprintf("Unable to create temporary file. Err: %s", err.Error())
+		return errors.New(errMsg)
 	}
+
+	// Remove the temporary file if we exit early.
+	cleanup := true
+	defer func() {
+		if cleanup {
+			os.Remove(tmpfile.Name())
+		}
+	}()
+
+	err = SaveQueryResultToJSON(configJSON, tmpfile)
+	if err != nil {
+		errMsg := fmt.Sprintf("Error converting config to JSON. Err: %s", err.Error())
+		return errors.New(errMsg)
+	}
+
+	err = tmpfile.Close()
+	if err != nil {
+		errMsg := fmt.Sprintf("Unable to close temporary file. Err: %s", err.Error())
+		return errors.New(errMsg)
+	}
+
+	err = os.Rename(tmpfile.Name(), configFile)
+	if err != nil {
+		errMsg := fmt.Sprintf("Unable to move temporary file. Err: %s", err.Error())
+		return errors.New(errMsg)
+	}
+
+	cleanup = false // our tempfile is no longer temporary
 
 	return nil
 }

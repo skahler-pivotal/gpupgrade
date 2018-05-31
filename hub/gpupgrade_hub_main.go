@@ -4,18 +4,20 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
 	"github.com/greenplum-db/gpupgrade/helpers"
 	"github.com/greenplum-db/gpupgrade/hub/cluster"
 	"github.com/greenplum-db/gpupgrade/hub/configutils"
 	"github.com/greenplum-db/gpupgrade/hub/services"
 
+	"runtime/debug"
+	"time"
+
 	"github.com/greenplum-db/gp-common-go-libs/gplog"
-	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
 	"github.com/greenplum-db/gpupgrade/hub/cluster_ssher"
 	"github.com/greenplum-db/gpupgrade/hub/upgradestatus"
-	"time"
-	"runtime/debug"
+	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
 )
 
 // This directory to have the implementation code for the gRPC server to serve
@@ -43,7 +45,11 @@ func main() {
 				return exec.Command(command, vars...)
 			}
 
-			clusterPair := cluster.NewClusterPair(conf.StateDir, commandExecer)
+			clusterPair, err := cluster.NewClusterPair(conf.StateDir, commandExecer)
+			if err != nil {
+				gplog.Error(err.Error())
+				return err
+			}
 
 			clusterSsher := cluster_ssher.NewClusterSsher(
 				upgradestatus.NewChecklistManager(conf.StateDir),
