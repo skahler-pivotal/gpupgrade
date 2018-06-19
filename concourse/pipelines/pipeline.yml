@@ -1,0 +1,23 @@
+---
+
+# groups
+# resource_types
+# resources
+# jobs
+
+resources:
+- name: gpupgrade_src
+  type: git
+  source:
+    uri: https://github.com/greenplum-db/gpupgrade.git
+    branch: 158153670-spike-ci-gpupgrade
+
+jobs:
+- name: unit_test
+  plan:
+  - get: gpupgrade_src
+    trigger: true
+  - task: unit_test
+    file: gpupgrade_src/concourse/tasks/unit_test.yml
+
+
