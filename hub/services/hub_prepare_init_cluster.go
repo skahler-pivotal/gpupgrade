@@ -41,19 +41,22 @@ func SaveTargetClusterConfig(target *utils.Cluster, dbConnector *dbconn.DBConn, 
 
 func (h *Hub) PrepareInitCluster(ctx context.Context, in *pb.PrepareInitClusterRequest) (*pb.PrepareInitClusterReply, error) {
 	gplog.Info("Running PrepareInitCluster()")
-	dbConnector := h.source.NewDBConn()
 
-	go func() {
-		step := h.checklist.GetStepWriter(upgradestatus.INIT_CLUSTER)
-		err := h.InitCluster(dbConnector)
-		if err != nil {
-			gplog.Error(err.Error())
-			step.MarkFailed()
-		} else {
-			step.MarkComplete()
-		}
-	}()
+	go h.AsyncInit()
+
 	return &pb.PrepareInitClusterReply{}, nil
+}
+
+func (h *Hub) AsyncInit() {
+	dbConnector := h.source.NewDBConn()
+	step := h.checklist.GetStepWriter(upgradestatus.INIT_CLUSTER)
+	err := h.InitCluster(dbConnector)
+	if err != nil {
+		gplog.Error(err.Error())
+		step.MarkFailed()
+	} else {
+		step.MarkComplete()
+	}
 }
 
 func (h *Hub) InitCluster(dbConnector *dbconn.DBConn) error {
